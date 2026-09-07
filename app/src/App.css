@@ -495,19 +495,23 @@ a {
   flex-shrink: 0;
   background: var(--bg-card);
   border-right: 1px solid var(--border-color);
-  padding: 14px 10px;
+  padding: 14px 10px 12px;
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 56px;
   height: calc(100vh - 56px);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .sidebar-nav-list {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
 }
 
 .sidebar-section-title {
@@ -733,6 +737,8 @@ a {
   flex-direction: column;
   gap: 8px;
   padding-top: 10px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-color);
 }
 
 .sidebar-logout-btn {
