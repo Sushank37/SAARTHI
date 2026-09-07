@@ -77,22 +77,6 @@ export default function SharedLayout() {
         <Sidebar summary={summary} roleConfig={roleConfig} />
 
         <main className="gov-content-viewport">
-          {/* Stakeholder Role Advisory Strip */}
-          <div className={`stakeholder-context-strip role-${(role || "mospi").toLowerCase()}`}>
-            <span className="strip-icon">{roleConfig?.icon || "🏛️"}</span>
-            <span className="strip-text">
-              <strong>{roleConfig?.displayName || "Authenticated"}:</strong> {roleConfig?.scope || "National macro surveillance active."}
-            </span>
-            <button
-              type="button"
-              className="strip-switch-hint-btn"
-              onClick={handleLogout}
-              title="Click to switch persona or return to login"
-            >
-              Switch Persona
-            </button>
-          </div>
-
           {/* Child Route Viewport */}
           <Outlet
             context={{

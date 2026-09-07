@@ -112,17 +112,7 @@ export default function Header({
             )
           )}
 
-          {onLogout && (
-            <button
-              type="button"
-              className="btn-switch-role"
-              onClick={onLogout}
-              title="Switch demo persona / Return to Login"
-            >
-              <LogOut size={13} />
-              <span>Switch Role</span>
-            </button>
-          )}
+
 
 
           <div
