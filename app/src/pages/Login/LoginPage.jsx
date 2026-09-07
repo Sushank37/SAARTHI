@@ -4,214 +4,363 @@ import { useAuth } from "../../context/useAuth";
 import { ROLE_LIST, ROLE_IDS } from "../../data/roles";
 import {
   ShieldCheck,
-  ArrowRight,
   Lock,
   User,
-  ExternalLink,
-  HelpCircle,
-  Award,
-  CheckCircle2,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  ArrowRight,
+  AlertCircle,
+  Building2,
 } from "lucide-react";
 import "./LoginPage.css";
+
+// Generate clean 5-character alphanumeric captcha
+const generateCaptcha = () => {
+  const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+  let result = "";
+  for (let i = 0; i < 5; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
 
 export default function LoginPage() {
   const { isAuthenticated, roleConfig, login } = useAuth();
   const navigate = useNavigate();
 
-  // Default to Member of Parliament
+  // Form State — strictly blank, real login behavior
   const [selectedRoleId, setSelectedRoleId] = useState(ROLE_IDS.MP);
+  const [loginId, setLoginId] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [captchaCode, setCaptchaCode] = useState(generateCaptcha());
+  const [captchaInput, setCaptchaInput] = useState("");
+  const [captchaError, setCaptchaError] = useState("");
+  const [loginError, setLoginError] = useState("");
 
-  // If already authenticated, redirect directly to role dashboard
+  // Direct dashboard selector state
+  const [directDashboardId, setDirectDashboardId] = useState(ROLE_IDS.MP);
+
+  // If already authenticated, redirect to authorized dashboard
   if (isAuthenticated && roleConfig) {
     return <Navigate to={roleConfig.path} replace />;
   }
 
-  const selectedRole = ROLE_LIST.find((r) => r.id === selectedRoleId) || ROLE_LIST[0];
+  // Refresh Captcha
+  const handleRefreshCaptcha = () => {
+    setCaptchaCode(generateCaptcha());
+    setCaptchaInput("");
+    setCaptchaError("");
+  };
 
-  const handleLogin = (e) => {
+  // Submit standard login form
+  const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (!selectedRoleId) return;
+    setCaptchaError("");
+    setLoginError("");
 
+    if (!loginId.trim()) {
+      setLoginError("Please enter your User ID / Official Email.");
+      return;
+    }
+
+    if (!password) {
+      setLoginError("Please enter your password.");
+      return;
+    }
+
+    // Verify Captcha (case-insensitive check)
+    if (captchaInput.trim().toUpperCase() !== captchaCode.toUpperCase()) {
+      setCaptchaError("Invalid Captcha code! Please enter the new code shown.");
+      setCaptchaCode(generateCaptcha());
+      setCaptchaInput("");
+      return;
+    }
+
+    const targetRole = ROLE_LIST.find((r) => r.id === selectedRoleId) || ROLE_LIST[0];
     const success = login(selectedRoleId);
     if (success) {
-      navigate(selectedRole.path || "/");
+      navigate(targetRole.path || "/");
     }
   };
 
+  // Direct access to selected dashboard
+  const handleDirectAccess = (roleId) => {
+    const targetRole = ROLE_LIST.find((r) => r.id === roleId);
+    if (!targetRole) return;
+    const success = login(roleId);
+    if (success) {
+      navigate(targetRole.path || "/");
+    }
+  };
+
+  const currentRole = ROLE_LIST.find((r) => r.id === selectedRoleId) || ROLE_LIST[0];
+
   return (
-    <div className="sih-signin-viewport">
-      {/* 1. Official Government Top Header Bar (Matching SIH Portal Layout) */}
-      <header className="sih-navbar-header">
-        <div className="sih-header-top">
-          {/* Official Logos Row (Left) */}
-          <div className="sih-logos-row">
-            {/* Government of India / MoSPI Logo */}
-            <div className="sih-emblem-unit">
-              <svg viewBox="0 0 100 130" className="sih-emblem-svg" aria-label="National Emblem of India">
-                <circle cx="50" cy="50" r="46" fill="#1e3a8a" opacity="0.08" />
-                <path
-                  d="M50 15 C40 15 32 25 32 38 C32 46 37 53 44 57 C41 62 38 68 38 78 L62 78 C62 68 59 62 56 57 C63 53 68 46 68 38 C68 25 60 15 50 15 Z"
-                  fill="currentColor"
-                />
-                <rect x="25" y="80" width="50" height="8" rx="2" fill="currentColor" />
-                <circle cx="50" cy="94" r="8" fill="none" stroke="currentColor" strokeWidth="2" />
-                <circle cx="50" cy="94" r="2" fill="currentColor" />
-                <rect x="20" y="104" width="60" height="6" rx="2" fill="currentColor" />
-                <text x="50" y="122" textAnchor="middle" fontSize="9" fontWeight="bold" fill="currentColor">
-                  सत्यमेव जयते
-                </text>
-              </svg>
-              <div className="sih-ministry-text">
-                <span className="sih-ministry-en">Ministry of Statistics & Programme Implementation</span>
-                <span className="sih-ministry-hi">Government of India · MoSPI</span>
-              </div>
-            </div>
+    <div className="gov-screen-container">
+      {/* 1. Indian National Tricolor Top Ribbon */}
+      <div className="gov-top-tricolor" />
 
-            {/* eSAKSHI MPLADS Portal Badge */}
-            <div className="sih-partner-logo">
-              <span className="partner-badge">eSAKSHI</span>
-              <span className="partner-text">MPLADS Portal</span>
-            </div>
+      {/* 2. Official Government Header */}
+      <header className="gov-header-bar">
+        <div className="gov-header-inner">
+          <div className="gov-emblem-unit">
+            {/* National Emblem SVG */}
+            <svg
+              viewBox="0 0 100 130"
+              className="gov-ashoka-svg"
+              aria-label="National Emblem of India"
+            >
+              <circle cx="50" cy="50" r="46" fill="#0f172a" opacity="0.04" />
+              <path
+                d="M50 15 C40 15 32 25 32 38 C32 46 37 53 44 57 C41 62 38 68 38 78 L62 78 C62 68 59 62 56 57 C63 53 68 46 68 38 C68 25 60 15 50 15 Z"
+                fill="currentColor"
+              />
+              <rect x="25" y="80" width="50" height="8" rx="2" fill="currentColor" />
+              <circle cx="50" cy="94" r="8" fill="none" stroke="currentColor" strokeWidth="2" />
+              <circle cx="50" cy="94" r="2" fill="currentColor" />
+              <rect x="20" y="104" width="60" height="6" rx="2" fill="currentColor" />
+              <text
+                x="50"
+                y="122"
+                textAnchor="middle"
+                fontSize="9"
+                fontWeight="bold"
+                fill="currentColor"
+              >
+                सत्यमेव जयते
+              </text>
+            </svg>
 
-            {/* Smart India Hackathon Tag */}
-            <div className="sih-event-logo">
-              <span className="sih-event-tag">SIH 2026</span>
-              <span className="text-xs font-bold text-slate-700">SAARTHI Prototype</span>
+            <div className="gov-titles">
+              <span className="gov-hi">सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय</span>
+              <span className="gov-en">Ministry of Statistics and Programme Implementation</span>
+              <span className="gov-in">Government of India · भारत सरकार</span>
             </div>
           </div>
 
-          {/* Header Action Buttons (Right, matching SIH buttons) */}
-          <div className="sih-header-actions">
-            <button
-              type="button"
-              className="btn-mic-alumni"
-              onClick={() => alert("MPLADS Guidelines 2023: Standard annual allocation of ₹ 5.00 Cr per Lok Sabha / Rajya Sabha MP for local capital asset development.")}
-            >
-              Guidelines
-            </button>
-            <div className="btn-sih-login-pill">
-              <div className="login-pill-avatar">
-                <User size={13} />
-              </div>
-              <span>Portal Login</span>
+          <div className="gov-portal-badge">
+            <div className="portal-name-block">
+              <span className="portal-main-name">eSAKSHI</span>
+              <span className="portal-sub-name">MPLADS Portal</span>
+            </div>
+            <div className="portal-nic-pill">
+              <ShieldCheck size={13} />
+              <span>NIC Verified</span>
             </div>
           </div>
         </div>
-
-        {/* Sub-Navigation Links Bar (HOME | GUIDELINES | etc.) */}
-        <nav className="sih-subnav-strip" aria-label="Portal Navigation">
-          <div className="sih-subnav-inner">
-            <span className="sih-nav-item active">HOME</span>
-            <span className="sih-nav-item">ABOUT SAARTHI</span>
-            <span className="sih-nav-item">MPLADS GUIDELINES</span>
-            <span className="sih-nav-item">5 ROLE PORTALS</span>
-            <span className="sih-nav-item">MASTER REPOSITORY (102,703 WORKS)</span>
-            <span className="sih-nav-item">FAQS</span>
-            <span className="sih-nav-item">CONTACT US</span>
-          </div>
-        </nav>
       </header>
 
-      {/* 2. Main Body with Honeycomb Background & Centered Form Card */}
-      <main className="sih-main-content">
-        {/* Prominent Red Announcement Heading (matching SIH bold red title) */}
-        <h1 className="sih-announcement-title">
-          eSAKSHI PROTOTYPE ACCESS IS NOW OPEN
-        </h1>
-        <p className="sih-announcement-subtitle">
-          Select your authorized stakeholder persona to access role-governed intelligence across the 102,703 canonical MPLADS works dataset.
-        </p>
-
-        {/* Centered Sign-In Card (Matching SIH Card Layout) */}
-        <div className="sih-signin-card">
-          <form onSubmit={handleLogin}>
-            {/* Quick 5-Role Segmented Switcher */}
-            <div className="sih-form-group">
-              <span className="sih-role-chips-label">Quick Select Persona:</span>
-              <div className="sih-role-chips-grid">
-                {ROLE_LIST.map((role) => (
-                  <button
-                    key={role.id}
-                    type="button"
-                    className={`sih-chip-btn ${selectedRoleId === role.id ? "active" : ""}`}
-                    onClick={() => setSelectedRoleId(role.id)}
-                    title={role.displayName}
-                  >
-                    {role.icon} {role.shortName || role.id}
-                  </button>
-                ))}
-              </div>
+      {/* 3. Main Centered Login Section (Strictly Fit to Screen) */}
+      <main className="gov-main-viewport">
+        <div className="gov-card">
+          {/* Card Top Title */}
+          <div className="gov-card-top">
+            <div className="gov-lock-icon">
+              <Lock size={18} />
             </div>
+            <h1 className="gov-title">Login</h1>
+          </div>
 
-            {/* Stakeholder Role Dropdown (Matching SIH select dropdown) */}
-            <div className="sih-form-group mt-2">
-              <label className="sih-form-label" htmlFor="role-select-dropdown">
-                Select Stakeholder Persona *
+          {/* Form */}
+          <form onSubmit={handleFormSubmit} className="gov-form">
+            {/* Role Dropdown */}
+            <div className="gov-field">
+              <label className="gov-label" htmlFor="role-select">
+                Select Role / Stakeholder Designation <span className="gov-req">*</span>
               </label>
               <select
-                id="role-select-dropdown"
-                className="sih-form-select"
+                id="role-select"
+                className="gov-select"
                 value={selectedRoleId}
-                onChange={(e) => setSelectedRoleId(e.target.value)}
+                onChange={(e) => {
+                  setSelectedRoleId(e.target.value);
+                  setErrorMessage("");
+                }}
               >
                 {ROLE_LIST.map((role) => (
                   <option key={role.id} value={role.id}>
-                    {role.displayName} ({role.path})
+                    {role.icon} {role.displayName}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Persona Authority & Scope Readout Box */}
-            <div className="sih-role-summary-box mt-3">
-              <div className="summary-title-line">
-                <span className="summary-role-name">
-                  <span>{selectedRole.icon}</span>
-                  <span>{selectedRole.displayName}</span>
-                </span>
-                <span className="summary-role-path">{selectedRole.path}</span>
-              </div>
-              <p className="summary-scope-desc">{selectedRole.scope}</p>
-              <div className="summary-truth-pill">
-                <ShieldCheck size={12} />
-                <span>Single Source of Truth: 102,703 Master Records</span>
+            {/* Login ID / Username */}
+            <div className="gov-field">
+              <label className="gov-label" htmlFor="user-id">
+                User ID / Official Email <span className="gov-req">*</span>
+              </label>
+              <div className="gov-input-wrap">
+                <User size={15} className="gov-icon-left" />
+                <input
+                  id="user-id"
+                  type="text"
+                  className="gov-input"
+                  value={loginId}
+                  onChange={(e) => {
+                    setLoginId(e.target.value);
+                    setErrorMessage("");
+                  }}
+                  placeholder="Enter NIC / Parichay User ID or Email"
+                  autoComplete="username"
+                  required
+                />
               </div>
             </div>
 
-            {/* Green Government Submit Button (Directly like SIH green button) */}
-            <div className="mt-4">
-              <button
-                type="submit"
-                className="btn-sih-submit"
-                id="btn-sih-submit"
+            {/* Password */}
+            <div className="gov-field">
+              <div className="gov-label-flex">
+                <label className="gov-label" htmlFor="user-pwd">
+                  Password <span className="gov-req">*</span>
+                </label>
+                <button
+                  type="button"
+                  className="gov-link-btn"
+                  onClick={() => alert("Please contact the District Nodal Officer or NIC Helpdesk at 1800-11-eSAKSHI for password recovery.")}
+                >
+                  Forgot Password?
+                </button>
+              </div>
+              <div className="gov-input-wrap">
+                <Lock size={15} className="gov-icon-left" />
+                <input
+                  id="user-pwd"
+                  type={showPassword ? "text" : "password"}
+                  className="gov-input"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrorMessage("");
+                  }}
+                  placeholder="Enter password"
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="gov-pwd-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Captcha */}
+            <div className="gov-field">
+              <label className="gov-label" htmlFor="captcha-box">
+                Security Captcha <span className="gov-req">*</span>
+              </label>
+              <div className="gov-captcha-box">
+                <div className="gov-captcha-render" title="Captcha Image">
+                  <span className="gov-captcha-txt">{captchaCode}</span>
+                  <div className="gov-captcha-hatch" />
+                </div>
+                <button
+                  type="button"
+                  className="gov-btn-reload"
+                  onClick={handleRefreshCaptcha}
+                  title="Reload Captcha"
+                >
+                  <RefreshCw size={14} />
+                </button>
+                <input
+                  id="captcha-box"
+                  type="text"
+                  className={`gov-input gov-captcha-in ${captchaError ? "gov-input-error" : ""}`}
+                  value={captchaInput}
+                  onChange={(e) => {
+                    setCaptchaInput(e.target.value);
+                    setCaptchaError("");
+                  }}
+                  placeholder="Enter captcha"
+                  maxLength={6}
+                  required
+                />
+              </div>
+              {captchaError && (
+                <div className="gov-captcha-error-alert">
+                  <AlertCircle size={13} />
+                  <span>{captchaError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* General / Login Error Message */}
+            {loginError && (
+              <div className="gov-alert">
+                <AlertCircle size={14} />
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button type="submit" className="gov-btn-submit">
+              <span>Sign In to Portal</span>
+              <ArrowRight size={15} />
+            </button>
+          </form>
+
+          {/* 4. Direct Option to Select and Go to Dashboard */}
+          <div className="gov-direct-nav-panel">
+            <div className="gov-direct-header">
+              <span className="gov-direct-tag">DIRECT ACCESS</span>
+              <span className="gov-direct-desc">Select role and go to dashboard:</span>
+            </div>
+            <div className="gov-direct-controls">
+              <select
+                className="gov-direct-select"
+                value={directDashboardId}
+                onChange={(e) => setDirectDashboardId(e.target.value)}
+                aria-label="Direct Dashboard Navigation"
               >
-                <span>Submit</span>
-                <ArrowRight size={15} />
+                {ROLE_LIST.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {role.icon} {role.displayName}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="gov-btn-direct"
+                onClick={() => handleDirectAccess(directDashboardId)}
+              >
+                <span>Go to Dashboard</span>
+                <ArrowRight size={14} />
               </button>
             </div>
-
-            {/* Card Sub-links */}
-            <div className="sih-card-links mt-3">
-              <span className="sih-demo-caption">
-                <Lock size={12} />
-                <span>Evaluation prototype: Zero passwords required. Internal role routing active.</span>
-              </span>
-            </div>
-          </form>
+          </div>
         </div>
       </main>
 
-      {/* 3. Official Deep Blue Bottom Footer (Matching SIH footer) */}
-      <footer className="sih-deep-blue-footer">
-        <div className="sih-footer-inner">
-          <div>
-            © 2026 SAARTHI · Ministry of Statistics and Programme Implementation (MoSPI) · Government of India
+      {/* 5. Official Government Bottom Footer (Slim & High-Contrast) */}
+      <footer className="gov-bottom-footer">
+        <div className="gov-footer-inner">
+          <div className="gov-footer-left">
+            <span className="gov-footer-mospi">
+              Ministry of Statistics and Programme Implementation (MoSPI) · Government of India
+            </span>
+            <span className="gov-footer-addr">
+              Sardar Patel Bhawan, Sansad Marg, New Delhi · Helpdesk: 1800-11-eSAKSHI
+            </span>
           </div>
-          <div className="sih-footer-links">
-            <span className="sih-footer-link">Privacy Policy</span>
-            <span className="sih-footer-link">Terms of Use</span>
-            <span className="sih-footer-link">Smart India Hackathon (SIH 2026)</span>
-            <span className="sih-footer-link">National Informatics Centre</span>
+          <div className="gov-footer-right">
+            <div className="gov-footer-nav">
+              <a href="#hyperlink" onClick={(e) => e.preventDefault()}>Hyperlink Policy</a>
+              <span>·</span>
+              <a href="#privacy" onClick={(e) => e.preventDefault()}>Privacy Policy</a>
+              <span>·</span>
+              <a href="#terms" onClick={(e) => e.preventDefault()}>Terms & Conditions</a>
+            </div>
+            <div className="gov-footer-nic">
+              <Building2 size={13} />
+              <span>National Informatics Centre (NIC)</span>
+            </div>
           </div>
         </div>
       </footer>

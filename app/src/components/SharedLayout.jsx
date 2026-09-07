@@ -118,8 +118,8 @@ export default function SharedLayout() {
                   Surveillance & Anomaly Extension Layer.
                 </p>
                 <small>
-                  Designed & Developed for Smart India Hackathon (SIH 2026) · Organization: MoSPI ·
-                  Department: Data Informatics & Innovation Division (DIID).
+                  Official Digital Portal · Ministry of Statistics & Programme Implementation (MoSPI) ·
+                  Data Informatics & National Surveillance Division (DIID).
                 </small>
               </div>
               <div className="footer-right">
