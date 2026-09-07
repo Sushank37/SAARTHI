@@ -11,6 +11,9 @@ export default function Header({
   toggleTheme,
   fontSize,
   setFontSize,
+  backendStatus = "connected",
+  onReconnect,
+  totalWorks,
 }) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -100,9 +103,44 @@ export default function Header({
             </div>
           )}
 
-          <div className="live-status-tag">
-            <span className="live-dot" />
-            <span>eSAKSHI Sync</span>
+          <div
+            className={`live-status-tag ${
+              backendStatus === "connected"
+                ? "connected"
+                : backendStatus === "connecting"
+                ? "connecting"
+                : "offline"
+            }`}
+            title={
+              backendStatus === "connected"
+                ? `Connected to FastAPI Backend · ${
+                    totalWorks ? totalWorks.toLocaleString("en-IN") : "102,703"
+                  } works loaded`
+                : "Backend Disconnected. Click to retry connection."
+            }
+            onClick={backendStatus !== "connected" ? onReconnect : undefined}
+            style={{ cursor: backendStatus !== "connected" ? "pointer" : "default" }}
+          >
+            <span
+              className={`live-dot ${
+                backendStatus === "connected"
+                  ? "green"
+                  : backendStatus === "connecting"
+                  ? "yellow"
+                  : "red"
+              }`}
+            />
+            <span>
+              {backendStatus === "connected"
+                ? `Live: ${
+                    totalWorks
+                      ? totalWorks.toLocaleString("en-IN")
+                      : "102,703"
+                  } Works`
+                : backendStatus === "connecting"
+                ? "Connecting..."
+                : "Offline (Retry)"}
+            </span>
           </div>
 
           <button className="icon-action-btn" onClick={toggleTheme} title="Toggle Dark/Light Mode">

@@ -12,7 +12,6 @@ import DuplicateIntelligence from "./pages/DuplicateIntelligence";
 import ReviewQueue from "./pages/ReviewQueue";
 import StateIntelligence from "./pages/StateIntelligence";
 import WorkExplorer from "./pages/WorkExplorer";
-
 import { API_BASE } from "./constants";
 import "./App.css";
 
@@ -23,16 +22,30 @@ export default function App() {
   const [fontSize, setFontSize] = useState(15);
   const [summary, setSummary] = useState(null);
   const [selectedWork, setSelectedWork] = useState(null);
+  const [backendStatus, setBackendStatus] = useState("connecting"); // "connected" | "connecting" | "offline"
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "official" ? "dark" : "official"));
   };
 
+  const loadSummary = async () => {
+    try {
+      setBackendStatus((prev) => (prev === "connected" ? "connected" : "connecting"));
+      const res = await fetch(`${API_BASE}/api/summary`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setSummary(data);
+      setBackendStatus("connected");
+    } catch (err) {
+      console.error("Summary fetch error:", err);
+      setBackendStatus("offline");
+    }
+  };
+
   useEffect(() => {
-    fetch(`${API_BASE}/api/summary`)
-      .then((res) => res.json())
-      .then(setSummary)
-      .catch((err) => console.error("Summary fetch error:", err));
+    loadSummary();
+    const interval = setInterval(loadSummary, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const roleBanners = {
@@ -71,7 +84,11 @@ export default function App() {
           toggleTheme={toggleTheme}
           fontSize={fontSize}
           setFontSize={setFontSize}
+          backendStatus={backendStatus}
+          onReconnect={loadSummary}
+          totalWorks={summary?.total_works}
         />
+
 
         {/* Main Two-Column Layout (Sidebar + Content) */}
         <div className="gov-layout-body">

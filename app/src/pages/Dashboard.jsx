@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ESakshiOfficialCards from "../components/ESakshiOfficialCards";
-import { API_BASE, formatNumber, formatDecimal, formatCurrency } from "../constants";
+import { API_BASE, formatNumber, formatDecimal, formatCurrency, formatCrores } from "../constants";
 
 const RISK_COLORS = {
   High: "#dc2626",
@@ -139,7 +139,9 @@ export default function Dashboard({ summary, house, onSelectWork }) {
                   <div className="pipe-info">
                     <div className="pipe-header">
                       <strong>1. Works Recommended</strong>
-                      <span>106,896 Works (₹5,723 Cr)</span>
+                      <span>
+                        {formatNumber(summary?.recommended_works_count || summary?.total_works || 102703)} Works ({formatCrores(summary?.total_recommended_amount || 56144023551)})
+                      </span>
                     </div>
                     <div className="pipe-bar">
                       <div className="pipe-fill" style={{ width: "100%" }} />
@@ -153,10 +155,12 @@ export default function Dashboard({ summary, house, onSelectWork }) {
                   <div className="pipe-info">
                     <div className="pipe-header">
                       <strong>2. Works Sanctioned</strong>
-                      <span>79,144 Works (74% rate)</span>
+                      <span>
+                        {formatNumber(summary?.sanctioned_works_count || 77617)} Works ({summary?.sanction_rate || 75.6}% rate)
+                      </span>
                     </div>
                     <div className="pipe-bar">
-                      <div className="pipe-fill" style={{ width: "74%" }} />
+                      <div className="pipe-fill" style={{ width: `${summary?.sanction_rate || 75.6}%` }} />
                     </div>
                     <small>Feasibility cleared by District Authorities & IAs designated</small>
                   </div>
@@ -167,10 +171,12 @@ export default function Dashboard({ summary, house, onSelectWork }) {
                   <div className="pipe-info">
                     <div className="pipe-header">
                       <strong>3. Works Completed</strong>
-                      <span>34,339 Completed Assets (32%)</span>
+                      <span>
+                        {formatNumber(summary?.completed_works_count || 33727)} Completed Assets ({summary?.completion_rate || 32.8}%)
+                      </span>
                     </div>
                     <div className="pipe-bar">
-                      <div className="pipe-fill green" style={{ width: "32%" }} />
+                      <div className="pipe-fill green" style={{ width: `${summary?.completion_rate || 32.8}%` }} />
                     </div>
                     <small>Physical asset created and marked complete on portal</small>
                   </div>

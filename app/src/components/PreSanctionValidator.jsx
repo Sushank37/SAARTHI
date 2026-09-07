@@ -124,44 +124,74 @@ export default function PreSanctionValidator({ onSelectWork }) {
 
     setLoading(true);
     try {
-      const searchTokens = description
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, "")
-        .split(/\s+/)
-        .filter((w) => w.length > 3)
-        .slice(0, 3)
-        .join(" ");
+      // 1. Try real-time pre-sanction validation endpoint
+      const validateUrl = `${API_BASE}/api/validate-proposal?description=${encodeURIComponent(
+        description
+      )}&state=${encodeURIComponent(stateName || "")}&constituency=${encodeURIComponent(
+        mpConstituency || ""
+      )}&amount=${amount}`;
 
-      const response = await fetch(
-        `${API_BASE}/api/works?q=${encodeURIComponent(searchTokens)}&state=${encodeURIComponent(
-          stateName
-        )}&limit=10`
-      );
-      const data = await response.json();
-      const matches = data.data || [];
+      const response = await fetch(validateUrl);
+      if (response.ok) {
+        const valData = await response.json();
+        const matches = valData.matched_works || [];
+        setResult({
+          matchedWorks: matches,
+          topMatch: valData.top_match,
+          isDuplicate: valData.is_duplicate,
+          similarityScore: valData.similarity_score,
+          duplicateRisk: valData.duplicate_risk,
+          peerMedianSanction: valData.peer_median_sanction || 1850000,
+          costRatio: valData.cost_ratio || (amount / 1850000),
+          costRisk: valData.cost_risk,
+          verdict: valData.verdict,
+          mpName: mpDisplayName,
+          constituency: mpConstituency,
+          availableQuota,
+          isOverQuota,
+          quotaAfterWork,
+        });
+      } else {
+        // Fallback to /api/works search
+        const searchTokens = description
+          .toLowerCase()
+          .replace(/[^a-z0-9\s]/g, "")
+          .split(/\s+/)
+          .filter((w) => w.length > 3)
+          .slice(0, 3)
+          .join(" ");
 
-      let topMatch = matches[0] || null;
-      let isDuplicate = matches.length > 0;
-      let peerMedianSanction = 1850000;
+        const fallbackRes = await fetch(
+          `${API_BASE}/api/works?q=${encodeURIComponent(searchTokens)}&state=${encodeURIComponent(
+            stateName
+          )}&limit=10`
+        );
+        const data = await fallbackRes.json();
+        const matches = data.data || [];
+        const topMatch = matches[0] || null;
+        const isDuplicate = matches.length > 0;
+        const peerMedianSanction = 1850000;
 
-      setResult({
-        matchedWorks: matches,
-        topMatch,
-        isDuplicate,
-        peerMedianSanction,
-        costRatio: amount / (peerMedianSanction || 1),
-        mpName: mpDisplayName,
-        constituency: mpConstituency,
-        availableQuota,
-        isOverQuota,
-        quotaAfterWork,
-      });
+        setResult({
+          matchedWorks: matches,
+          topMatch,
+          isDuplicate,
+          peerMedianSanction,
+          costRatio: amount / (peerMedianSanction || 1),
+          mpName: mpDisplayName,
+          constituency: mpConstituency,
+          availableQuota,
+          isOverQuota,
+          quotaAfterWork,
+        });
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Validation error:", err);
     } finally {
       setLoading(false);
     }
   };
+
 
   const presetAmounts = [
     { label: "₹5 Lakh", val: 500000 },

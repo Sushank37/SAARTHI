@@ -26,8 +26,16 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "*",
+    ],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -656,6 +664,49 @@ def summary():
 
 
     # --------------------------------------------------------
+    # Financial metrics & progress
+    # --------------------------------------------------------
+
+    total_recommended_amount = 0.0
+    if column_exists("RECOMMENDED_AMOUNT"):
+        total_recommended_amount = float(df["RECOMMENDED_AMOUNT"].dropna().sum())
+
+    total_sanction_amount = 0.0
+    if column_exists("SANCTION_AMOUNT"):
+        total_sanction_amount = float(df["SANCTION_AMOUNT"].dropna().sum())
+
+    total_actual_amount = 0.0
+    if column_exists("ACTUAL_AMOUNT"):
+        total_actual_amount = float(df["ACTUAL_AMOUNT"].dropna().sum())
+
+    recommended_works_count = total_works
+    if column_exists("RECOMMENDED_AMOUNT"):
+        recommended_works_count = int(df["RECOMMENDED_AMOUNT"].notna().sum())
+
+    sanctioned_works_count = 0
+    if column_exists("SANCTION_AMOUNT"):
+        sanctioned_works_count = int(df["SANCTION_AMOUNT"].notna().sum())
+
+    completed_works_count = 0
+    if column_exists("ACTUAL_AMOUNT"):
+        completed_works_count = int(df["ACTUAL_AMOUNT"].notna().sum())
+
+    sanction_rate = (
+        round((sanctioned_works_count / total_works * 100), 1)
+        if total_works
+        else 0.0
+    )
+    completion_rate = (
+        round((completed_works_count / total_works * 100), 1)
+        if total_works
+        else 0.0
+    )
+
+    # 543 MPs * ₹5.00 Cr annual entitlement limit
+    total_fund_allocation = float(mps_tracked * 50000000.0) if mps_tracked else 27150000000.0
+
+
+    # --------------------------------------------------------
     # RESPONSE
     # --------------------------------------------------------
 
@@ -663,6 +714,33 @@ def summary():
 
         "total_works":
             total_works,
+
+        "total_recommended_amount":
+            total_recommended_amount,
+
+        "total_sanction_amount":
+            total_sanction_amount,
+
+        "total_actual_amount":
+            total_actual_amount,
+
+        "recommended_works_count":
+            recommended_works_count,
+
+        "sanctioned_works_count":
+            sanctioned_works_count,
+
+        "completed_works_count":
+            completed_works_count,
+
+        "sanction_rate":
+            sanction_rate,
+
+        "completion_rate":
+            completion_rate,
+
+        "total_fund_allocation":
+            total_fund_allocation,
 
         "risk_cases":
             risk_cases,
@@ -2484,7 +2562,119 @@ def search(
 
 
 # ============================================================
-# SERVER MESSAGE
+# REAL-TIME PROPOSAL VALIDATION (PRE-SANCTION AUDIT)
+# ============================================================
+
+@app.get("/api/validate-proposal")
+def validate_proposal(
+    description: str = Query("", min_length=1),
+    state: str | None = None,
+    constituency: str | None = None,
+    mp_name: str | None = None,
+    amount: float = Query(0.0, ge=0)
+):
+    """
+    Real-time pre-sanction anomaly and duplicate check against 102,703 MPLADS works.
+    Evaluates:
+      1. Text similarity & duplicate overlap with existing works in State/Constituency
+      2. Cost escalation vs. Peer Median Sanction Amount
+    """
+    clean_desc = description.strip()
+    words = [
+        w.lower()
+        for w in clean_desc.replace(",", " ").replace(".", " ").replace("-", " ").split()
+        if len(w) > 3
+    ]
+
+    target_df = df
+
+    # Scope to state if provided
+    if state and column_exists("STATE_NAME"):
+        state_matches = target_df[text_contains(target_df["STATE_NAME"], state)]
+        if len(state_matches) > 0:
+            target_df = state_matches
+
+    # Scope to constituency if provided and matches exist
+    if constituency and column_exists("CONSTITUENCY"):
+        const_matches = target_df[text_contains(target_df["CONSTITUENCY"], constituency)]
+        if len(const_matches) > 0:
+            target_df = const_matches
+
+    matched_works = []
+    top_score = 0.0
+    top_match = None
+
+    if words and column_exists("WORK_DESCRIPTION"):
+        # Match any of the key tokens
+        mask = pd.Series(False, index=target_df.index)
+        for w in words[:4]:
+            mask = mask | text_contains(target_df["WORK_DESCRIPTION"], w)
+
+        candidates = target_df[mask].head(25)
+
+        for _, row in candidates.iterrows():
+            row_desc = str(row.get("WORK_DESCRIPTION") or "").lower()
+            row_words = set([
+                w for w in row_desc.replace(",", " ").replace(".", " ").split()
+                if len(w) > 3
+            ])
+            user_words = set(words)
+            if row_words and user_words:
+                overlap = len(user_words & row_words)
+                union = len(user_words | row_words)
+                sim = (overlap / union) * 100.0 if union else 0.0
+            else:
+                sim = 0.0
+
+            work_record = row_to_dict(row)
+            work_record["_SIMILARITY_PERCENT"] = round(sim, 1)
+            matched_works.append(work_record)
+
+        matched_works.sort(key=lambda x: x.get("_SIMILARITY_PERCENT", 0), reverse=True)
+        if matched_works:
+            top_match = matched_works[0]
+            top_score = top_match.get("_SIMILARITY_PERCENT", 0.0)
+
+    # Peer median sanction calculation
+    peer_median = 1850000.0  # National default ~ ₹18.50 Lakh
+    if column_exists("SANCTION_AMOUNT"):
+        valid_sanctions = target_df["SANCTION_AMOUNT"].dropna()
+        if len(valid_sanctions) >= 5:
+            peer_median = float(valid_sanctions.median())
+
+    cost_ratio = (amount / peer_median) if peer_median > 0 and amount > 0 else 1.0
+
+    # Determine risk & duplication status
+    is_duplicate = top_score >= 60.0
+    duplicate_risk = "HIGH" if top_score >= 70.0 else ("MEDIUM" if top_score >= 45.0 else ("LOW" if top_score >= 25.0 else "NONE"))
+    cost_risk = "HIGH" if cost_ratio >= 2.5 else ("MEDIUM" if cost_ratio >= 1.5 else "LOW")
+
+    if duplicate_risk == "HIGH" or cost_risk == "HIGH":
+        verdict = "FLAGGED"
+    elif duplicate_risk == "MEDIUM" or cost_risk == "MEDIUM":
+        verdict = "CAUTION"
+    else:
+        verdict = "PASSED"
+
+    return {
+        "verdict": verdict,
+        "is_duplicate": is_duplicate,
+        "duplicate_risk": duplicate_risk,
+        "similarity_score": round(top_score, 1),
+        "cost_ratio": round(cost_ratio, 2),
+        "cost_risk": cost_risk,
+        "peer_median_sanction": peer_median,
+        "amount": amount,
+        "top_match": top_match,
+        "matched_works": matched_works[:5],
+        "state": state,
+        "constituency": constituency,
+        "mp_name": mp_name
+    }
+
+
+# ============================================================
+# SERVER MESSAGE & MAIN RUNNER
 # ============================================================
 
 print()
@@ -2507,5 +2697,11 @@ print("  GET /api/analytics/categories")
 print("  GET /api/analytics/risk")
 print("  GET /api/analytics/duplicates")
 print("  GET /api/search")
+print("  GET /api/validate-proposal")
 print()
 print("=" * 70)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

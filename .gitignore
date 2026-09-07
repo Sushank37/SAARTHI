@@ -33,3 +33,6 @@ dist/
 
 # Local Backups
 app/src/legacy_*
+
+#start
+start.sh
