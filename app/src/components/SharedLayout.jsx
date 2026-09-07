@@ -138,6 +138,7 @@ export default function SharedLayout() {
       {/* Global Work Inspection Dossier Drawer */}
       <WorkDetailDrawer
         work={selectedWork}
+        initialSection={selectedWork?.__initialSection || "all"}
         onClose={() => setSelectedWork(null)}
       />
     </div>

@@ -100,12 +100,14 @@
   padding: 0;
 }
 
-body {
+html, body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--bg-page);
   color: var(--text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 button, input, select, textarea {
@@ -124,21 +126,29 @@ a {
   flex-direction: column;
   background-color: var(--bg-page);
   color: var(--text-primary);
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .gov-layout-body {
   display: flex;
   flex: 1;
   width: 100%;
+  max-width: 100vw;
   min-height: calc(100vh - 64px);
+  overflow-x: hidden;
 }
 
 .gov-content-viewport {
   flex: 1;
   min-width: 0;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   background-color: var(--bg-page);
+  overflow-x: hidden;
+  padding: 0 16px 24px;
 }
 
 /* Compact Main Container */
@@ -561,6 +571,108 @@ a {
   background: var(--success-bg);
   color: var(--success-text);
   border: 1px solid var(--success-border);
+}
+
+.nav-badge-pill.neutral, .nav-badge-compact.neutral {
+  background: var(--bg-card-muted);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+/* District Authority Sidebar Mode */
+.gov-sidebar-compact.da-mode {
+  width: 270px;
+}
+
+.da-sidebar-role-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.da-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 9px;
+  border-radius: 5px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.12s ease;
+  border-left: 3px solid transparent;
+  gap: 8px;
+}
+
+.da-nav-item:hover {
+  background: var(--bg-card-muted);
+  color: var(--text-primary);
+}
+
+.da-nav-item.active {
+  background: #fffbeb;
+  border-left-color: #b45309;
+  color: #78350f;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .da-nav-item.active {
+  background: #291c0a;
+  border-left-color: #f59e0b;
+  color: #fbbf24;
+}
+
+.da-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.da-nav-icon {
+  flex-shrink: 0;
+}
+
+.da-nav-texts {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.da-nav-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.da-nav-subtext {
+  font-size: 10px;
+  color: #64748b;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+[data-theme="dark"] .da-nav-subtext {
+  color: #94a3b8;
+}
+
+.da-nav-item.active .da-nav-subtext {
+  color: #92400e;
 }
 
 .sidebar-mini-footer {
