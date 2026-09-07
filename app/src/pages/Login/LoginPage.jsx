@@ -36,7 +36,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [captchaCode, setCaptchaCode] = useState(generateCaptcha());
   const [captchaInput, setCaptchaInput] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [captchaError, setCaptchaError] = useState("");
+  const [loginError, setLoginError] = useState("");
 
   // Direct dashboard selector state
   const [directDashboardId, setDirectDashboardId] = useState(ROLE_IDS.MP);
@@ -50,28 +51,30 @@ export default function LoginPage() {
   const handleRefreshCaptcha = () => {
     setCaptchaCode(generateCaptcha());
     setCaptchaInput("");
-    setErrorMessage("");
+    setCaptchaError("");
   };
 
   // Submit standard login form
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    setErrorMessage("");
+    setCaptchaError("");
+    setLoginError("");
 
     if (!loginId.trim()) {
-      setErrorMessage("Please enter your Official User ID / Email.");
+      setLoginError("Please enter your User ID / Official Email.");
       return;
     }
 
     if (!password) {
-      setErrorMessage("Please enter your Password.");
+      setLoginError("Please enter your password.");
       return;
     }
 
-    // Verify Captcha (case-insensitive)
+    // Verify Captcha (case-insensitive check)
     if (captchaInput.trim().toUpperCase() !== captchaCode.toUpperCase()) {
-      setErrorMessage("Security captcha code does not match. Please try again.");
-      handleRefreshCaptcha();
+      setCaptchaError("Invalid Captcha code! Please enter the new code shown.");
+      setCaptchaCode(generateCaptcha());
+      setCaptchaInput("");
       return;
     }
 
@@ -158,10 +161,7 @@ export default function LoginPage() {
             <div className="gov-lock-icon">
               <Lock size={18} />
             </div>
-            <h1 className="gov-title">Unified Stakeholder Login</h1>
-            <p className="gov-sub">
-              Sign in with your authorized institutional credentials
-            </p>
+            <h1 className="gov-title">Login</h1>
           </div>
 
           {/* Form */}
@@ -272,24 +272,30 @@ export default function LoginPage() {
                 <input
                   id="captcha-box"
                   type="text"
-                  className="gov-input gov-captcha-in"
+                  className={`gov-input gov-captcha-in ${captchaError ? "gov-input-error" : ""}`}
                   value={captchaInput}
                   onChange={(e) => {
                     setCaptchaInput(e.target.value);
-                    setErrorMessage("");
+                    setCaptchaError("");
                   }}
                   placeholder="Enter captcha"
                   maxLength={6}
                   required
                 />
               </div>
+              {captchaError && (
+                <div className="gov-captcha-error-alert">
+                  <AlertCircle size={13} />
+                  <span>{captchaError}</span>
+                </div>
+              )}
             </div>
 
-            {/* Error Message */}
-            {errorMessage && (
+            {/* General / Login Error Message */}
+            {loginError && (
               <div className="gov-alert">
                 <AlertCircle size={14} />
-                <span>{errorMessage}</span>
+                <span>{loginError}</span>
               </div>
             )}
 
@@ -303,8 +309,8 @@ export default function LoginPage() {
           {/* 4. Direct Option to Select and Go to Dashboard */}
           <div className="gov-direct-nav-panel">
             <div className="gov-direct-header">
-              <span className="gov-direct-tag">DEMO / FAST ACCESS</span>
-              <span className="gov-direct-desc">Directly navigate to any role dashboard:</span>
+              <span className="gov-direct-tag">DIRECT ACCESS</span>
+              <span className="gov-direct-desc">Select role and go to dashboard:</span>
             </div>
             <div className="gov-direct-controls">
               <select
@@ -315,7 +321,7 @@ export default function LoginPage() {
               >
                 {ROLE_LIST.map((role) => (
                   <option key={role.id} value={role.id}>
-                    {role.icon} {role.displayName} ({role.path})
+                    {role.icon} {role.displayName}
                   </option>
                 ))}
               </select>
