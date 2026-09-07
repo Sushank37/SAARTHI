@@ -1,0 +1,477 @@
+/* ==============================================================================
+   SAARTHI — SIH-INSPIRED OFFICIAL GOVERNMENT SIGNIN LAYOUT
+   Modeled on the classic, clean layout of sih.gov.in/signin
+   ============================================================================== */
+
+.sih-signin-viewport {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+  /* Hexagonal honeycomb watermark pattern matching sih.gov.in */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cg fill='%2394a3b8' fill-opacity='0.08'%3E%3Cpolygon points='28 0 56 16.16 56 48.5 28 64.66 0 48.5 0 16.16' fill='none' stroke='%2394a3b8' stroke-width='1' stroke-opacity='0.15'/%3E%3Cpolygon points='28 97 56 80.84 56 48.5 28 32.34 0 48.5 0 80.84' fill='none' stroke='%2394a3b8' stroke-width='1' stroke-opacity='0.15'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  color: #1e293b;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 1. Top Government Header with Official Logos */
+.sih-navbar-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  position: relative;
+  z-index: 20;
+}
+
+.sih-header-top {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.sih-logos-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sih-emblem-unit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-right: 1px solid #e2e8f0;
+  padding-right: 14px;
+}
+
+.sih-emblem-svg {
+  width: 32px;
+  height: 40px;
+  color: #1e3a8a;
+}
+
+.sih-ministry-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.sih-ministry-en {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.sih-ministry-hi {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.sih-partner-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 14px;
+  border-right: 1px solid #e2e8f0;
+}
+
+.partner-badge {
+  background: #1e3a8a;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.partner-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.sih-event-logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sih-event-tag {
+  background: #ffedd5;
+  color: #c2410c;
+  border: 1px solid #fdba74;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+/* Header Action Buttons (Right side) */
+.sih-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-mic-alumni {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-mic-alumni:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.btn-sih-login-pill {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 14px 5px 10px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.login-pill-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ea580c; /* SIH orange user circle */
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+/* Sub-Navigation Strip (HOME | GUIDELINES | etc) */
+.sih-subnav-strip {
+  background: #ffffff;
+  border-top: 1px solid #f1f5f9;
+  padding: 0 24px;
+}
+
+.sih-subnav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  overflow-x: auto;
+  padding: 8px 0;
+}
+
+.sih-nav-item {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #1e3a8a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.sih-nav-item:hover,
+.sih-nav-item.active {
+  color: #ea580c;
+}
+
+/* 2. Main Content Viewport */
+.sih-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
+/* Prominent Bold Red Announcement Heading (like SIH "SPOC REGISTRATIONS ARE NOW OPEN") */
+.sih-announcement-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #dc2626; /* Government Red headline */
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  margin: 0 0 6px 0;
+}
+
+.sih-announcement-subtitle {
+  font-size: 13.5px;
+  color: #475569;
+  text-align: center;
+  margin: 0 0 28px 0;
+  max-width: 580px;
+  line-height: 1.45;
+}
+
+/* 3. Centered Sign-In Card */
+.sih-signin-card {
+  width: 100%;
+  max-width: 460px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 30px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Role Quick Segmented Switcher */
+.sih-role-chips-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.sih-role-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.sih-chip-btn {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 6px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.1s ease;
+  white-space: nowrap;
+}
+
+.sih-chip-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.sih-chip-btn.active {
+  background: #1e3a8a;
+  border-color: #1e3a8a;
+  color: #ffffff;
+}
+
+/* Form Fields */
+.sih-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sih-form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.sih-form-select,
+.sih-form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 13.5px;
+  color: #0f172a;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit;
+}
+
+.sih-form-select:focus,
+.sih-form-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+/* Role Scope Information Box */
+.sih-role-summary-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 3.5px solid #1e3a8a;
+  border-radius: 4px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.summary-title-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.summary-role-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.summary-role-path {
+  font-family: monospace;
+  font-size: 11px;
+  background: #e2e8f0;
+  color: #1e3a8a;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+.summary-scope-desc {
+  font-size: 11.5px;
+  color: #475569;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.summary-truth-pill {
+  font-size: 10.5px;
+  color: #15803d;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+/* Green Government Submit Button (Directly like SIH green submit button) */
+.btn-sih-submit {
+  width: 100%;
+  background: #16a34a; /* SIH Green */
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 1px 3px rgba(22, 163, 74, 0.2);
+}
+
+.btn-sih-submit:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.btn-sih-submit:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Card Sub-links */
+.sih-card-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.sih-forgot-link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sih-forgot-link:hover {
+  text-decoration: underline;
+}
+
+.sih-demo-caption {
+  font-size: 11.5px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* 4. Official Bottom Deep Blue Footer (Just like sih.gov.in) */
+.sih-deep-blue-footer {
+  background: #0b1e36; /* Deep navy bar from SIH screenshot */
+  color: #cbd5e1;
+  padding: 14px 24px;
+  font-size: 12px;
+  border-top: 2px solid #1e3a8a;
+  text-align: center;
+}
+
+.sih-footer-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sih-footer-links {
+  display: flex;
+  gap: 18px;
+  font-size: 11.5px;
+}
+
+.sih-footer-link {
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.sih-footer-link:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .sih-subnav-inner {
+    justify-content: flex-start;
+  }
+  .sih-footer-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+}

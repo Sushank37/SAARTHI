@@ -13,13 +13,16 @@ import {
 } from "lucide-react";
 import { formatNumber } from "../constants";
 
-export default function Sidebar({ summary }) {
+export default function Sidebar({ summary, roleConfig }) {
   const location = useLocation();
+
+  const dashboardLabel = roleConfig ? `${roleConfig.shortName} Dashboard` : "Portal Overview";
+  const dashboardPath = roleConfig?.path || "/";
 
   const navLinks = [
     {
-      label: "Portal Overview",
-      path: "/",
+      label: dashboardLabel,
+      path: dashboardPath,
       icon: LayoutDashboard,
       badge: null,
     },

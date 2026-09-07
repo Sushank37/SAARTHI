@@ -824,6 +824,8 @@ def get_works(
 
     requires_review: bool | None = None,
 
+    stage: str | None = None,
+
     q: str | None = None
 ):
 
@@ -903,6 +905,19 @@ def get_works(
             text_contains(
                 data["MP_NAME"],
                 mp_name
+            )
+        ]
+
+
+    # Stage
+    if stage and column_exists(
+        "WORK_STAGE"
+    ):
+
+        data = data[
+            text_contains(
+                data["WORK_STAGE"],
+                stage
             )
         ]
 
@@ -1910,7 +1925,8 @@ def constituencies(
 
 @app.get("/api/mps")
 def mps(
-    state: str | None = None
+    state: str | None = None,
+    include_stats: bool = False
 ):
 
     if not column_exists(
@@ -1943,9 +1959,153 @@ def mps(
     )
 
 
-    return {
+    response = {
         "count": len(mp_list),
         "mps": mp_list
+    }
+
+    if include_stats:
+        counts = data["MP_NAME"].fillna("").astype(str).str.strip().value_counts()
+        details_list = []
+        for name, cnt in counts.items():
+            if not name or name == "nan":
+                continue
+            mp_sub = data[data["MP_NAME"] == name]
+            const = str(mp_sub["CONSTITUENCY"].dropna().iloc[0]) if "CONSTITUENCY" in mp_sub.columns and not mp_sub["CONSTITUENCY"].dropna().empty else ""
+            st = str(mp_sub["STATE_NAME"].dropna().iloc[0]) if "STATE_NAME" in mp_sub.columns and not mp_sub["STATE_NAME"].dropna().empty else ""
+            details_list.append({
+                "mp_name": name,
+                "constituency": const,
+                "state": st,
+                "works_count": int(cnt)
+            })
+        response["details"] = details_list
+
+    return response
+
+
+# ============================================================
+# MP ANALYTICS
+# ============================================================
+
+@app.get("/api/analytics/mp")
+def mp_analytics(
+    mp_name: str = Query(..., description="Name or partial name of Member of Parliament")
+):
+    if not column_exists("MP_NAME"):
+        raise HTTPException(status_code=404, detail="MP_NAME column not found in master dataset")
+
+    query = mp_name.strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="MP name cannot be empty")
+
+    mask = text_contains(df["MP_NAME"], query)
+    sub = df[mask]
+
+    if sub.empty:
+        raise HTTPException(status_code=404, detail=f"No works found for MP matching '{mp_name}'")
+
+    canonical_name = str(sub["MP_NAME"].dropna().iloc[0]) if not sub["MP_NAME"].dropna().empty else query
+    constituency = str(sub["CONSTITUENCY"].dropna().iloc[0]) if "CONSTITUENCY" in sub.columns and not sub["CONSTITUENCY"].dropna().empty else ""
+    state = str(sub["STATE_NAME"].dropna().iloc[0]) if "STATE_NAME" in sub.columns and not sub["STATE_NAME"].dropna().empty else ""
+
+    total_works = len(sub)
+    rec_sum = float(sub["RECOMMENDED_AMOUNT"].sum()) if column_exists("RECOMMENDED_AMOUNT") else 0.0
+    sanc_sum = float(sub["SANCTION_AMOUNT"].sum()) if column_exists("SANCTION_AMOUNT") else 0.0
+    act_sum = float(sub["ACTUAL_AMOUNT"].sum()) if column_exists("ACTUAL_AMOUNT") else 0.0
+
+    sanction_rate = round((sanc_sum / rec_sum * 100), 2) if rec_sum > 0 else 0.0
+    expenditure_rate = round((act_sum / sanc_sum * 100), 2) if sanc_sum > 0 else 0.0
+
+    # MPLADS Guidelines: Standard Annual Quota = ₹5.00 Crore (₹50,000,000)
+    annual_quota = 50000000.0
+
+    # Stage distribution
+    stages_dict = {}
+    if column_exists("WORK_STAGE"):
+        st_counts = sub["WORK_STAGE"].fillna("Pending Sanction").astype(str).str.strip().value_counts()
+        stages_dict = {k: int(v) for k, v in st_counts.items() if k and k != "nan"}
+
+    # Completion rate
+    completed_count = stages_dict.get("Work Completed", 0)
+    partially_completed_count = stages_dict.get("Work partially Completed", 0)
+    completion_rate = round(((completed_count + partially_completed_count) / total_works * 100), 2) if total_works > 0 else 0.0
+
+    # Risk & anomaly summary
+    high_dup_count = int((sub["DUPLICATE_RISK"].fillna("").astype(str).str.upper() == "HIGH").sum()) if column_exists("DUPLICATE_RISK") else 0
+    med_dup_count = int((sub["DUPLICATE_RISK"].fillna("").astype(str).str.upper() == "MEDIUM").sum()) if column_exists("DUPLICATE_RISK") else 0
+    low_dup_count = total_works - high_dup_count - med_dup_count
+
+    review_count = int(boolean_series(sub["REQUIRES_REVIEW"]).sum()) if column_exists("REQUIRES_REVIEW") else 0
+
+    delayed_count = 0
+    if column_exists("SANCTION_DELAY_DAYS") and column_exists("PEER_MEDIAN_SANCTION_DELAY"):
+        delay_mask = (sub["SANCTION_DELAY_DAYS"] > sub["PEER_MEDIAN_SANCTION_DELAY"]) & sub["SANCTION_DELAY_DAYS"].notna()
+        delayed_count = int(delay_mask.sum())
+
+    cost_variance_count = 0
+    if column_exists("COST_VS_PEER"):
+        cost_mask = (sub["COST_VS_PEER"] > 1.2) & sub["COST_VS_PEER"].notna()
+        cost_variance_count = int(cost_mask.sum())
+
+    # Top implementing agencies for this MP's works
+    top_agencies = []
+    if column_exists("IDA_NAME"):
+        ida_counts = sub["IDA_NAME"].fillna("Unassigned").astype(str).str.strip().value_counts().head(5)
+        top_agencies = [{"agency": k, "works_count": int(v)} for k, v in ida_counts.items() if k and k != "nan"]
+
+    # Top categories
+    top_categories = []
+    if column_exists("WORK_CATEGORY"):
+        cat_counts = sub["WORK_CATEGORY"].fillna("General/Others").astype(str).str.strip().value_counts().head(5)
+        top_categories = [{"category": k, "works_count": int(v)} for k, v in cat_counts.items() if k and k != "nan"]
+
+    # Flagged works watchlist (top 8 items requiring MP oversight)
+    flag_mask = pd.Series(False, index=sub.index)
+    if column_exists("DUPLICATE_RISK"):
+        flag_mask = flag_mask | (sub["DUPLICATE_RISK"].fillna("").astype(str).str.upper().isin(["HIGH", "MEDIUM"]))
+    if column_exists("REQUIRES_REVIEW"):
+        flag_mask = flag_mask | boolean_series(sub["REQUIRES_REVIEW"])
+    if column_exists("SANCTION_DELAY_DAYS") and column_exists("PEER_MEDIAN_SANCTION_DELAY"):
+        flag_mask = flag_mask | ((sub["SANCTION_DELAY_DAYS"] > sub["PEER_MEDIAN_SANCTION_DELAY"]) & sub["SANCTION_DELAY_DAYS"].notna())
+
+    flagged_df = sub[flag_mask]
+    if flagged_df.empty:
+        flagged_df = sub.head(5)
+    else:
+        sort_col = "RISK_SCORE" if column_exists("RISK_SCORE") else "RECOMMENDED_AMOUNT"
+        flagged_df = flagged_df.sort_values(by=sort_col, ascending=False).head(8)
+
+    flagged_records = dataframe_to_records(flagged_df)
+
+    return {
+        "mp_name": canonical_name,
+        "constituency": constituency,
+        "state": state,
+        "house": "Lok Sabha",
+        "total_works": total_works,
+        "financials": {
+            "recommended_amount": rec_sum,
+            "sanction_amount": sanc_sum,
+            "actual_amount": act_sum,
+            "sanction_rate_percent": sanction_rate,
+            "expenditure_rate_percent": expenditure_rate,
+            "annual_quota": annual_quota,
+            "uncommitted_quota": max(0.0, annual_quota - sanc_sum)
+        },
+        "stages": stages_dict,
+        "completion_rate_percent": completion_rate,
+        "risk_summary": {
+            "high_duplicate_risk": high_dup_count,
+            "medium_duplicate_risk": med_dup_count,
+            "low_duplicate_risk": low_dup_count,
+            "requires_review": review_count,
+            "delayed_sanctions": delayed_count,
+            "cost_exceeded": cost_variance_count
+        },
+        "top_agencies": top_agencies,
+        "top_categories": top_categories,
+        "flagged_works": flagged_records
     }
 
 

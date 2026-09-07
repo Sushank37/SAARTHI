@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Sun, Moon, ExternalLink } from "lucide-react";
+import { Search, Sun, Moon, ExternalLink, LogOut } from "lucide-react";
 
 export default function Header({
   house,
@@ -14,6 +14,8 @@ export default function Header({
   backendStatus = "connected",
   onReconnect,
   totalWorks,
+  roleConfig,
+  onLogout,
 }) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,21 +89,41 @@ export default function Header({
 
         {/* Right: Actions, Stakeholder Role & Status */}
         <div className="header-right-group">
-          {setRole && (
-            <div className="stakeholder-role-dropdown" title="Simulate Stakeholder Persona">
-              <span className="role-label">Persona:</span>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="role-select"
-              >
-                <option value="mospi">🏛️ MoSPI Admin</option>
-                <option value="mp">🎖️ Hon'ble MP</option>
-                <option value="collector">⚖️ Collector (NDA)</option>
-                <option value="vendor">👷 Vendor (IA)</option>
-              </select>
+          {roleConfig ? (
+            <div className="header-active-persona" title={`Active Persona: ${roleConfig.displayName}`}>
+              <span className="persona-icon">{roleConfig.icon}</span>
+              <span className="persona-name">{roleConfig.shortName}</span>
             </div>
+          ) : (
+            setRole && (
+              <div className="stakeholder-role-dropdown" title="Simulate Stakeholder Persona">
+                <span className="role-label">Persona:</span>
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="role-select"
+                >
+                  <option value="mospi">🏛️ MoSPI Admin</option>
+                  <option value="mp">🎖️ Hon'ble MP</option>
+                  <option value="collector">⚖️ Collector (NDA)</option>
+                  <option value="vendor">👷 Vendor (IA)</option>
+                </select>
+              </div>
+            )
           )}
+
+          {onLogout && (
+            <button
+              type="button"
+              className="btn-switch-role"
+              onClick={onLogout}
+              title="Switch demo persona / Return to Login"
+            >
+              <LogOut size={13} />
+              <span>Switch Role</span>
+            </button>
+          )}
+
 
           <div
             className={`live-status-tag ${

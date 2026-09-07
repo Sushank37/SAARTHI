@@ -15,86 +15,37 @@ import {
 } from "lucide-react";
 import { API_BASE, formatCurrency, formatNumber } from "../constants";
 
-const PROMINENT_MPS = [
-  {
-    name: "Shri Rahul Shewale",
-    constituency: "Mumbai South Central",
-    state: "Maharashtra",
-    house: "Lok Sabha",
-    annualQuota: 50000000,
-    earmarkedAmount: 38000000,
-  },
-  {
-    name: "Smt. Supriya Sule",
-    constituency: "Baramati",
-    state: "Maharashtra",
-    house: "Lok Sabha",
-    annualQuota: 50000000,
-    earmarkedAmount: 41500000,
-  },
-  {
-    name: "Dr. Shashi Tharoor",
-    constituency: "Thiruvananthapuram",
-    state: "Kerala",
-    house: "Lok Sabha",
-    annualQuota: 50000000,
-    earmarkedAmount: 34500000,
-  },
-  {
-    name: "Shri Asaduddin Owaisi",
-    constituency: "Hyderabad",
-    state: "Telangana",
-    house: "Lok Sabha",
-    annualQuota: 50000000,
-    earmarkedAmount: 39000000,
-  },
-  {
-    name: "Dr. Chandra Sekhar Pemmasani",
-    constituency: "Guntur",
-    state: "Andhra Pradesh",
-    house: "Lok Sabha",
-    annualQuota: 50000000,
-    earmarkedAmount: 29000000,
-  },
-  {
-    name: "Dr. K. Keshava Rao",
-    constituency: "Telangana (Elected)",
-    state: "Telangana",
-    house: "Rajya Sabha",
-    annualQuota: 50000000,
-    earmarkedAmount: 26000000,
-  },
-  {
-    name: "Custom / Enter Any MP",
-    constituency: "District Nodal Jurisdiction",
-    state: "Maharashtra",
-    house: "Lok Sabha",
-    annualQuota: 50000000,
-    earmarkedAmount: 30000000,
-  },
+const DEFAULT_MPS = [
+  { name: "Arvind Dharmapuri", constituency: "NIZAMABAD", state: "Telangana", house: "Lok Sabha" },
+  { name: "Sambit Patra", constituency: "PURI", state: "Odisha", house: "Lok Sabha" },
+  { name: "Putta Mahesh Kumar", constituency: "ELURU", state: "Andhra Pradesh", house: "Lok Sabha" },
+  { name: "Ram Shiromani", constituency: "SHRAWASTI", state: "Uttar Pradesh", house: "Lok Sabha" },
+  { name: "Priya Saroj", constituency: "MACHHLISHAHR", state: "Uttar Pradesh", house: "Lok Sabha" },
 ];
 
 export default function PreSanctionValidator({ onSelectWork }) {
   const [states, setStates] = useState([]);
+  const [mpList, setMpList] = useState(DEFAULT_MPS);
   const [selectedMpIdx, setSelectedMpIdx] = useState(0);
   const [customMpName, setCustomMpName] = useState("");
   const [customConstituency, setCustomConstituency] = useState("");
   const [description, setDescription] = useState(
     "Construction of CC road and side drain from Panchayat Bhawan to Primary School"
   );
-  const [stateName, setStateName] = useState("Maharashtra");
+  const [stateName, setStateName] = useState("Telangana");
   const [category, setCategory] = useState("Roads, Pathways and Bridges");
   const [amount, setAmount] = useState(2500000);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [realEarmarked, setRealEarmarked] = useState(0);
 
-  const activeMp = PROMINENT_MPS[selectedMpIdx];
+  const activeMp = mpList[selectedMpIdx] || DEFAULT_MPS[0];
   const isCustomMp = activeMp.name.startsWith("Custom");
   const mpDisplayName = isCustomMp ? customMpName || "Hon'ble MP" : activeMp.name;
   const mpConstituency = isCustomMp ? customConstituency || "Constituency" : activeMp.constituency;
-  const annualQuota = activeMp.annualQuota;
-  const earmarked = activeMp.earmarkedAmount;
-  const availableQuota = annualQuota - earmarked;
+  const annualQuota = 50000000; // ₹ 5.00 Cr standard statutory annual quota
+  const earmarked = realEarmarked;
+  const availableQuota = Math.max(0, annualQuota - earmarked);
   const quotaAfterWork = availableQuota - amount;
   const isOverQuota = quotaAfterWork < 0;
 
@@ -107,13 +58,43 @@ export default function PreSanctionValidator({ onSelectWork }) {
         }
       })
       .catch(() => {});
+
+    fetch(`${API_BASE}/api/mps?include_stats=true`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.details?.length) {
+          const formatted = data.details.map((d) => ({
+            name: d.mp_name,
+            constituency: d.constituency,
+            state: d.state,
+            house: "Lok Sabha",
+            worksCount: d.works_count,
+          }));
+          setMpList(formatted);
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  // Fetch real earmarked amount for the selected MP from master dataset
+  useEffect(() => {
+    if (activeMp?.name && !isCustomMp) {
+      fetch(`${API_BASE}/api/analytics/mp?mp_name=${encodeURIComponent(activeMp.name)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.financials?.sanction_amount !== undefined) {
+            setRealEarmarked(data.financials.sanction_amount);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [activeMp?.name, isCustomMp]);
 
   const handleMpChange = (e) => {
     const idx = Number(e.target.value);
     setSelectedMpIdx(idx);
-    const mp = PROMINENT_MPS[idx];
-    if (!mp.name.startsWith("Custom")) {
+    const mp = mpList[idx];
+    if (mp && !mp.name.startsWith("Custom") && mp.state) {
       setStateName(mp.state);
     }
   };
@@ -231,9 +212,9 @@ export default function PreSanctionValidator({ onSelectWork }) {
                   <span>Recommending Hon'ble Member of Parliament (MP) *</span>
                 </label>
                 <select value={selectedMpIdx} onChange={handleMpChange} className="mp-select-input">
-                  {PROMINENT_MPS.map((mp, i) => (
+                  {mpList.map((mp, i) => (
                     <option key={i} value={i}>
-                      {mp.name} — {mp.constituency} ({mp.state}) [{mp.house}]
+                      {mp.name} — {mp.constituency} {mp.state ? `(${mp.state})` : ""} [{mp.house || "Lok Sabha"}]
                     </option>
                   ))}
                 </select>
