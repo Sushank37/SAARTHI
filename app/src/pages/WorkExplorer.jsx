@@ -26,6 +26,7 @@ export default function WorkExplorer({ onSelectWork }) {
 
   const q = params.get("q") || "";
   const state = params.get("state") || "";
+  const mpName = params.get("mp_name") || "";
   const risk = params.get("risk_level") || "";
   const duplicate = params.get("duplicate_risk") || "";
   const review = params.get("requires_review") || "";
@@ -47,6 +48,7 @@ export default function WorkExplorer({ onSelectWork }) {
       });
       if (q) query.set("q", q);
       if (state) query.set("state", state);
+      if (mpName) query.set("mp_name", mpName);
       if (risk) query.set("risk_level", risk);
       if (duplicate) query.set("duplicate_risk", duplicate);
       if (review) query.set("requires_review", review);
@@ -166,11 +168,24 @@ export default function WorkExplorer({ onSelectWork }) {
         </div>
 
         {/* Results Metadata */}
-        <div className="table-meta-bar">
+        <div className="table-meta-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
           <span>
             Showing page <strong>{page}</strong> of <strong>{result.pages || 1}</strong> (
             <strong>{formatNumber(result.total)}</strong> matching MPLADS works)
           </span>
+          {mpName && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#e0f2fe', color: '#0369a1', padding: '3px 10px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+              Filtered for Hon'ble MP: {mpName}
+              <button 
+                type="button"
+                onClick={() => setFilter("mp_name", "")} 
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0369a1', fontWeight: 800, fontSize: '14px', lineHeight: 1 }}
+                title="Clear MP filter"
+              >
+                ×
+              </button>
+            </span>
+          )}
         </div>
 
         {/* Master Table */}

@@ -22,7 +22,6 @@ import {
   TrendingUp,
   Clock,
 } from "lucide-react";
-
 import { API_BASE, formatNumber } from "../constants";
 import { ROLE_IDS } from "../data/roles";
 
@@ -82,7 +81,7 @@ export default function Sidebar({ summary, roleConfig }) {
   }, [isDARole]);
 
   /* =========================================================
-     DISTRICT AUTHORITY NAVIGATION
+     DISTRICT AUTHORITY NAVIGATION (11 Modules)
      ========================================================= */
 
   const daNavLinks = [
@@ -93,13 +92,11 @@ export default function Sidebar({ summary, roleConfig }) {
       tab: "overview",
       icon: LayoutDashboard,
       badge:
-        daBadges?.overview !== undefined &&
-          daBadges?.overview !== null
+        daBadges?.overview !== undefined && daBadges?.overview !== null
           ? formatNumber(daBadges.overview)
-          : summary?.total_works !== undefined &&
-            summary?.total_works !== null
-            ? formatNumber(summary.total_works)
-            : null,
+          : summary?.total_works !== undefined && summary?.total_works !== null
+          ? formatNumber(summary.total_works)
+          : null,
       badgeType: "neutral",
     },
     {
@@ -109,8 +106,7 @@ export default function Sidebar({ summary, roleConfig }) {
       tab: "pending-sanctions",
       icon: Clock,
       badge:
-        daBadges?.pending_sanctions !== undefined &&
-          daBadges?.pending_sanctions !== null
+        daBadges?.pending_sanctions !== undefined && daBadges?.pending_sanctions !== null
           ? formatNumber(daBadges.pending_sanctions)
           : null,
       badgeType: "warning",
@@ -122,8 +118,7 @@ export default function Sidebar({ summary, roleConfig }) {
       tab: "compliance-45d",
       icon: AlertTriangle,
       badge:
-        daBadges?.compliance_45d !== undefined &&
-          daBadges?.compliance_45d !== null
+        daBadges?.compliance_45d !== undefined && daBadges?.compliance_45d !== null
           ? formatNumber(daBadges.compliance_45d)
           : null,
       badgeType: "danger",
@@ -135,8 +130,7 @@ export default function Sidebar({ summary, roleConfig }) {
       tab: "completion",
       icon: CheckCircle2,
       badge:
-        daBadges?.completion !== undefined &&
-          daBadges?.completion !== null
+        daBadges?.completion !== undefined && daBadges?.completion !== null
           ? formatNumber(daBadges.completion)
           : null,
       badgeType: "warning",
@@ -148,8 +142,7 @@ export default function Sidebar({ summary, roleConfig }) {
       tab: "financials",
       icon: Coins,
       badge:
-        daBadges?.financials !== undefined &&
-          daBadges?.financials !== null
+        daBadges?.financials !== undefined && daBadges?.financials !== null
           ? formatNumber(daBadges.financials)
           : null,
       badgeType: "accent",
@@ -161,13 +154,11 @@ export default function Sidebar({ summary, roleConfig }) {
       tab: "risk-cases",
       icon: ShieldAlert,
       badge:
-        daBadges?.risk_cases !== undefined &&
-          daBadges?.risk_cases !== null
+        daBadges?.risk_cases !== undefined && daBadges?.risk_cases !== null
           ? formatNumber(daBadges.risk_cases)
-          : summary?.high_risk !== undefined &&
-            summary?.high_risk !== null
-            ? formatNumber(summary.high_risk)
-            : null,
+          : summary?.high_risk !== undefined && summary?.high_risk !== null
+          ? formatNumber(summary.high_risk)
+          : null,
       badgeType: "danger",
     },
     {
@@ -177,13 +168,11 @@ export default function Sidebar({ summary, roleConfig }) {
       tab: "duplicates",
       icon: GitBranch,
       badge:
-        daBadges?.duplicates !== undefined &&
-          daBadges?.duplicates !== null
+        daBadges?.duplicates !== undefined && daBadges?.duplicates !== null
           ? formatNumber(daBadges.duplicates)
-          : summary?.duplicate_clusters !== undefined &&
-            summary?.duplicate_clusters !== null
-            ? formatNumber(summary.duplicate_clusters)
-            : null,
+          : summary?.duplicate_clusters !== undefined && summary?.duplicate_clusters !== null
+          ? formatNumber(summary.duplicate_clusters)
+          : null,
       badgeType: "warning",
     },
     {
@@ -193,8 +182,7 @@ export default function Sidebar({ summary, roleConfig }) {
       tab: "ia-monitoring",
       icon: Building2,
       badge:
-        daBadges?.ia_monitoring !== undefined &&
-          daBadges?.ia_monitoring !== null
+        daBadges?.ia_monitoring !== undefined && daBadges?.ia_monitoring !== null
           ? formatNumber(daBadges.ia_monitoring)
           : null,
       badgeType: "neutral",
@@ -206,8 +194,7 @@ export default function Sidebar({ summary, roleConfig }) {
       tab: "evidence",
       icon: FileCheck,
       badge:
-        daBadges?.evidence !== undefined &&
-          daBadges?.evidence !== null
+        daBadges?.evidence !== undefined && daBadges?.evidence !== null
           ? formatNumber(daBadges.evidence)
           : null,
       badgeType: "warning",
@@ -219,8 +206,7 @@ export default function Sidebar({ summary, roleConfig }) {
       tab: "geo-photo",
       icon: Camera,
       badge:
-        daBadges?.geo_photo !== undefined &&
-          daBadges?.geo_photo !== null
+        daBadges?.geo_photo !== undefined && daBadges?.geo_photo !== null
           ? formatNumber(daBadges.geo_photo)
           : null,
       badgeType: "accent",
@@ -232,19 +218,17 @@ export default function Sidebar({ summary, roleConfig }) {
       tab: "alerts-queue",
       icon: Bell,
       badge:
-        daBadges?.alerts_queue !== undefined &&
-          daBadges?.alerts_queue !== null
+        daBadges?.alerts_queue !== undefined && daBadges?.alerts_queue !== null
           ? formatNumber(daBadges.alerts_queue)
-          : summary?.review_required !== undefined &&
-            summary?.review_required !== null
-            ? formatNumber(summary.review_required)
-            : null,
+          : summary?.review_required !== undefined && summary?.review_required !== null
+          ? formatNumber(summary.review_required)
+          : null,
       badgeType: "danger",
     },
   ];
 
   /* =========================================================
-     MP NAVIGATION
+     MP NAVIGATION (9 Modules with Status Badges)
      ========================================================= */
 
   const mpNavLinks = [
@@ -272,14 +256,14 @@ export default function Sidebar({ summary, roleConfig }) {
       label: "Delayed Works",
       path: "/mp/delayed-works",
       icon: Clock,
-      badge: null,
+      badge: "Delayed",
       badgeType: "warning",
     },
     {
       label: "Risk Alerts",
       path: "/mp/risk-alerts",
       icon: AlertTriangle,
-      badge: null,
+      badge: "High Risk",
       badgeType: "danger",
     },
     {
@@ -292,27 +276,27 @@ export default function Sidebar({ summary, roleConfig }) {
       label: "Evidence",
       path: "/mp/evidence",
       icon: Camera,
-      badge: null,
+      badge: "Photos",
       badgeType: "accent",
     },
     {
       label: "AI Insights",
       path: "/mp/ai-insights",
       icon: Sparkles,
-      badge: null,
+      badge: "AI Alert",
       badgeType: "accent",
     },
     {
       label: "Map",
       path: "/mp/map",
       icon: Map,
-      badge: null,
+      badge: "GIS",
       badgeType: "highlight",
     },
   ];
 
   /* =========================================================
-     STANDARD NAVIGATION
+     STANDARD NAVIGATION (Other Personas)
      ========================================================= */
 
   const dashboardLabel = roleConfig
@@ -333,8 +317,7 @@ export default function Sidebar({ summary, roleConfig }) {
       path: "/risk-cases",
       icon: ShieldAlert,
       badge:
-        summary?.high_risk !== undefined &&
-          summary?.high_risk !== null
+        summary?.high_risk !== undefined && summary?.high_risk !== null
           ? formatNumber(summary.high_risk)
           : null,
       badgeType: "danger",
@@ -344,8 +327,7 @@ export default function Sidebar({ summary, roleConfig }) {
       path: "/duplicates",
       icon: GitBranch,
       badge:
-        summary?.duplicate_clusters !== undefined &&
-          summary?.duplicate_clusters !== null
+        summary?.duplicate_clusters !== undefined && summary?.duplicate_clusters !== null
           ? formatNumber(summary.duplicate_clusters)
           : null,
       badgeType: "warning",
@@ -355,29 +337,14 @@ export default function Sidebar({ summary, roleConfig }) {
       path: "/review",
       icon: ClipboardCheck,
       badge:
-        summary?.review_required !== undefined &&
-          summary?.review_required !== null
+        summary?.review_required !== undefined && summary?.review_required !== null
           ? formatNumber(summary.review_required)
           : null,
       badgeType: "highlight",
     },
     {
-      label: "Pre-Sanction Check",
-      path: "/pre-sanction",
-      icon: Sparkles,
-      badge: "Verify",
-      badgeType: "accent",
-    },
-    {
-      label: "Geo Photo AI Verifier",
-      path: "/photo-verifier",
-      icon: Camera,
-      badge: "GPS AI",
-      badgeType: "accent",
-    },
-    {
-      label: "State-wise Progress",
-      path: "/states",
+      label: "State Intelligence",
+      path: "/state",
       icon: Map,
       badge: null,
     },
@@ -393,68 +360,48 @@ export default function Sidebar({ summary, roleConfig }) {
      ACTIVE NAVIGATION
      ========================================================= */
 
-  const activeNavLinks = isMPMode
-    ? mpNavLinks
-    : standardNavLinks;
+  const activeNavLinks = isMPMode ? mpNavLinks : standardNavLinks;
 
   /* =========================================================
      RENDER
      ========================================================= */
 
   return (
-    <aside
-      className={`gov-sidebar-compact ${isDARole ? "da-mode" : ""
-        }`}
-    >
+    <aside className={`gov-sidebar-compact ${isDARole ? "da-mode" : ""}`}>
       {isDARole ? (
         /* =====================================================
-           DISTRICT AUTHORITY NAVIGATION
+           DISTRICT AUTHORITY NAVIGATION (11 Modules)
            ===================================================== */
         <div className="sidebar-nav-list">
           <div className="da-sidebar-role-header">
             <Scale size={13} className="da-role-icon" />
-            <span className="da-role-text">
-              District Authority Nodal
-            </span>
+            <span className="da-role-text">District Authority Nodal</span>
           </div>
 
           {daNavLinks.map((item) => {
             const Icon = item.icon;
-
-            const isTabActive =
-              location.pathname === "/da" &&
-              currentTab === item.tab;
+            const isTabActive = location.pathname === "/da" && currentTab === item.tab;
 
             return (
               <NavLink
                 key={item.id}
                 to={`/da?tab=${item.tab}`}
-                className={`da-nav-item ${isTabActive ? "active" : ""
-                  }`}
+                className={`da-nav-item ${isTabActive ? "active" : ""}`}
                 title={`${item.label} — ${item.subtitle}`}
               >
                 <div className="da-nav-left">
                   <Icon size={16} className="da-nav-icon" />
-
                   <div className="da-nav-texts">
-                    <span className="da-nav-title">
-                      {item.label}
-                    </span>
-
-                    <span className="da-nav-subtext">
-                      {item.subtitle}
-                    </span>
+                    <span className="da-nav-title">{item.label}</span>
+                    <span className="da-nav-subtext">{item.subtitle}</span>
                   </div>
                 </div>
 
-                {item.badge !== null &&
-                  item.badge !== undefined && (
-                    <span
-                      className={`nav-badge-pill ${item.badgeType}`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
+                {item.badge !== null && item.badge !== undefined && (
+                  <span className={`nav-badge-pill ${item.badgeType}`}>
+                    {item.badge}
+                  </span>
+                )}
               </NavLink>
             );
           })}
@@ -472,34 +419,26 @@ export default function Sidebar({ summary, roleConfig }) {
 
           {activeNavLinks.map((item) => {
             const Icon = item.icon;
-
             const isActive =
               location.pathname === item.path ||
-              (item.altPath &&
-                location.pathname === item.altPath);
+              (item.altPath && location.pathname === item.altPath);
 
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={`nav-item-compact ${isActive ? "active" : ""
-                  }`}
+                className={`nav-item-compact ${isActive ? "active" : ""}`}
               >
                 <div className="nav-label-wrap">
                   <Icon size={16} className="nav-icon" />
-                  <span className="nav-label">
-                    {item.label}
-                  </span>
+                  <span className="nav-label">{item.label}</span>
                 </div>
 
-                {item.badge !== null &&
-                  item.badge !== undefined && (
-                    <span
-                      className={`nav-badge-pill ${item.badgeType}`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
+                {item.badge !== null && item.badge !== undefined && (
+                  <span className={`nav-badge-pill ${item.badgeType}`}>
+                    {item.badge}
+                  </span>
+                )}
               </NavLink>
             );
           })}
@@ -507,13 +446,9 @@ export default function Sidebar({ summary, roleConfig }) {
       )}
 
       <div className="sidebar-mini-footer">
-        <div className="footer-label">
-          Synchronized Works
-        </div>
-
+        <div className="footer-label">Synchronized Works</div>
         <div className="footer-value">
-          {summary?.total_works !== undefined &&
-            summary?.total_works !== null
+          {summary?.total_works !== undefined && summary?.total_works !== null
             ? formatNumber(summary.total_works)
             : "—"}
         </div>

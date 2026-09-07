@@ -506,6 +506,16 @@ a {
   gap: 3px;
 }
 
+.sidebar-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  padding: 4px 12px 8px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
 .nav-item-compact {
   display: flex;
   align-items: center;

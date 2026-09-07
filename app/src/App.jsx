@@ -61,6 +61,14 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/mp/:section"
+          element={
+            <RoleRoute allowedRole={ROLE_IDS.MP}>
+              <RouteConsumer Component={MPDashboard} />
+            </RoleRoute>
+          }
+        />
+        <Route
           path="/da"
           element={
             <RoleRoute allowedRole={ROLE_IDS.DISTRICT_AUTHORITY}>
