@@ -380,15 +380,14 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
      ========================================================= */
 
   return (
-    <aside className={`gov-sidebar-compact ${isDARole ? "da-mode" : ""}`}>
+    <aside className="gov-sidebar-compact">
       {isDARole ? (
         /* =====================================================
-           DISTRICT AUTHORITY NAVIGATION (11 Modules)
+           DISTRICT AUTHORITY NAVIGATION (Matching MP UI)
            ===================================================== */
         <div className="sidebar-nav-list">
-          <div className="da-sidebar-role-header">
-            <Scale size={13} className="da-role-icon" />
-            <span className="da-role-text">District Authority Nodal</span>
+          <div className="sidebar-section-title">
+            Section
           </div>
 
           {daNavLinks.map((item) => {
@@ -399,15 +398,12 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
               <NavLink
                 key={item.id}
                 to={`/da?tab=${item.tab}`}
-                className={`da-nav-item ${isTabActive ? "active" : ""}`}
-                title={`${item.label} — ${item.subtitle}`}
+                className={`nav-item-compact ${isTabActive ? "active" : ""}`}
+                title={item.label}
               >
-                <div className="da-nav-left">
-                  <Icon size={16} className="da-nav-icon" />
-                  <div className="da-nav-texts">
-                    <span className="da-nav-title">{item.label}</span>
-                    <span className="da-nav-subtext">{item.subtitle}</span>
-                  </div>
+                <div className="nav-label-wrap">
+                  <Icon size={16} className="nav-icon" />
+                  <span className="nav-label">{item.label}</span>
                 </div>
 
                 {item.badge !== null && item.badge !== undefined && (

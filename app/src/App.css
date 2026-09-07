@@ -495,23 +495,15 @@ a {
   flex-shrink: 0;
   background: var(--bg-card);
   border-right: 1px solid var(--border-color);
-  padding: 14px 10px 12px;
+  padding: 14px 10px;
   display: flex;
   flex-direction: column;
-  position: sticky;
-  top: 56px;
-  height: calc(100vh - 56px);
-  overflow: hidden;
 }
 
 .sidebar-nav-list {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 2px;
 }
 
 .sidebar-section-title {
