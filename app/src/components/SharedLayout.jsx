@@ -74,7 +74,7 @@ export default function SharedLayout() {
 
       {/* Main Two-Column Layout (Sidebar + Content) */}
       <div className="gov-layout-body">
-        <Sidebar summary={summary} roleConfig={roleConfig} />
+        <Sidebar summary={summary} roleConfig={roleConfig} onLogout={handleLogout} />
 
         <main className="gov-content-viewport">
           {/* Child Route Viewport */}

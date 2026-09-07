@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { NavLink, useLocation, useSearchParams } from "react-router-dom";
+import { NavLink, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Activity,
   AlertTriangle,
@@ -15,6 +15,7 @@ import {
   IndianRupee,
   Layers,
   LayoutDashboard,
+  LogOut,
   Map,
   Scale,
   ShieldAlert,
@@ -24,10 +25,22 @@ import {
 } from "lucide-react";
 import { API_BASE, formatNumber } from "../constants";
 import { ROLE_IDS } from "../data/roles";
+import { useAuth } from "../context/useAuth";
 
-export default function Sidebar({ summary, roleConfig }) {
+export default function Sidebar({ summary, roleConfig, onLogout }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [searchParams] = useSearchParams();
+
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    } else {
+      logout();
+      navigate("/login");
+    }
+  };
 
   const [daBadges, setDaBadges] = useState(null);
 
@@ -445,13 +458,26 @@ export default function Sidebar({ summary, roleConfig }) {
         </div>
       )}
 
-      <div className="sidebar-mini-footer">
-        <div className="footer-label">Synchronized Works</div>
-        <div className="footer-value">
-          {summary?.total_works !== undefined && summary?.total_works !== null
-            ? formatNumber(summary.total_works)
-            : "—"}
+      <div className="sidebar-bottom-section">
+        <div className="sidebar-mini-footer">
+          <div className="footer-label">Synchronized Works</div>
+          <div className="footer-value">
+            {summary?.total_works !== undefined && summary?.total_works !== null
+              ? formatNumber(summary.total_works)
+              : "—"}
+          </div>
         </div>
+
+        <button
+          type="button"
+          id="sidebar-logout-btn"
+          className="sidebar-logout-btn"
+          onClick={handleLogout}
+          title="Sign out of current session"
+        >
+          <LogOut size={15} className="sidebar-logout-icon" />
+          <span>Log Out</span>
+        </button>
       </div>
     </aside>
   );
