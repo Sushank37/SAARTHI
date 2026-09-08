@@ -875,48 +875,6 @@
   font-weight: 600;
 }
 
-/* Dark Mode Overrides */
-[data-theme="dark"] .ia-header-card,
-[data-theme="dark"] .ia-kpi-card,
-[data-theme="dark"] .ia-section-card,
-[data-theme="dark"] .ia-tab-nav-bar,
-[data-theme="dark"] .ia-context-banner {
-  background: var(--bg-card, #0c1c28);
-  border-color: var(--border-color, #1e3a4f);
-}
-
-[data-theme="dark"] .ia-section-header,
-[data-theme="dark"] .ia-pagination,
-[data-theme="dark"] .ia-table th,
-[data-theme="dark"] .ia-selector-btn,
-[data-theme="dark"] .ia-dropdown-search {
-  background: var(--bg-card-muted, #112534);
-  border-color: var(--border-color, #1e3a4f);
-}
-
-[data-theme="dark"] .ia-table td {
-  border-color: var(--border-color, #1e3a4f);
-}
-
-[data-theme="dark"] .ia-dropdown-menu {
-  background: var(--bg-card, #0c1c28);
-  border-color: var(--border-color, #1e3a4f);
-}
-
-[data-theme="dark"] .ia-dropdown-row:hover {
-  background: var(--bg-hover, #162f42);
-}
-
-[data-theme="dark"] .ia-dropdown-row.selected {
-  background: rgba(2, 132, 199, 0.15);
-  border-left-color: #38bdf8;
-}
-
-[data-theme="dark"] .ia-tab-pill.active {
-  background: rgba(2, 132, 199, 0.2);
-  border-color: rgba(2, 132, 199, 0.4);
-  color: #38bdf8;
-}
 
 @media (max-width: 1024px) {
   .ia-kpi-grid {

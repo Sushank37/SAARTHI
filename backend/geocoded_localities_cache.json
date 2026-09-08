@@ -1,0 +1,695 @@
+{
+  "ibrahimpatnam": {
+    "locality_text": "Ibrahimpatnam",
+    "display_location": "Ibrahimpatnam, Jagtial / Nizamabad",
+    "latitude": 18.8797,
+    "longitude": 78.6189,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "saloora": {
+    "locality_text": "Saloora",
+    "display_location": "Saloora, Bodhan, Nizamabad",
+    "latitude": 18.6294,
+    "longitude": 77.8546,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "khaleelwadi": {
+    "locality_text": "Khaleelwadi",
+    "display_location": "Khaleelwadi, Nizamabad Town",
+    "latitude": 18.6791,
+    "longitude": 78.0995,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "vani nagar": {
+    "locality_text": "Vani Nagar",
+    "display_location": "Vani Nagar, Nizamabad",
+    "latitude": 18.6881,
+    "longitude": 78.1062,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "teachers colony": {
+    "locality_text": "Teachers Colony",
+    "display_location": "Teachers Colony, Nizamabad",
+    "latitude": 18.682,
+    "longitude": 78.11,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.9
+  },
+  "chinnametupally": {
+    "locality_text": "Chinnametupally",
+    "display_location": "Chinnametupally, Metpally",
+    "latitude": 18.8419,
+    "longitude": 78.5412,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "bodhan": {
+    "locality_text": "Bodhan",
+    "display_location": "Bodhan, Nizamabad",
+    "latitude": 18.6654,
+    "longitude": 77.8974,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "armoor": {
+    "locality_text": "Armoor",
+    "display_location": "Armoor, Nizamabad",
+    "latitude": 18.7904,
+    "longitude": 78.2917,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "balkonda": {
+    "locality_text": "Balkonda",
+    "display_location": "Balkonda, Nizamabad",
+    "latitude": 18.8742,
+    "longitude": 78.3496,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "bheemgal": {
+    "locality_text": "Bheemgal",
+    "display_location": "Bheemgal, Nizamabad",
+    "latitude": 18.7083,
+    "longitude": 78.4385,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "navipet": {
+    "locality_text": "Navipet",
+    "display_location": "Navipet, Nizamabad",
+    "latitude": 18.7958,
+    "longitude": 77.9942,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "nandipet": {
+    "locality_text": "Nandipet",
+    "display_location": "Nandipet, Nizamabad",
+    "latitude": 18.8502,
+    "longitude": 78.1884,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "morthad": {
+    "locality_text": "Morthad",
+    "display_location": "Morthad, Nizamabad",
+    "latitude": 18.7937,
+    "longitude": 78.4116,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "kammarpally": {
+    "locality_text": "Kammarpally",
+    "display_location": "Kammarpally, Nizamabad",
+    "latitude": 18.8035,
+    "longitude": 78.5088,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "dichpally": {
+    "locality_text": "Dichpally",
+    "display_location": "Dichpally, Nizamabad",
+    "latitude": 18.5746,
+    "longitude": 78.1969,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "dharpally": {
+    "locality_text": "Dharpally",
+    "display_location": "Dharpally, Nizamabad",
+    "latitude": 18.5369,
+    "longitude": 78.3072,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "jakranpally": {
+    "locality_text": "Jakranpally",
+    "display_location": "Jakranpally, Nizamabad",
+    "latitude": 18.6811,
+    "longitude": 78.3039,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "sirikonda": {
+    "locality_text": "Sirikonda",
+    "display_location": "Sirikonda, Nizamabad",
+    "latitude": 18.5061,
+    "longitude": 78.3752,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "kotgiri": {
+    "locality_text": "Kotgiri",
+    "display_location": "Kotgiri, Nizamabad",
+    "latitude": 18.5667,
+    "longitude": 77.8667,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "varni": {
+    "locality_text": "Varni",
+    "display_location": "Varni, Nizamabad",
+    "latitude": 18.5381,
+    "longitude": 77.9258,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "ranjal": {
+    "locality_text": "Ranjal",
+    "display_location": "Ranjal / Renjal, Nizamabad",
+    "latitude": 18.7842,
+    "longitude": 77.8828,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "renjal": {
+    "locality_text": "Renjal",
+    "display_location": "Renjal, Nizamabad",
+    "latitude": 18.7842,
+    "longitude": 77.8828,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "rudrur": {
+    "locality_text": "Rudrur",
+    "display_location": "Rudrur, Nizamabad",
+    "latitude": 18.5833,
+    "longitude": 77.8833,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "yedpally": {
+    "locality_text": "Yedpally",
+    "display_location": "Yedpally, Nizamabad",
+    "latitude": 18.685,
+    "longitude": 77.98,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "makloor": {
+    "locality_text": "Makloor",
+    "display_location": "Makloor, Nizamabad",
+    "latitude": 18.7619,
+    "longitude": 78.1517,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "velpur": {
+    "locality_text": "Velpur",
+    "display_location": "Velpur, Nizamabad",
+    "latitude": 18.7631,
+    "longitude": 78.3619,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "velpoor": {
+    "locality_text": "Velpoor",
+    "display_location": "Velpoor, Nizamabad",
+    "latitude": 18.7631,
+    "longitude": 78.3619,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "indalwai": {
+    "locality_text": "Indalwai",
+    "display_location": "Indalwai, Nizamabad",
+    "latitude": 18.5283,
+    "longitude": 78.2392,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "mupkal": {
+    "locality_text": "Mupkal",
+    "display_location": "Mupkal, Balkonda, Nizamabad",
+    "latitude": 18.8681,
+    "longitude": 78.3972,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "ankapur": {
+    "locality_text": "Ankapur",
+    "display_location": "Ankapur, Armoor, Nizamabad",
+    "latitude": 18.7667,
+    "longitude": 78.2667,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "argul": {
+    "locality_text": "Argul",
+    "display_location": "Argul, Armoor, Nizamabad",
+    "latitude": 18.8142,
+    "longitude": 78.3128,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "bejjora": {
+    "locality_text": "Bejjora",
+    "display_location": "Bejjora, Nizamabad",
+    "latitude": 18.7425,
+    "longitude": 78.2811,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "borgaon": {
+    "locality_text": "Borgaon",
+    "display_location": "Borgaon, Nizamabad",
+    "latitude": 18.6472,
+    "longitude": 78.1219,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "donkeshwar": {
+    "locality_text": "Donkeshwar",
+    "display_location": "Donkeshwar, Nizamabad",
+    "latitude": 18.8833,
+    "longitude": 78.25,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "dubba": {
+    "locality_text": "Dubba",
+    "display_location": "Dubba, Nizamabad Town",
+    "latitude": 18.6833,
+    "longitude": 78.0833,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "kalleda": {
+    "locality_text": "Kalleda",
+    "display_location": "Kalleda, Nizamabad",
+    "latitude": 18.8333,
+    "longitude": 78.3167,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "maithapur": {
+    "locality_text": "Maithapur",
+    "display_location": "Maithapur, Raikal",
+    "latitude": 18.8917,
+    "longitude": 78.8,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "mallapur": {
+    "locality_text": "Mallapur",
+    "display_location": "Mallapur, Jagtial",
+    "latitude": 18.9167,
+    "longitude": 78.7167,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "raikal": {
+    "locality_text": "Raikal",
+    "display_location": "Raikal, Jagtial",
+    "latitude": 18.9,
+    "longitude": 78.85,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "kathlapur": {
+    "locality_text": "Kathlapur",
+    "display_location": "Kathlapur, Jagtial",
+    "latitude": 18.75,
+    "longitude": 78.7833,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "medpally": {
+    "locality_text": "Medpally",
+    "display_location": "Medpally, Jagtial",
+    "latitude": 18.7333,
+    "longitude": 78.6833,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "metpally": {
+    "locality_text": "Metpally",
+    "display_location": "Metpally, Jagtial",
+    "latitude": 18.8277,
+    "longitude": 78.5833,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "korutla": {
+    "locality_text": "Korutla",
+    "display_location": "Korutla, Jagtial",
+    "latitude": 18.8208,
+    "longitude": 78.7119,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "jagtial": {
+    "locality_text": "Jagtial",
+    "display_location": "Jagtial, Telangana",
+    "latitude": 18.7946,
+    "longitude": 78.9126,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "nizamabad": {
+    "locality_text": "Nizamabad",
+    "display_location": "Nizamabad, Telangana",
+    "latitude": 18.6725,
+    "longitude": 78.0941,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "subhashnagar": {
+    "locality_text": "Subhashnagar",
+    "display_location": "Subhashnagar, Nizamabad",
+    "latitude": 18.675,
+    "longitude": 78.105,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "vinayaknagar": {
+    "locality_text": "Vinayaknagar",
+    "display_location": "Vinayaknagar, Nizamabad",
+    "latitude": 18.68,
+    "longitude": 78.115,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "kanteshwar": {
+    "locality_text": "Kanteshwar",
+    "display_location": "Kanteshwar, Nizamabad",
+    "latitude": 18.665,
+    "longitude": 78.112,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "arsapally": {
+    "locality_text": "Arsapally",
+    "display_location": "Arsapally, Nizamabad",
+    "latitude": 18.662,
+    "longitude": 78.085,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "malapally": {
+    "locality_text": "Malapally",
+    "display_location": "Malapally, Nizamabad",
+    "latitude": 18.67,
+    "longitude": 78.09,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "yergatla": {
+    "locality_text": "Yergatla",
+    "display_location": "Yergatla, Nizamabad",
+    "latitude": 18.835,
+    "longitude": 78.435,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "perkit": {
+    "locality_text": "Perkit",
+    "display_location": "Perkit, Armoor",
+    "latitude": 18.795,
+    "longitude": 78.275,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "pochampally": {
+    "locality_text": "Pochampally",
+    "display_location": "Pochampally, Nizamabad",
+    "latitude": 18.72,
+    "longitude": 78.24,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "gundaram": {
+    "locality_text": "Gundaram",
+    "display_location": "Gundaram, Nizamabad",
+    "latitude": 18.625,
+    "longitude": 78.145,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "sarangapur": {
+    "locality_text": "Sarangapur",
+    "display_location": "Sarangapur, Nizamabad",
+    "latitude": 18.705,
+    "longitude": 78.075,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "sirnapally": {
+    "locality_text": "Sirnapally",
+    "display_location": "Sirnapally, Indalwai, Nizamabad",
+    "latitude": 18.545,
+    "longitude": 78.285,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "degaon": {
+    "locality_text": "Degaon",
+    "display_location": "Degaon, Bodhan",
+    "latitude": 18.655,
+    "longitude": 77.845,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "mendora": {
+    "locality_text": "Mendora",
+    "display_location": "Mendora, Balkonda",
+    "latitude": 18.91,
+    "longitude": 78.36,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "choutpally": {
+    "locality_text": "Choutpally",
+    "display_location": "Choutpally, Kammarpally",
+    "latitude": 18.825,
+    "longitude": 78.535,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "manchippa": {
+    "locality_text": "Manchippa",
+    "display_location": "Manchippa, Mugpal",
+    "latitude": 18.59,
+    "longitude": 78.115,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.95
+  },
+  "machhlishahr": {
+    "locality_text": "Machhlishahr",
+    "display_location": "Machhlishahr, Jaunpur, Uttar Pradesh",
+    "latitude": 25.6881,
+    "longitude": 82.4172,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "kaushambi": {
+    "locality_text": "Kaushambi",
+    "display_location": "Manjhanpur / Kaushambi, Uttar Pradesh",
+    "latitude": 25.5342,
+    "longitude": 81.3789,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "manjhanpur": {
+    "locality_text": "Manjhanpur",
+    "display_location": "Manjhanpur, Kaushambi, Uttar Pradesh",
+    "latitude": 25.5342,
+    "longitude": 81.3789,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "sirathu": {
+    "locality_text": "Sirathu",
+    "display_location": "Sirathu, Kaushambi, Uttar Pradesh",
+    "latitude": 25.65,
+    "longitude": 81.32,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "chail": {
+    "locality_text": "Chail",
+    "display_location": "Chail, Kaushambi, Uttar Pradesh",
+    "latitude": 25.43,
+    "longitude": 81.63,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "mariyahun": {
+    "locality_text": "Mariyahun",
+    "display_location": "Mariyahun, Jaunpur, Uttar Pradesh",
+    "latitude": 25.62,
+    "longitude": 82.62,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "kerakat": {
+    "locality_text": "Kerakat",
+    "display_location": "Kerakat, Jaunpur, Uttar Pradesh",
+    "latitude": 25.63,
+    "longitude": 82.92,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "badlapur": {
+    "locality_text": "Badlapur",
+    "display_location": "Badlapur, Jaunpur, Uttar Pradesh",
+    "latitude": 25.92,
+    "longitude": 82.47,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "jaunpur": {
+    "locality_text": "Jaunpur",
+    "display_location": "Jaunpur, Uttar Pradesh",
+    "latitude": 25.7464,
+    "longitude": 82.6837,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "puri": {
+    "locality_text": "Puri",
+    "display_location": "Puri, Odisha",
+    "latitude": 19.8135,
+    "longitude": 85.8312,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "pipili": {
+    "locality_text": "Pipili",
+    "display_location": "Pipili, Puri, Odisha",
+    "latitude": 20.1167,
+    "longitude": 85.8333,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "satapada": {
+    "locality_text": "Satapada",
+    "display_location": "Satapada, Chilika, Puri, Odisha",
+    "latitude": 19.67,
+    "longitude": 85.43,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "brahmagiri": {
+    "locality_text": "Brahmagiri",
+    "display_location": "Brahmagiri, Puri, Odisha",
+    "latitude": 19.8,
+    "longitude": 85.65,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "nimapara": {
+    "locality_text": "Nimapara",
+    "display_location": "Nimapara, Puri, Odisha",
+    "latitude": 20.06,
+    "longitude": 86.01,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "konark": {
+    "locality_text": "Konark",
+    "display_location": "Konark, Puri, Odisha",
+    "latitude": 19.8876,
+    "longitude": 86.0945,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "kakatpur": {
+    "locality_text": "Kakatpur",
+    "display_location": "Kakatpur, Puri, Odisha",
+    "latitude": 20.0,
+    "longitude": 86.2,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  },
+  "gop": {
+    "locality_text": "Gop",
+    "display_location": "Gop, Puri, Odisha",
+    "latitude": 19.99,
+    "longitude": 86.0,
+    "location_source": "geocoded_locality",
+    "location_precision": "locality",
+    "confidence": 0.98
+  }
+}

@@ -17,6 +17,7 @@ data/works_sanctioned.csv
 # Python
 __pycache__/
 *.pyc
+*.db
 .venv/
 venv/
 

@@ -48,46 +48,166 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
 }
 
-[data-theme="dark"] {
-  --gov-navy-dark: #07121b;
-  --gov-navy-mid: #0d2230;
-  --gov-navy-light: #164e63;
-  --gov-blue-subtle: #082f49;
-  --gov-blue-border: #0369a1;
+/* =========================================================
+   MULTILINGUAL LANGUAGE SELECTOR DROPDOWN (TOP CORNER)
+   Official Government Portal Multilingual Standard
+========================================================= */
 
-  --bg-page: #07121b;
-  --bg-card: #0c1c28;
-  --bg-card-muted: #112534;
-  --bg-hover: #162f42;
+.header-lang-wrapper {
+  position: relative;
+  display: inline-flex;
+}
 
-  --border-color: #1e3a4f;
-  --border-subtle: #152d3d;
-  --border-focus: #38bdf8;
+.header-lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
 
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-light: #64748b;
+.header-lang-btn:hover,
+.header-lang-btn.open {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #005A9C;
+}
 
-  --danger-bg: rgba(220, 38, 38, 0.15);
-  --danger-text: #f87171;
-  --danger-border: rgba(220, 38, 38, 0.4);
+.header-lang-globe-icon {
+  color: #005A9C;
+  flex-shrink: 0;
+}
 
-  --warning-bg: rgba(217, 119, 6, 0.15);
-  --warning-text: #fbbf24;
-  --warning-border: rgba(217, 119, 6, 0.4);
+.header-lang-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
 
-  --success-bg: rgba(22, 163, 74, 0.15);
-  --success-text: #4ade80;
-  --success-border: rgba(22, 163, 74, 0.4);
+.header-lang-chevron {
+  color: #64748b;
+  transition: transform 0.2s ease;
+}
 
-  --info-bg: rgba(37, 99, 235, 0.15);
-  --info-text: #60a5fa;
-  --info-border: rgba(37, 99, 235, 0.4);
+.header-lang-chevron.rotate {
+  transform: rotate(180deg);
+}
 
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+.header-lang-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 270px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.18), 0 4px 10px -2px rgba(15, 23, 42, 0.08);
+  z-index: 99999;
+  overflow: hidden;
+  animation: fadeInLang 0.15s ease;
+}
+
+@keyframes fadeInLang {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header-lang-menu-title {
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #005A9C;
+  background: #f0f7ff;
+  border-bottom: 1px solid #e0f2fe;
+}
+
+.header-lang-options-grid {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.header-lang-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s ease;
+}
+
+.header-lang-option:hover {
+  background: #f1f5f9;
+}
+
+.header-lang-option.selected {
+  background: #eff6ff;
+  color: #005A9C;
+}
+
+.header-lang-option-text {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.lang-native {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.header-lang-option.selected .lang-native {
+  color: #005A9C;
+}
+
+.lang-english {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.lang-check {
+  color: #005A9C;
+  flex-shrink: 0;
+}
+
+/* Hide Google Translate Banner & Floating Tooltips */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner-frame,
+iframe.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+}
+
+body {
+  top: 0px !important;
+  position: static !important;
+}
+
+#goog-gt-tt,
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 /* =========================================================
@@ -191,10 +311,6 @@ a {
   height: 40px;
   color: var(--gov-navy-mid);
   flex-shrink: 0;
-}
-
-[data-theme="dark"] .ashoka-emblem-small {
-  color: #38bdf8;
 }
 
 .ashoka-svg {
@@ -475,15 +591,33 @@ a {
   filter: brightness(0.95);
 }
 
+.header-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 4px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.header-logout-btn:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+  color: #b91c1c;
+}
+
 .compact-tricolor-line {
   height: 3.5px;
   width: 100%;
   background: linear-gradient(90deg, #ea580c 0%, #ea580c 33.3%, #94a3b8 33.3%, #94a3b8 66.6%, #16a34a 66.6%, #16a34a 100%);
   opacity: 0.9;
-}
-
-[data-theme="dark"] .compact-tricolor-line {
-  background: linear-gradient(90deg, #ea580c 0%, #ea580c 33.3%, #cbd5e1 33.3%, #cbd5e1 66.6%, #16a34a 66.6%, #16a34a 100%);
 }
 
 /* =========================================================
@@ -538,11 +672,6 @@ a {
   background: var(--info-bg);
   color: var(--info-text);
   font-weight: 600;
-}
-
-[data-theme="dark"] .nav-item-compact.active {
-  background: #1e3a5f;
-  color: #60a5fa;
 }
 
 .nav-label-wrap {
@@ -635,12 +764,6 @@ a {
   font-weight: 600;
 }
 
-[data-theme="dark"] .da-nav-item.active {
-  background: #291c0a;
-  border-left-color: #f59e0b;
-  color: #fbbf24;
-}
-
 .da-nav-left {
   display: flex;
   align-items: center;
@@ -675,10 +798,6 @@ a {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 150px;
-}
-
-[data-theme="dark"] .da-nav-subtext {
-  color: #94a3b8;
 }
 
 .da-nav-item.active .da-nav-subtext {
@@ -765,18 +884,6 @@ a {
 
 .sidebar-logout-icon {
   flex-shrink: 0;
-}
-
-[data-theme="dark"] .sidebar-logout-btn {
-  background: rgba(220, 38, 38, 0.12);
-  color: #f87171;
-  border-color: rgba(220, 38, 38, 0.35);
-}
-
-[data-theme="dark"] .sidebar-logout-btn:hover {
-  background: rgba(220, 38, 38, 0.22);
-  color: #fca5a5;
-  border-color: rgba(220, 38, 38, 0.5);
 }
 
 /* =========================================================

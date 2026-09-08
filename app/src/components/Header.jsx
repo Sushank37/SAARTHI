@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Sun, Moon, ExternalLink, LogOut } from "lucide-react";
+import { Search, ExternalLink, LogOut } from "lucide-react";
+import { useAuth } from "../context/useAuth";
+import LanguageSelector from "./LanguageSelector";
 
 export default function Header({
   house,
   setHouse,
   role = "mospi",
   setRole,
-  theme,
-  toggleTheme,
   fontSize,
   setFontSize,
   backendStatus = "connected",
@@ -18,7 +18,21 @@ export default function Header({
   onLogout,
 }) {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    } else if (logout) {
+      logout();
+      navigate("/login");
+    } else {
+      localStorage.removeItem("mplads_token");
+      localStorage.removeItem("mplads_role");
+      navigate("/login");
+    }
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -155,9 +169,7 @@ export default function Header({
             </span>
           </div>
 
-          <button className="icon-action-btn" onClick={toggleTheme} title="Toggle Dark/Light Mode">
-            {theme === "official" ? <Moon size={16} /> : <Sun size={16} />}
-          </button>
+          <LanguageSelector />
 
           <a
             href="https://mplads.mospi.gov.in/digigov/dashboard.html"
@@ -169,6 +181,16 @@ export default function Header({
             <span>eSAKSHI</span>
             <ExternalLink size={12} />
           </a>
+
+          <button
+            type="button"
+            className="header-logout-btn"
+            onClick={handleLogout}
+            title="Sign out of current session"
+          >
+            <LogOut size={13} />
+            <span>Logout</span>
+          </button>
         </div>
       </div>
 
