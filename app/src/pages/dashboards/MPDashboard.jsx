@@ -1294,23 +1294,16 @@ export default function MPDashboard(props) {
   function renderWorksTable({ title, subtitle, showStageTabs }) {
     return (
       <div className="gov-mp-card gov-register-card">
-        <div className="register-toolbar">
+        {/* Top Header & Actions Row */}
+        <div className="register-header-row">
           <div className="register-headings">
-            <h2 className="register-main-title">{title}</h2>
-            <p className="register-sub-text">{subtitle} ({formatNumber(worksTotal)} total)</p>
+            <h3 className="register-main-title">{title}</h3>
+            <p className="register-sub-text">
+              {subtitle} · <strong style={{ color: "#334155" }}>{formatNumber(worksTotal)} Works</strong>
+            </p>
           </div>
 
-          <div className="register-tools">
-            <div className="gov-table-search-box">
-              <Search size={14} className="search-icon text-slate-400" />
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Search Work ID or description..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+          <div className="register-actions-right">
             <button
               type="button"
               className="gov-export-btn"
@@ -1332,9 +1325,20 @@ export default function MPDashboard(props) {
           </div>
         </div>
 
-        {/* Milestone Stage Filter Tabs in Plain Language */}
-        {showStageTabs && (
-          <div className="register-stage-strip">
+        {/* Unified Search & Stage Filter Strip */}
+        <div className="register-filter-strip">
+          <div className="gov-table-search-box">
+            <Search size={14} className="search-icon" />
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search Work ID, title, or agency..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {showStageTabs && (
             <div className="stage-pills-list">
               {[
                 { id: "All", label: "All Works", count: worksTotal },
@@ -1359,8 +1363,8 @@ export default function MPDashboard(props) {
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Data Table */}
         <div className="register-table-responsive">

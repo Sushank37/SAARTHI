@@ -7,7 +7,7 @@
 .gov-mp-shell {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   width: 100%;
   color: #0f172a;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -22,7 +22,7 @@
   border: 1px solid #cbd5e1;
   border-top: 3.5px solid #005A9C; /* Parliamentary Navy */
   border-radius: 8px;
-  padding: 14px 18px;
+  padding: 10px 16px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
@@ -301,7 +301,7 @@
   background: #ffffff;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  padding: 14px 18px;
+  padding: 11px 14px;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
 }
 
@@ -317,18 +317,18 @@
 .card-section-desc {
   font-size: 11.5px;
   color: #64748b;
-  margin: 2px 0 10px;
+  margin: 2px 0 6px;
 }
 
 .lifecycle-stepper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  padding: 10px 16px;
+  padding: 7px 12px;
 }
 
 .lifecycle-step {
@@ -1334,5 +1334,447 @@
   .fund-status-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ============================================================
+   5. CONSTITUENCY WORKS REGISTER TABLE & TOOLBAR
+   Unified Government Standard, Compact, No Excessive Scroll
+   ============================================================ */
+.gov-register-card {
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.register-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.register-main-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.register-sub-text {
+  font-size: 11.5px;
+  color: #64748b;
+  margin: 2px 0 0;
+}
+
+.register-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gov-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.gov-export-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.gov-export-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gov-refresh-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gov-refresh-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+/* Filter Strip (Search + Stage Pills) */
+.register-filter-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.gov-table-search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  padding: 4px 8px;
+  min-width: 240px;
+  flex-shrink: 0;
+}
+
+.gov-table-search-box .search-icon {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.gov-table-search-box .search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 11.5px;
+  width: 100%;
+  color: #0f172a;
+}
+
+.gov-table-search-box .search-input::placeholder {
+  color: #94a3b8;
+}
+
+.stage-pills-list {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.stage-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s ease;
+}
+
+.stage-pill-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+.stage-pill-btn.active {
+  background: #eff6ff;
+  border-color: #005A9C;
+  color: #005A9C;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 90, 156, 0.08);
+}
+
+.stage-count-tag {
+  font-size: 10px;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #334155;
+  padding: 1px 5px;
+  border-radius: 8px;
+}
+
+.stage-pill-btn.active .stage-count-tag {
+  background: #005A9C;
+  color: #ffffff;
+}
+
+/* Compact Table Container with Sticky Header to Avoid Excessive Vertical Scroll */
+.register-table-responsive {
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.gov-register-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+  text-align: left;
+}
+
+.gov-register-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f1f5f9;
+}
+
+.gov-register-table th {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 7px 10px;
+  border-bottom: 1.5px solid #cbd5e1;
+  white-space: nowrap;
+}
+
+.gov-register-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.gov-register-table tbody tr {
+  transition: background 0.1s;
+  cursor: pointer;
+}
+
+.gov-register-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.table-status-cell {
+  text-align: center;
+  padding: 24px 12px !important;
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* Cells */
+.cell-id {
+  font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0284c7;
+  white-space: nowrap;
+}
+
+.cell-work-info {
+  max-width: 280px;
+  min-width: 190px;
+}
+
+.work-desc-text {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 11.5px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  margin-bottom: 2px;
+}
+
+.work-cat-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 3px;
+  padding: 1px 5px;
+  line-height: 1.2;
+}
+
+.cell-agency {
+  max-width: 180px;
+  min-width: 130px;
+}
+
+.agency-title {
+  font-weight: 600;
+  color: #334155;
+  font-size: 11.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.agency-loc {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+.cell-numeric {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.stage-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.stage-badge.stage-done {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.stage-badge.stage-sanction {
+  background: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
+.stage-badge.stage-ongoing {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.stage-badge.stage-pending {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.risk-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.risk-badge.risk-high {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.risk-badge.risk-med {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.risk-badge.risk-clear {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.gov-inspect-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #005A9C;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.gov-inspect-btn:hover {
+  background: #eff6ff;
+  border-color: #005A9C;
+}
+
+/* Pagination */
+.register-pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pagination-text {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gov-pag-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.gov-pag-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.gov-pag-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gov-pag-indicator {
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
 }
 
