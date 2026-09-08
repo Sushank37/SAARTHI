@@ -215,12 +215,12 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
                       <td style={{ textAlign: "center" }}>
                         <button
                           type="button"
-                          className="mospi-btn-sm"
-                          onClick={() => onSelectWork && onSelectWork(w)}
-                          title="Open full 78-field canonical record dossier"
+                          className="mospi-dossier-btn mospi-dossier-anomaly"
+                          onClick={() => onSelectWork && onSelectWork({ ...w, __initialSection: "risk", __authority: "MOSPI" })}
+                          title="Inspect MoSPI Central Anomaly & Forensic Dossier"
                         >
-                          <ExternalLink size={12} />
-                          <span>Dossier</span>
+                          <ShieldAlert size={12} />
+                          <span>Anomaly Dossier →</span>
                         </button>
                       </td>
                     </tr>

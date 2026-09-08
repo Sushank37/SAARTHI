@@ -357,11 +357,12 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                       <td>
                         <button
                           type="button"
-                          className="mospi-btn-sm"
-                          onClick={() => onSelectWork && onSelectWork(w)}
+                          className="mospi-dossier-btn mospi-dossier-district"
+                          onClick={() => onSelectWork && onSelectWork({ ...w, __initialSection: "overview", __authority: "MOSPI" })}
+                          title="Inspect District Central Registry Dossier"
                         >
-                          <ExternalLink size={12} />
-                          <span>Dossier</span>
+                          <Building2 size={12} />
+                          <span>District Dossier →</span>
                         </button>
                       </td>
                     </tr>

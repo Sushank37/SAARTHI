@@ -238,12 +238,12 @@ export default function EvidenceIntelligenceTab({ analytics, onSelectWork }) {
                       <td style={{ textAlign: "center" }}>
                         <button
                           type="button"
-                          className="mospi-btn-sm"
-                          onClick={() => onSelectWork && onSelectWork(w)}
-                          title="Inspect canonical 78-field dossier"
+                          className="mospi-dossier-btn mospi-dossier-evidence"
+                          onClick={() => onSelectWork && onSelectWork({ ...w, __initialSection: "evidence", __authority: "MOSPI" })}
+                          title="Inspect MoSPI Digital Forensic & EXIF Evidence Dossier"
                         >
-                          <ExternalLink size={12} />
-                          <span>Dossier</span>
+                          <Camera size={12} />
+                          <span>Forensic Dossier →</span>
                         </button>
                       </td>
                     </tr>

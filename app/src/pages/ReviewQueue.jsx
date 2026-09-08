@@ -171,7 +171,13 @@ export default function ReviewQueue({ onSelectWork }) {
                       </span>
                     </td>
                     <td>
-                      <button className="table-action-btn">Audit Dossier →</button>
+                      <button
+                        type="button"
+                        className="table-action-btn"
+                        onClick={() => onSelectWork && onSelectWork(item)}
+                      >
+                        Audit Dossier →
+                      </button>
                     </td>
                   </tr>
                 ))

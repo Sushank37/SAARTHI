@@ -248,7 +248,13 @@ export default function WorkExplorer({ onSelectWork }) {
                       </td>
                       <td>{item.WORK_STAGE || "Sanctioned"}</td>
                       <td>
-                        <button className="table-action-btn">Inspect Dossier →</button>
+                        <button
+                          type="button"
+                          className="table-action-btn"
+                          onClick={() => onSelectWork && onSelectWork(item)}
+                        >
+                          Inspect Dossier →
+                        </button>
                       </td>
                     </tr>
                   );

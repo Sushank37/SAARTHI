@@ -178,7 +178,7 @@ export default function IADashboard({ summary, onSelectWork }) {
   const handleSelectWork = (work, section = null) => {
     if (!work) return;
     const targetSec = section || getAuditSectionForTab(currentTab);
-    const workWithSec = { ...work, __initialSection: targetSec };
+    const workWithSec = { ...work, __initialSection: targetSec, __authority: "IMPLEMENTING_AGENCY" };
     if (typeof onSelectWork === "function") {
       onSelectWork(workWithSec);
     } else {
@@ -718,7 +718,7 @@ export default function IADashboard({ summary, onSelectWork }) {
                             onClick={() => handleSelectWork(w, "overview")}
                           >
                             <Eye size={13} />
-                            <span>View Dossier</span>
+                            <span>Work Order Dossier →</span>
                           </button>
                         </td>
                       </tr>
@@ -903,7 +903,7 @@ export default function IADashboard({ summary, onSelectWork }) {
                               onClick={() => handleSelectWork(w, "sanction")}
                             >
                               <Eye size={13} />
-                              <span>Milestones</span>
+                              <span>Milestone Dossier →</span>
                             </button>
                           </td>
                         </tr>
@@ -1059,7 +1059,7 @@ export default function IADashboard({ summary, onSelectWork }) {
                             onClick={() => handleSelectWork(w, "sanction")}
                           >
                             <Eye size={13} />
-                            <span>Expedite</span>
+                            <span>SLA Dossier →</span>
                           </button>
                         </td>
                       </tr>
@@ -1213,7 +1213,7 @@ export default function IADashboard({ summary, onSelectWork }) {
                             onClick={() => handleSelectWork(w, "financials")}
                           >
                             <Eye size={13} />
-                            <span>Audit Claim</span>
+                            <span>MB Billing Dossier →</span>
                           </button>
                         </td>
                       </tr>
@@ -1404,7 +1404,7 @@ export default function IADashboard({ summary, onSelectWork }) {
                               onClick={() => handleSelectWork(w, "overview")}
                             >
                               <Eye size={13} />
-                              <span>View Dossier</span>
+                              <span>Contractor Dossier →</span>
                             </button>
                           </td>
                         </tr>
@@ -1542,7 +1542,7 @@ export default function IADashboard({ summary, onSelectWork }) {
                             onClick={() => handleSelectWork(w, "evidence")}
                           >
                             <Eye size={13} />
-                            <span>View Evidence</span>
+                            <span>Site Evidence Dossier →</span>
                           </button>
                         </td>
                       </tr>
@@ -1672,7 +1672,7 @@ export default function IADashboard({ summary, onSelectWork }) {
                             onClick={() => handleSelectWork(w, "geo-photo")}
                           >
                             <Eye size={13} />
-                            <span>Verify Photo</span>
+                            <span>Geo-Photo Dossier →</span>
                           </button>
                         </td>
                       </tr>
@@ -1810,7 +1810,7 @@ export default function IADashboard({ summary, onSelectWork }) {
                             onClick={() => handleSelectWork(w, "evidence")}
                           >
                             <Eye size={13} />
-                            <span>Upload Evidence</span>
+                            <span>Compliance Dossier →</span>
                           </button>
                         </td>
                       </tr>
@@ -1961,7 +1961,7 @@ export default function IADashboard({ summary, onSelectWork }) {
                             onClick={() => handleSelectWork(w, "completion")}
                           >
                             <Eye size={13} />
-                            <span>{isFullyDone ? "Certificate" : "Signoff MB"}</span>
+                            <span>Handover Dossier →</span>
                           </button>
                         </td>
                       </tr>
@@ -2101,7 +2101,7 @@ export default function IADashboard({ summary, onSelectWork }) {
                             onClick={() => handleSelectWork(w, "actions")}
                           >
                             <Eye size={13} />
-                            <span>Resolve & Inspect</span>
+                            <span>IA Correction Dossier →</span>
                           </button>
                         </td>
                       </tr>

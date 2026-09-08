@@ -1155,10 +1155,10 @@ export default function MPDashboard(props) {
                           className="case-action-btn"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (onSelectWork) onSelectWork(item);
+                            if (onSelectWork) onSelectWork({ ...item, __initialSection: "risk", __authority: "MP" });
                           }}
                         >
-                          <span>View Work Details</span>
+                          <span>Inspect MP Dossier →</span>
                           <ArrowRight size={12} />
                         </button>
                       </div>
@@ -1465,10 +1465,11 @@ export default function MPDashboard(props) {
                           className="gov-inspect-btn"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (onSelectWork) onSelectWork(work);
+                            if (onSelectWork) onSelectWork({ ...work, __initialSection: "overview", __authority: "MP" });
                           }}
+                          title="Open Hon'ble MP Constituency Work Dossier"
                         >
-                          <span>Details</span>
+                          <span>MP Dossier →</span>
                           <ArrowRight size={11} />
                         </button>
                       </td>

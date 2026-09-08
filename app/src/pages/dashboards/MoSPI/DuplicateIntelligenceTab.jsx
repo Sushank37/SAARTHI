@@ -201,12 +201,12 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
                       <td style={{ textAlign: "center" }}>
                         <button
                           type="button"
-                          className="mospi-btn-sm"
-                          onClick={() => onSelectWork && onSelectWork(item)}
-                          title="Open canonical 78-field work dossier"
+                          className="mospi-dossier-btn mospi-dossier-duplicate"
+                          onClick={() => onSelectWork && onSelectWork({ ...item, __initialSection: "duplicates", __authority: "MOSPI" })}
+                          title="Inspect Cross-Jurisdiction Duplicate Cluster Dossier"
                         >
-                          <ExternalLink size={12} />
-                          <span>Dossier</span>
+                          <Copy size={12} />
+                          <span>Duplicate Dossier →</span>
                         </button>
                       </td>
                     </tr>

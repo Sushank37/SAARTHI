@@ -191,24 +191,16 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
                       <td>
                         <button
                           type="button"
-                          className="mospi-page-btn"
+                          className="mospi-dossier-btn mospi-dossier-risk"
                           onClick={() => {
                             if (typeof onSelectWork === "function") {
-                              onSelectWork({ ...w, __initialSection: "risk" });
+                              onSelectWork({ ...w, __initialSection: "risk", __authority: "MOSPI" });
                             }
                           }}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            fontSize: "11px",
-                            padding: "3px 8px",
-                            color: "#0369a1",
-                          }}
-                          title="Inspect comprehensive dossier for this work"
+                          title="Inspect National Risk Distribution & Algorithmic Audit Dossier"
                         >
-                          <span>Inspect Dossier</span>
-                          <ChevronRight size={12} />
+                          <ShieldAlert size={12} />
+                          <span>National Risk Dossier →</span>
                         </button>
                       </td>
                     </tr>

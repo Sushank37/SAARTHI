@@ -147,21 +147,14 @@ export default function DuplicateSurveillanceTab({ analytics, onSelectWork }) {
                           className="mospi-page-btn"
                           onClick={() => {
                             if (typeof onSelectWork === "function") {
-                              onSelectWork({ ...w, __initialSection: "duplicates" });
+                              onSelectWork({ ...w, __initialSection: "duplicates", __authority: "MOSPI" });
                             }
                           }}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            fontSize: "11px",
-                            padding: "3px 8px",
-                            color: "#0369a1",
-                          }}
+                          className="mospi-dossier-btn mospi-dossier-duplicate"
                           title="Inspect duplicate cluster dossier"
                         >
-                          <span>Inspect Dossier</span>
-                          <ChevronRight size={12} />
+                          <Copy size={12} />
+                          <span>Duplicate Dossier →</span>
                         </button>
                       </td>
                     </tr>

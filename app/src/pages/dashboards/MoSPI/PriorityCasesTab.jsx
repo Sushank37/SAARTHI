@@ -167,24 +167,16 @@ export default function PriorityCasesTab({ onSelectWork }) {
                       <td>
                         <button
                           type="button"
-                          className="mospi-page-btn"
+                          className="mospi-dossier-btn mospi-dossier-vigilance"
                           onClick={() => {
                             if (typeof onSelectWork === "function") {
-                              onSelectWork({ ...w, __initialSection: "overview" });
+                              onSelectWork({ ...w, __initialSection: "actions", __authority: "MOSPI" });
                             }
                           }}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            fontSize: "11px",
-                            padding: "3px 8px",
-                            color: "#0369a1",
-                          }}
-                          title="Inspect comprehensive dossier for this work"
+                          title="Open Central MoSPI Vigilance Directives Dossier"
                         >
-                          <span>Inspect Dossier</span>
-                          <ChevronRight size={12} />
+                          <AlertOctagon size={12} />
+                          <span>Vigilance Dossier →</span>
                         </button>
                       </td>
                     </tr>

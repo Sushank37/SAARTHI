@@ -238,7 +238,13 @@ export default function RiskIntelligence({ onSelectWork }) {
                     </td>
                     <td className="truncate-cell">{item.RISK_REASON || "Flagged by peer benchmark"}</td>
                     <td>
-                      <button className="table-action-btn">Audit Dossier →</button>
+                      <button
+                        type="button"
+                        className="table-action-btn"
+                        onClick={() => onSelectWork && onSelectWork(item)}
+                      >
+                        Audit Dossier →
+                      </button>
                     </td>
                   </tr>
                 ))

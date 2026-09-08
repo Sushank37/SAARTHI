@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   Briefcase,
+  Building,
   Building2,
   Search,
   CheckCircle2,
@@ -176,6 +177,7 @@ export default function IAPerformanceTab({ analytics, onSelectWork }) {
                     <ArrowUpDown size={12} />
                   </div>
                 </th>
+                <th style={{ textAlign: "center" }}>National Dossier</th>
               </tr>
             </thead>
             <tbody>
@@ -216,6 +218,26 @@ export default function IAPerformanceTab({ analytics, onSelectWork }) {
                     <span className={`mospi-pill ${(ia.avg_delay || 0) > 100 ? "warning" : "neutral"}`}>
                       {ia.avg_delay || 0}d
                     </span>
+                  </td>
+                  <td style={{ textAlign: "center" }}>
+                    <button
+                      type="button"
+                      className="mospi-dossier-btn mospi-dossier-district"
+                      onClick={() => onSelectWork && onSelectWork({
+                        IDA_NAME: ia.IDA_NAME,
+                        STATE_NAME: ia.STATE_NAME,
+                        SANCTION_AMOUNT: (ia.total_sanction_cr || 0) * 10000000,
+                        ACTUAL_AMOUNT: (ia.total_actual_cr || 0) * 10000000,
+                        WORK_STAGE: "Assigned to IA",
+                        WORK_DESCRIPTION: `Executing Agency Portfolio: ${ia.IDA_NAME} (${ia.STATE_NAME}) managing ${ia.total_works} works with ${ia.completed_works} completed.`,
+                        __initialSection: "ia",
+                        __authority: "MOSPI"
+                      })}
+                      title="Inspect MoSPI Implementing Agency Benchmarking Dossier"
+                    >
+                      <Building size={12} />
+                      <span>Agency Dossier →</span>
+                    </button>
                   </td>
                 </tr>
               ))}

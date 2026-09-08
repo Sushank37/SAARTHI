@@ -249,12 +249,12 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
                       <td style={{ textAlign: "center" }}>
                         <button
                           type="button"
-                          className="mospi-btn-sm"
-                          onClick={() => onSelectWork && onSelectWork(w)}
-                          title="Inspect canonical 78-field dossier"
+                          className="mospi-dossier-btn mospi-dossier-delay"
+                          onClick={() => onSelectWork && onSelectWork({ ...w, __initialSection: "compliance-45d", __authority: "MOSPI" })}
+                          title="Inspect MoSPI National Delay Breach & Compliance Dossier"
                         >
-                          <ExternalLink size={12} />
-                          <span>Dossier</span>
+                          <Clock size={12} />
+                          <span>Delay Dossier →</span>
                         </button>
                       </td>
                     </tr>

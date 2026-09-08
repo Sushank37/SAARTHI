@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 import {
   X,
   ShieldAlert,
@@ -25,33 +26,129 @@ import {
   Bell,
   AlertOctagon,
   Filter,
+  Star,
+  Download,
+  FileText,
+  Hammer,
 } from "lucide-react";
-import { formatNumber, formatDecimal, formatCurrency } from "../constants";
+import { formatNumber, formatDecimal, formatCurrency, formatCrores } from "../constants";
 import "./WorkDetailDrawer.css";
 
-// 11 Specific Audit Navigation Modules inside the Dossier
-const DOSSIER_AUDIT_TABS = [
-  { id: "all", label: "Full Audit (All Sections)" },
-  { id: "overview", label: "1. Overview & Sponsorship" },
-  { id: "sanction", label: "2. Sanction Feasibility (Sec 3.11)" },
-  { id: "compliance-45d", label: "3. 45-Day Limit (Sec 3.12)" },
-  { id: "completion", label: "4. 1-Yr Completion (Sec 3.14)" },
-  { id: "financials", label: "5. Financials & Escalation" },
-  { id: "risk", label: "6. AI Risk & Anomalies" },
-  { id: "duplicates", label: "7. Duplicate Clusters" },
-  { id: "ia", label: "8. Executing Agency (IA)" },
-  { id: "evidence", label: "9. Ground Evidence" },
-  { id: "geo-photo", label: "10. Geo-Photo & Site (Sec 3.16)" },
-  { id: "actions", label: "11. Collector Clearance" },
-];
+// Authority-specific tabs for the dossier
+const getAuthorityTabs = (authority) => {
+  switch (authority) {
+    case "MOSPI":
+      return [
+        { id: "all", label: "Full Central Audit (All)" },
+        { id: "overview", label: "1. Central Registry & Identifiers" },
+        { id: "financials", label: "2. Central SNA Fund Flow & Audit" },
+        { id: "duplicates", label: "3. Inter-State Duplicate Clusters" },
+        { id: "compliance-45d", label: "4. National Delay Breach & SLAs" },
+        { id: "risk", label: "5. National Risk & Forensic Anomalies" },
+        { id: "ia", label: "6. IA National Benchmarking" },
+        { id: "evidence", label: "7. Evidence & EXIF Forensic Audit" },
+        { id: "actions", label: "8. MoSPI Central Directives & CVC" },
+      ];
+    case "IMPLEMENTING_AGENCY":
+      return [
+        { id: "all", label: "Full Execution File (All)" },
+        { id: "overview", label: "1. Work Order & Scope of Works" },
+        { id: "completion", label: "2. Physical Milestones & Progress" },
+        { id: "financials", label: "3. Measurement Book (MB) & Claims" },
+        { id: "geo-photo", label: "4. Geo-Tagged Photos & Site Uploads" },
+        { id: "compliance-45d", label: "5. Deadlines & Extension (EOT)" },
+        { id: "risk", label: "6. Site Quality & Rectification Log" },
+        { id: "actions", label: "7. IA Execution & Billing Directives" },
+      ];
+    case "MP":
+      return [
+        { id: "all", label: "Full Parliamentary Brief (All)" },
+        { id: "overview", label: "1. MP Sponsorship & ₹5 Cr Quota Debit" },
+        { id: "sanction", label: "2. Constituency Sanction SLA & DA Status" },
+        { id: "completion", label: "3. Ground Delivery & Milestone Progress" },
+        { id: "financials", label: "4. Constituency Fund Release & Balance" },
+        { id: "geo-photo", label: "5. Asset Photos for Public Dedication" },
+        { id: "risk", label: "6. Grievances & Constituency Delay Flags" },
+        { id: "actions", label: "7. Parliamentary Directives & Inquiries" },
+      ];
+    case "CITIZEN":
+      return [
+        { id: "all", label: "Public Factsheet (All)" },
+        { id: "overview", label: "1. Community Infrastructure Summary" },
+        { id: "financials", label: "2. Public Fund Utilization Breakdown" },
+        { id: "completion", label: "3. Delivery Status & Public Opening" },
+        { id: "geo-photo", label: "4. Before & After Photo Gallery" },
+        { id: "actions", label: "5. Citizen Social Audit & Verification" },
+      ];
+    case "DISTRICT_AUTHORITY":
+    default:
+      return [
+        { id: "all", label: "Full Statutory Audit (All)" },
+        { id: "overview", label: "1. Overview & Sponsorship" },
+        { id: "sanction", label: "2. Sanction Feasibility (Sec 3.11)" },
+        { id: "compliance-45d", label: "3. 45-Day Limit (Sec 3.12)" },
+        { id: "completion", label: "4. 1-Yr Completion (Sec 3.14)" },
+        { id: "financials", label: "5. Financials & Escalation" },
+        { id: "risk", label: "6. AI Risk & Anomalies" },
+        { id: "duplicates", label: "7. Duplicate Clusters" },
+        { id: "ia", label: "8. Executing Agency (IA)" },
+        { id: "evidence", label: "9. Ground Evidence" },
+        { id: "geo-photo", label: "10. Geo-Photo & Site (Sec 3.16)" },
+        { id: "actions", label: "11. Collector Clearance Directives" },
+      ];
+  }
+};
 
 export default function WorkDetailDrawer({ work, onClose, initialSection = "all" }) {
   if (!work) return null;
 
+  const { role: authRole } = useAuth() || {};
+  const location = useLocation();
+
+  // Determine active authority persona
+  const activeAuthority = useMemo(() => {
+    if (work?.__authority) return String(work.__authority).toUpperCase();
+    if (authRole) return String(authRole).toUpperCase();
+    const path = location?.pathname || "";
+    if (path.startsWith("/mospi")) return "MOSPI";
+    if (path.startsWith("/ia")) return "IMPLEMENTING_AGENCY";
+    if (path.startsWith("/da")) return "DISTRICT_AUTHORITY";
+    if (path.startsWith("/mp")) return "MP";
+    if (path.startsWith("/citizen")) return "CITIZEN";
+    return "DISTRICT_AUTHORITY";
+  }, [work, authRole, location?.pathname]);
+
+  const currentTabs = useMemo(() => getAuthorityTabs(activeAuthority), [activeAuthority]);
+
   const [copied, setCopied] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
+
+  // Authority-specific action interactive states
+  // 1. DA states
   const [verifiedLocally, setVerifiedLocally] = useState(false);
   const [noticeIssued, setNoticeIssued] = useState(false);
+  const [fundsFrozen, setFundsFrozen] = useState(false);
+
+  // 2. MoSPI states
+  const [mospiDirectiveIssued, setMospiDirectiveIssued] = useState(false);
+  const [snaTrancheWithheld, setSnaTrancheWithheld] = useState(false);
+  const [cagAuditOrdered, setCagAuditOrdered] = useState(false);
+
+  // 3. IA states
+  const [mbSubmitted, setMbSubmitted] = useState(false);
+  const [geoEvidenceUploaded, setGeoEvidenceUploaded] = useState(false);
+  const [eotFiled, setEotFiled] = useState(false);
+
+  // 4. MP states
+  const [sansadNoticeIssued, setSansadNoticeIssued] = useState(false);
+  const [inaugurationApproved, setInaugurationApproved] = useState(false);
+  const [inspectionScheduled, setInspectionScheduled] = useState(false);
+
+  // 5. Citizen states
+  const [citizenRating, setCitizenRating] = useState(5);
+  const [citizenAuditVerified, setCitizenAuditVerified] = useState(false);
+  const [grievanceReported, setGrievanceReported] = useState(false);
+
   const [activeSection, setActiveSection] = useState(initialSection || "all");
 
   // Synchronize initial section if prop updates
@@ -147,8 +244,51 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
   };
 
   const shouldShow = (sectionId) => {
-    return activeSection === "all" || activeSection === sectionId;
+    if (activeSection === "all") return true;
+    if (activeSection === sectionId) return true;
+    // Section aliases for authority tabs
+    if (activeSection === "milestones" && (sectionId === "completion" || sectionId === "sanction")) return true;
+    if (activeSection === "mb-billing" && sectionId === "financials") return true;
+    if (activeSection === "deadlines" && sectionId === "compliance-45d") return true;
+    return false;
   };
+
+  // Authority Header Title & Tagline
+  const authorityMeta = useMemo(() => {
+    switch (activeAuthority) {
+      case "MOSPI":
+        return {
+          eyebrow: "🏛️ CENTRAL NODAL AUTHORITY (MoSPI) · NATIONAL AUDIT DOSSIER",
+          badge: "NATIONAL VIGILANCE DESK",
+          subtitle: "Pan-India Central Surveillance & Fiscal Audit Under MoSPI Guidelines",
+        };
+      case "IMPLEMENTING_AGENCY":
+        return {
+          eyebrow: "👷 IMPLEMENTING AGENCY (IA) · CONTRACT EXECUTION & MB DOSSIER",
+          badge: "SITE EXECUTION & BILLING",
+          subtitle: "Measurement Book (MB) Recordings, Milestone Delivery & Photo Evidence",
+        };
+      case "MP":
+        return {
+          eyebrow: "🎖️ HON'BLE MEMBER OF PARLIAMENT · CONSTITUENCY WORK DOSSIER",
+          badge: "SANSAD OVERSIGHT BRIEF",
+          subtitle: "₹5.00 Cr Quota Entitlement, Recommendation Tracking & Asset Delivery",
+        };
+      case "CITIZEN":
+        return {
+          eyebrow: "👥 JAN SAARTHI CITIZEN · PUBLIC TRANSPARENCY & SOCIAL AUDIT",
+          badge: "PUBLIC AUDIT REGISTER",
+          subtitle: "Constituency Development Verification & Democratic Social Audit",
+        };
+      case "DISTRICT_AUTHORITY":
+      default:
+        return {
+          eyebrow: "⚖️ DISTRICT MAGISTRATE & COLLECTORATE · STATUTORY SANCTION DOSSIER",
+          badge: "STATUTORY RECORD · FORM 78-A",
+          subtitle: "Section 3.11 Feasibility & Section 3.12 45-Day Statutory Scrutiny",
+        };
+    }
+  }, [activeAuthority]);
 
   return (
     <div className="drawer-overlay" onClick={onClose}>
@@ -157,8 +297,8 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
         <div className="drawer-header">
           <div className="header-meta">
             <div className="doc-category-line">
-              <span className="doc-category">OFFICIAL MPLADS eSAKSHI WORK INSPECTION DOSSIER</span>
-              <span className="doc-confidential-tag">STATUTORY RECORD · FORM 78-A</span>
+              <span className="doc-category">{authorityMeta.eyebrow}</span>
+              <span className="doc-confidential-tag">{authorityMeta.badge}</span>
             </div>
             <h2 className="work-id-title">
               {primaryId}
@@ -189,7 +329,7 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
               type="button"
               className="gov-btn-outline"
               onClick={handlePrint}
-              title="Print Official 78-Field Dossier"
+              title="Print Official Dossier"
             >
               <Printer size={14} />
               <span>Print</span>
@@ -265,32 +405,121 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
             </span>
           ) : null}
 
-          {work.REQUIRES_REVIEW && (
-            <span className="status-pill review-pill">
-              <AlertCircle size={12} />
-              SCRUTINY FLAGGED
-            </span>
+          {/* Authority Status Badges */}
+          {activeAuthority === "MOSPI" && (
+            <>
+              {mospiDirectiveIssued && (
+                <span className="status-pill review-pill">
+                  <AlertOctagon size={12} />
+                  CENTRAL DIRECTIVE ACTIVE ✓
+                </span>
+              )}
+              {snaTrancheWithheld && (
+                <span className="status-pill risk-high">
+                  <ShieldAlert size={12} />
+                  SNA TRANCHE BLOCKED ⛔
+                </span>
+              )}
+              {cagAuditOrdered && (
+                <span className="status-pill dup-high">
+                  <FileText size={12} />
+                  CAG AUDIT REQUISITIONED ⚖️
+                </span>
+              )}
+            </>
           )}
 
-          {verifiedLocally && (
-            <span className="status-pill risk-low">
-              <CheckCircle2 size={12} />
-              COLLECTORATE VERIFIED ✓
-            </span>
+          {activeAuthority === "IMPLEMENTING_AGENCY" && (
+            <>
+              {mbSubmitted && (
+                <span className="status-pill risk-low">
+                  <FileCheck size={12} />
+                  MB BILL SUBMITTED ✓
+                </span>
+              )}
+              {geoEvidenceUploaded && (
+                <span className="status-pill risk-low">
+                  <Camera size={12} />
+                  GEO-EVIDENCE LOGGED 📷
+                </span>
+              )}
+              {eotFiled && (
+                <span className="status-pill review-pill">
+                  <Clock size={12} />
+                  EOT EXTENSION CLAIMED
+                </span>
+              )}
+            </>
           )}
 
-          {noticeIssued && (
-            <span className="status-pill review-pill">
-              <AlertOctagon size={12} />
-              7-DAY EXPLANATION NOTICE ISSUED
-            </span>
+          {activeAuthority === "MP" && (
+            <>
+              {sansadNoticeIssued && (
+                <span className="status-pill review-pill">
+                  <Bell size={12} />
+                  SANSAD INQUIRY SERVED ✓
+                </span>
+              )}
+              {inaugurationApproved && (
+                <span className="status-pill risk-low">
+                  <CheckCircle2 size={12} />
+                  DEDICATION APPROVED 🎖️
+                </span>
+              )}
+              {inspectionScheduled && (
+                <span className="status-pill stage-pill">
+                  <Calendar size={12} />
+                  GROUND INSPECTION LOGGED 📍
+                </span>
+              )}
+            </>
+          )}
+
+          {activeAuthority === "CITIZEN" && (
+            <>
+              {citizenAuditVerified && (
+                <span className="status-pill risk-low">
+                  <CheckCircle2 size={12} />
+                  COMMUNITY VERIFIED ({citizenRating}★) ✓
+                </span>
+              )}
+              {grievanceReported && (
+                <span className="status-pill risk-high">
+                  <AlertTriangle size={12} />
+                  GRIEVANCE LOGGED TO DM
+                </span>
+              )}
+            </>
+          )}
+
+          {activeAuthority === "DISTRICT_AUTHORITY" && (
+            <>
+              {verifiedLocally && (
+                <span className="status-pill risk-low">
+                  <CheckCircle2 size={12} />
+                  COLLECTORATE VERIFIED ✓
+                </span>
+              )}
+              {noticeIssued && (
+                <span className="status-pill review-pill">
+                  <AlertOctagon size={12} />
+                  7-DAY NOTICE ISSUED
+                </span>
+              )}
+              {fundsFrozen && (
+                <span className="status-pill risk-high">
+                  <ShieldAlert size={12} />
+                  INSTALLMENT WITHHELD ⛔
+                </span>
+              )}
+            </>
           )}
         </div>
 
-        {/* 3. Section Navigation Filter Pills (Quick-jump across all 11 DA parts) */}
+        {/* 3. Section Navigation Filter Pills (Tailored to Authority) */}
         <div className="dossier-nav-tabs-bar">
           <div className="dossier-nav-tabs-scroll">
-            {DOSSIER_AUDIT_TABS.map((tab) => (
+            {currentTabs.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
@@ -943,72 +1172,407 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
             </section>
           )}
 
-          {/* SECTION 11: COLLECTOR PRIORITY QUEUE & ADMINISTRATIVE CLEARANCE */}
+          {/* SECTION: AUTHORITY DIRECTIVES & PRIORITY CLEARANCE */}
           {shouldShow("actions") && (
             <section className="dossier-section" id="dossier-sec-actions">
-              <div className="section-header-row">
-                <h3 className="section-title">
-                  <span className="sec-num-badge">11</span>
-                  <span>District Collectorate Priority Action & Official Clearance</span>
-                </h3>
-                {verifiedLocally ? (
-                  <span className="status-pill risk-low">CLEARED ✓</span>
-                ) : (
-                  <span className="status-pill review-pill">ACTION PENDING</span>
-                )}
-              </div>
+              {/* A. MoSPI Central Directives */}
+              {activeAuthority === "MOSPI" && (
+                <div className="authority-directive-box mospi-directive-theme">
+                  <div className="section-header-row" style={{ marginBottom: "10px" }}>
+                    <h3 className="section-title">
+                      <span className="sec-num-badge">8</span>
+                      <span>MoSPI Central Vigilance & National Directive Board</span>
+                    </h3>
+                    <span className="authority-badge-small mospi">Central Nodal Authority</span>
+                  </div>
+                  <p className="action-box-desc">
+                    Statutory central oversight powers under MoSPI MPLADS Guidelines: issue national compliance directives,
+                    withhold central State Nodal Account (SNA) tranches, refer anomalous multi-district clusters to Central Vigilance Commission (CVC), or requisition CAG special performance audits.
+                  </p>
 
-              <div className="collector-action-box">
-                <div className="action-box-title">
-                  <ShieldAlert size={15} color="#b45309" />
-                  <span>District Collectorate Action Directives</span>
+                  <div className="directive-kpi-row">
+                    <div className="d-kpi">
+                      <span className="d-kpi-label">Central Vigilance Priority</span>
+                      <strong className="d-kpi-val" style={{ color: riskLevel === "HIGH" ? "#b91c1c" : "#0284c7" }}>
+                        {riskLevel === "HIGH" ? "LEVEL 1 — IMMEDIATE AUDIT" : "STANDARD CENTRAL SURVEILLANCE"}
+                      </strong>
+                    </div>
+                    <div className="d-kpi">
+                      <span className="d-kpi-label">SNA Grant Release</span>
+                      <strong className="d-kpi-val" style={{ color: snaTrancheWithheld ? "#b91c1c" : "#059669" }}>
+                        {snaTrancheWithheld ? "BLOCKED / WITHHELD ⚠️" : "CENTRAL SNA AUTHORISED ✓"}
+                      </strong>
+                    </div>
+                    <div className="d-kpi">
+                      <span className="d-kpi-label">CAG Special Audit</span>
+                      <strong className="d-kpi-val">
+                        {cagAuditOrdered ? "REQUISITION ACTIVE ✓" : "NOT REQUISITIONED"}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className="action-box-buttons">
+                    <button
+                      type="button"
+                      className={`collector-btn ${mospiDirectiveIssued ? "btn-verified" : "btn-primary"}`}
+                      onClick={() => setMospiDirectiveIssued(!mospiDirectiveIssued)}
+                    >
+                      <CheckCircle2 size={14} />
+                      <span>{mospiDirectiveIssued ? "Central Directive Served to State (Active) ✓" : "Issue Central MoSPI Compliance Directive to State"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`collector-btn ${snaTrancheWithheld ? "btn-notice-issued" : "btn-warning"}`}
+                      onClick={() => setSnaTrancheWithheld(!snaTrancheWithheld)}
+                    >
+                      <AlertOctagon size={14} />
+                      <span>{snaTrancheWithheld ? "SNA Tranche Frozen (Click to Release)" : "Withhold State Nodal Account (SNA) Tranche"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`collector-btn ${cagAuditOrdered ? "btn-verified" : "btn-outline"}`}
+                      onClick={() => setCagAuditOrdered(!cagAuditOrdered)}
+                    >
+                      <ShieldAlert size={14} />
+                      <span>{cagAuditOrdered ? "CAG / CVC Audit Requisition Active ✓" : "Requisition Special CAG / CVC Audit"}</span>
+                    </button>
+                  </div>
                 </div>
-                <p className="action-box-desc">
-                  Under statutory powers vested in the District Magistrate / Deputy Commissioner under the MPLADS Guidelines,
-                  execute formal review clearances, issue notices to defaulting implementing agencies, or accord administrative sanction.
-                </p>
+              )}
 
-                <div className="action-box-buttons">
-                  <button
-                    type="button"
-                    className={`collector-btn ${verifiedLocally ? "btn-verified" : "btn-primary"}`}
-                    onClick={() => setVerifiedLocally(!verifiedLocally)}
-                  >
-                    <CheckCircle2 size={14} />
-                    <span>{verifiedLocally ? "Collectorate Verified (Click to Undo)" : "Mark Collectorate Feasibility Clearance"}</span>
-                  </button>
+              {/* B. Implementing Agency Directives */}
+              {activeAuthority === "IMPLEMENTING_AGENCY" && (
+                <div className="authority-directive-box ia-directive-theme">
+                  <div className="section-header-row" style={{ marginBottom: "10px" }}>
+                    <h3 className="section-title">
+                      <span className="sec-num-badge">7</span>
+                      <span>Implementing Agency Execution, MB Records & Billing Submissions</span>
+                    </h3>
+                    <span className="authority-badge-small ia">Executing Agency</span>
+                  </div>
+                  <p className="action-box-desc">
+                    Official execution portal for designated executing body ({work.IDA_NAME || "Executing Agency"}): log physical progress, record Measurement Book (MB) measurements, submit running contractor bills to District Authority, and upload verified site evidence.
+                  </p>
 
-                  <button
-                    type="button"
-                    className={`collector-btn ${noticeIssued ? "btn-notice-issued" : "btn-warning"}`}
-                    onClick={() => setNoticeIssued(!noticeIssued)}
-                  >
-                    <AlertOctagon size={14} />
-                    <span>{noticeIssued ? "Notice Issued to IA (Active) ✓" : "Issue 7-Day Explanation Notice to Agency"}</span>
-                  </button>
+                  <div className="directive-kpi-row">
+                    <div className="d-kpi">
+                      <span className="d-kpi-label">MB Ledger Entry</span>
+                      <strong className="d-kpi-val" style={{ color: "#059669" }}>
+                        {mbSubmitted ? "MB RECORDED & SUBMITTED ✓" : `MB-2026-${workId || recId || "PENDING"}`}
+                      </strong>
+                    </div>
+                    <div className="d-kpi">
+                      <span className="d-kpi-label">Stage Geo-Photos</span>
+                      <strong className="d-kpi-val" style={{ color: geoEvidenceUploaded ? "#059669" : "#b45309" }}>
+                        {geoEvidenceUploaded ? "GEO-STAMP VERIFIED (100%)" : "UPLOAD MANDATORY"}
+                      </strong>
+                    </div>
+                    <div className="d-kpi">
+                      <span className="d-kpi-label">Time Extension (EOT)</span>
+                      <strong className="d-kpi-val">
+                        {eotFiled ? "EOT CLAIM FILED WITH DA" : "STANDARD TIMELINE"}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className="action-box-buttons">
+                    <button
+                      type="button"
+                      className={`collector-btn ${mbSubmitted ? "btn-verified" : "btn-primary"}`}
+                      onClick={() => setMbSubmitted(!mbSubmitted)}
+                    >
+                      <FileCheck size={14} />
+                      <span>{mbSubmitted ? "MB Entry & Bill Submitted to DA ✓" : "Record Measurement Book (MB) Entry & Submit Bill"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`collector-btn ${geoEvidenceUploaded ? "btn-verified" : "btn-warning"}`}
+                      onClick={() => setGeoEvidenceUploaded(!geoEvidenceUploaded)}
+                    >
+                      <Camera size={14} />
+                      <span>{geoEvidenceUploaded ? "Milestone Geo-Photo Logged ✓" : "Upload Verified Milestone Geo-Photo"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`collector-btn ${eotFiled ? "btn-notice-issued" : "btn-outline"}`}
+                      onClick={() => setEotFiled(!eotFiled)}
+                    >
+                      <Clock size={14} />
+                      <span>{eotFiled ? "Extension Request Active (Under DA Review)" : "Apply for Formal Time Extension (EOT)"}</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* C. MP Parliamentary Directives */}
+              {activeAuthority === "MP" && (
+                <div className="authority-directive-box mp-directive-theme">
+                  <div className="section-header-row" style={{ marginBottom: "10px" }}>
+                    <h3 className="section-title">
+                      <span className="sec-num-badge">7</span>
+                      <span>Hon'ble Member of Parliament Constituency Oversight & Inquiries</span>
+                    </h3>
+                    <span className="authority-badge-small mp">Hon'ble MP</span>
+                  </div>
+                  <p className="action-box-desc">
+                    Constituency oversight and parliamentary priority management: monitor ₹5.00 Cr quota utilization,
+                    issue parliamentary inquiry to District Collectorate on execution delays, and endorse completed community assets for public inauguration.
+                  </p>
+
+                  <div className="directive-kpi-row">
+                    <div className="d-kpi">
+                      <span className="d-kpi-label">Recommending MP</span>
+                      <strong className="d-kpi-val" style={{ color: "#7c3aed" }}>
+                        {work.MP_NAME || "Hon'ble MP"} ({displayHouse})
+                      </strong>
+                    </div>
+                    <div className="d-kpi">
+                      <span className="d-kpi-label">Quota Entitlement Impact</span>
+                      <strong className="d-kpi-val" style={{ color: "#059669" }}>
+                        ₹ {formatCrores(recAmount || sancAmount)} Cr debited
+                      </strong>
+                    </div>
+                    <div className="d-kpi">
+                      <span className="d-kpi-label">Sansad Notice Status</span>
+                      <strong className="d-kpi-val" style={{ color: sansadNoticeIssued ? "#b91c1c" : "#64748b" }}>
+                        {sansadNoticeIssued ? "PARLIAMENTARY NOTICE SERVED ✓" : "STANDARD MONITORING"}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className="action-box-buttons">
+                    <button
+                      type="button"
+                      className={`collector-btn ${sansadNoticeIssued ? "btn-notice-issued" : "btn-primary"}`}
+                      onClick={() => setSansadNoticeIssued(!sansadNoticeIssued)}
+                    >
+                      <Bell size={14} />
+                      <span>{sansadNoticeIssued ? "Expedited Inquiry Served to Collector ✓" : "Issue Parliamentary Expedited Inquiry to Collector"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`collector-btn ${inaugurationApproved ? "btn-verified" : "btn-warning"}`}
+                      onClick={() => setInaugurationApproved(!inaugurationApproved)}
+                    >
+                      <CheckCircle2 size={14} />
+                      <span>{inaugurationApproved ? "Asset Endorsed for Dedication ✓" : "Endorse for Public Dedication & Plaque Inscription"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`collector-btn ${inspectionScheduled ? "btn-verified" : "btn-outline"}`}
+                      onClick={() => setInspectionScheduled(!inspectionScheduled)}
+                    >
+                      <Calendar size={14} />
+                      <span>{inspectionScheduled ? "MP Ground Inspection Scheduled 📍" : "Schedule On-Site Constituency Inspection"}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* D. Citizen Social Audit */}
+              {activeAuthority === "CITIZEN" && (
+                <div className="authority-directive-box citizen-directive-theme">
+                  <div className="section-header-row" style={{ marginBottom: "10px" }}>
+                    <h3 className="section-title">
+                      <span className="sec-num-badge">5</span>
+                      <span>Jan Saarthi Citizen Social Audit & Public Verification</span>
+                    </h3>
+                    <span className="authority-badge-small citizen">Public Transparency</span>
+                  </div>
+                  <p className="action-box-desc">
+                    Public transparency and civic oversight: verify on-ground completion of community projects,
+                    submit 5-star public utility satisfaction ratings, report ghost or substandard infrastructure, or file an e-RTI inquiry.
+                  </p>
+
+                  <div className="citizen-rating-box">
+                    <span style={{ fontSize: "12.5px", fontWeight: 700, color: "#1e293b" }}>
+                      Rate Community Asset Quality & Utility:
+                    </span>
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setCitizenRating(star)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            fontSize: "22px",
+                            cursor: "pointer",
+                            color: star <= citizenRating ? "#f59e0b" : "#cbd5e1",
+                            transition: "transform 0.1s ease",
+                            padding: "2px",
+                          }}
+                          title={`Rate ${star} Star${star > 1 ? "s" : ""}`}
+                        >
+                          ★
+                        </button>
+                      ))}
+                      <span style={{ fontSize: "12px", fontWeight: 600, color: "#64748b", marginLeft: "6px" }}>
+                        ({citizenRating} / 5 Stars · Public Social Audit)
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="action-box-buttons">
+                    <button
+                      type="button"
+                      className={`collector-btn ${citizenAuditVerified ? "btn-verified" : "btn-primary"}`}
+                      onClick={() => setCitizenAuditVerified(!citizenAuditVerified)}
+                    >
+                      <CheckCircle2 size={14} />
+                      <span>{citizenAuditVerified ? "Citizen Verification Submitted ✓" : "Verify Community Asset as Delivered & Usable"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`collector-btn ${grievanceReported ? "btn-notice-issued" : "btn-warning"}`}
+                      onClick={() => setGrievanceReported(!grievanceReported)}
+                    >
+                      <AlertTriangle size={14} />
+                      <span>{grievanceReported ? "Grievance Dispatched to DM Office ✓" : "Report On-Ground Defect / Incomplete Work"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="collector-btn btn-outline"
+                      onClick={() => alert(`e-RTI Application template generated for Work #${workId || recId}. You can file this directly with Nodal District Authority.`)}
+                    >
+                      <ExternalLink size={14} />
+                      <span>File e-RTI Public Information Request</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* E. District Authority / Collector Clearances (Default) */}
+              {activeAuthority === "DISTRICT_AUTHORITY" && (
+                <div className="collector-action-box">
+                  <div className="section-header-row" style={{ marginBottom: "10px" }}>
+                    <h3 className="section-title">
+                      <span className="sec-num-badge">11</span>
+                      <span>District Collectorate Priority Action & Official Clearance</span>
+                    </h3>
+                    {verifiedLocally ? (
+                      <span className="status-pill risk-low">CLEARED ✓</span>
+                    ) : (
+                      <span className="status-pill review-pill">ACTION PENDING</span>
+                    )}
+                  </div>
+                  <div className="action-box-title">
+                    <ShieldAlert size={15} color="#b45309" />
+                    <span>District Collectorate Action Directives</span>
+                  </div>
+                  <p className="action-box-desc">
+                    Under statutory powers vested in the District Magistrate / Deputy Commissioner under the MPLADS Guidelines,
+                    execute formal review clearances, issue notices to defaulting implementing agencies, or accord administrative sanction.
+                  </p>
+
+                  <div className="action-box-buttons">
+                    <button
+                      type="button"
+                      className={`collector-btn ${verifiedLocally ? "btn-verified" : "btn-primary"}`}
+                      onClick={() => setVerifiedLocally(!verifiedLocally)}
+                    >
+                      <CheckCircle2 size={14} />
+                      <span>{verifiedLocally ? "Collectorate Verified (Click to Undo)" : "Mark Collectorate Feasibility Clearance"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`collector-btn ${noticeIssued ? "btn-notice-issued" : "btn-warning"}`}
+                      onClick={() => setNoticeIssued(!noticeIssued)}
+                    >
+                      <AlertOctagon size={14} />
+                      <span>{noticeIssued ? "Notice Issued to IA (Active) ✓" : "Issue 7-Day Explanation Notice to Agency"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`collector-btn ${fundsFrozen ? "btn-notice-issued" : "btn-outline"}`}
+                      onClick={() => setFundsFrozen(!fundsFrozen)}
+                    >
+                      <ShieldAlert size={14} />
+                      <span>{fundsFrozen ? "Disbursement Frozen ⛔" : "Freeze Next Installment Release"}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </section>
           )}
         </div>
 
-        {/* 5. Sticky Bottom Action Clearance Bar */}
+        {/* 5. Sticky Bottom Action Clearance Bar Tailored to Authority */}
         <div className="drawer-footer-actions">
           <div className="footer-left-status">
             <span className="font-mono text-xs text-slate-500">
-              Record #{recId || workId} · Stage: <strong>{stage}</strong>
+              {activeAuthority === "MOSPI" ? (
+                <>MoSPI Central Record #{recId || workId} · State: <strong>{work.STATE_NAME || "All-India"}</strong></>
+              ) : activeAuthority === "IMPLEMENTING_AGENCY" ? (
+                <>Work Order #{workId || recId} · Agency: <strong>{work.IDA_NAME || "Executing Agency"}</strong></>
+              ) : activeAuthority === "MP" ? (
+                <>Constituency Work #{recId || workId} · <strong>{displayHouse}</strong></>
+              ) : activeAuthority === "CITIZEN" ? (
+                <>Public Asset #{workId || recId} · <strong>{work.CONSTITUENCY || "Local Area"}</strong></>
+              ) : (
+                <>Record #{recId || workId} · Stage: <strong>{stage}</strong></>
+              )}
             </span>
           </div>
 
           <div className="footer-right-buttons">
-            <button
-              type="button"
-              className={`drawer-action-btn ${verifiedLocally ? "btn-cleared" : "btn-primary"}`}
-              onClick={() => setVerifiedLocally(!verifiedLocally)}
-            >
-              <CheckCircle2 size={14} />
-              <span>{verifiedLocally ? "Collectorate Cleared ✓" : "Mark Clearance"}</span>
-            </button>
+            {activeAuthority === "MOSPI" ? (
+              <button
+                type="button"
+                className={`drawer-action-btn ${mospiDirectiveIssued ? "btn-cleared" : "btn-primary"}`}
+                onClick={() => setMospiDirectiveIssued(!mospiDirectiveIssued)}
+              >
+                <CheckCircle2 size={14} />
+                <span>{mospiDirectiveIssued ? "Directive Active ✓" : "MoSPI Central Action"}</span>
+              </button>
+            ) : activeAuthority === "IMPLEMENTING_AGENCY" ? (
+              <button
+                type="button"
+                className={`drawer-action-btn ${mbSubmitted ? "btn-cleared" : "btn-primary"}`}
+                onClick={() => setMbSubmitted(!mbSubmitted)}
+              >
+                <CheckCircle2 size={14} />
+                <span>{mbSubmitted ? "MB Bill Filed ✓" : "Submit Execution Claim / MB"}</span>
+              </button>
+            ) : activeAuthority === "MP" ? (
+              <button
+                type="button"
+                className={`drawer-action-btn ${sansadNoticeIssued ? "btn-cleared" : "btn-primary"}`}
+                onClick={() => setSansadNoticeIssued(!sansadNoticeIssued)}
+              >
+                <Bell size={14} />
+                <span>{sansadNoticeIssued ? "Notice Served ✓" : "Dispatch Sansad Notice"}</span>
+              </button>
+            ) : activeAuthority === "CITIZEN" ? (
+              <button
+                type="button"
+                className={`drawer-action-btn ${citizenAuditVerified ? "btn-cleared" : "btn-primary"}`}
+                onClick={() => setCitizenAuditVerified(!citizenAuditVerified)}
+              >
+                <CheckCircle2 size={14} />
+                <span>{citizenAuditVerified ? "Feedback Recorded ✓" : "Submit Social Audit Feedback"}</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={`drawer-action-btn ${verifiedLocally ? "btn-cleared" : "btn-primary"}`}
+                onClick={() => setVerifiedLocally(!verifiedLocally)}
+              >
+                <CheckCircle2 size={14} />
+                <span>{verifiedLocally ? "Collectorate Cleared ✓" : "Accord Clearance"}</span>
+              </button>
+            )}
 
             <Link
               to={`/works?q=${workId || recId || ""}`}

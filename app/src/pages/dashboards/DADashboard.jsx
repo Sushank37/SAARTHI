@@ -130,7 +130,7 @@ export default function DADashboard({ summary, onSelectWork }) {
   const handleSelectWork = (work, section = null) => {
     if (!work) return;
     const targetSec = section || getAuditSectionForTab(currentTab);
-    const workWithSec = { ...work, __initialSection: targetSec };
+    const workWithSec = { ...work, __initialSection: targetSec, __authority: "DISTRICT_AUTHORITY" };
     if (typeof onSelectWork === "function") {
       onSelectWork(workWithSec);
     } else {
