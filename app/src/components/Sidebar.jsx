@@ -652,17 +652,6 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
               : "—"}
           </div>
         </div>
-
-        <button
-          type="button"
-          id="sidebar-logout-btn"
-          className="sidebar-logout-btn"
-          onClick={handleLogout}
-          title="Sign out of current session"
-        >
-          <LogOut size={15} className="sidebar-logout-icon" />
-          <span>Log Out</span>
-        </button>
       </div>
     </aside>
   );

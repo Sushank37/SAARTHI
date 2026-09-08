@@ -44,6 +44,7 @@ import {
   exportToCSV,
 } from "../../constants";
 import "./MPDashboard.css";
+import ConstituencyMap from "../../components/ConstituencyMap";
 
 // Helper: Calculate stage-based milestone progress in simple words
 const getMilestoneProgress = (stage) => {
@@ -1174,116 +1175,17 @@ export default function MPDashboard(props) {
       {/* ============================================================
           PAGE 9: MAP (Location of Works in Constituency)
           ============================================================ */}
+      {/* ============================================================
+          PAGE 9: MAP (Location of Works in Constituency - Leaflet GIS)
+          ============================================================ */}
       {section === "map" && (
         <div className="gov-mp-section-wrap">
-          <div className="gov-mp-card">
-            <div className="map-toolbar-row">
-              <div>
-                <div className="card-section-title">
-                  <MapIcon size={16} className="text-slate-600" />
-                  <span>Map of Constituency Works</span>
-                </div>
-                <p className="card-section-desc">
-                  Interactive map showing where your recommended works are located across {analytics?.constituency || "your constituency"}.
-                </p>
-              </div>
-
-              {/* Map Filter Toggles */}
-              <div className="map-filter-pills">
-                {["All", "Approved", "Needs Attention"].map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    className={`map-pill-btn ${mapFilter === f ? "active" : ""}`}
-                    onClick={() => setMapFilter(f)}
-                  >
-                    {f === "All" ? `All Works (${totalWorks})` : f}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Visual Constituency Map Container */}
-            <div className="gov-map-viewport">
-              <svg className="constituency-map-svg" viewBox="0 0 100 100">
-                <path
-                  d="M 18,30 L 45,15 L 85,22 L 92,50 L 78,85 L 45,92 L 15,75 Z"
-                  className="constituency-boundary-polygon"
-                />
-                <path
-                  d="M 28,40 L 45,28 L 75,32 L 80,55 L 68,78 L 42,82 L 25,68 Z"
-                  className="constituency-inner-mesh"
-                />
-
-                {/* Mandals / Pins */}
-                {filteredLocalities.map((loc) => {
-                  const isSelected = selectedMapWork?.name === loc.name;
-                  return (
-                    <g
-                      key={loc.name}
-                      className={`map-pin-group ${isSelected ? "selected" : ""}`}
-                      onClick={() => setSelectedMapWork(loc)}
-                    >
-                      <circle
-                        cx={loc.x}
-                        cy={loc.y}
-                        r={loc.highRisk > 0 ? "4" : "3.2"}
-                        className={`map-pin-circle ${loc.highRisk > 0 ? "pin-risk" : "pin-normal"}`}
-                      />
-                      <circle
-                        cx={loc.x}
-                        cy={loc.y}
-                        r="1.2"
-                        className="map-pin-center"
-                      />
-                      <text
-                        x={loc.x}
-                        y={loc.y - 5}
-                        textAnchor="middle"
-                        className="map-pin-label"
-                      >
-                        {loc.name}
-                      </text>
-                    </g>
-                  );
-                })}
-              </svg>
-
-              {/* Selected Pin Details Overlay Card */}
-              {selectedMapWork && (
-                <div className="map-detail-card">
-                  <div className="map-detail-header">
-                    <strong>{selectedMapWork.name}</strong>
-                    <button
-                      type="button"
-                      className="map-close-btn"
-                      onClick={() => setSelectedMapWork(null)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                  <div className="map-detail-body">
-                    <div>Total Works: <strong>{selectedMapWork.worksCount}</strong></div>
-                    <div>Approved Fund: <strong>{selectedMapWork.sanctioned}</strong></div>
-                    {selectedMapWork.highRisk > 0 && (
-                      <div className="text-red-700 font-semibold">
-                        ⚠️ {selectedMapWork.highRisk} Works Delayed in Area
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    className="map-detail-btn"
-                    onClick={() => {
-                      setSearchQuery(selectedMapWork.name);
-                      navigate("/mp/my-works");
-                    }}
-                  >
-                    View Works in this Area →
-                  </button>
-                </div>
-              )}
-            </div>
+          <div className="gov-mp-card" style={{ padding: 0, overflow: "hidden" }}>
+            <ConstituencyMap
+              selectedMP={selectedMP}
+              constituency={analytics?.constituency}
+              onSelectWork={onSelectWork}
+            />
           </div>
         </div>
       )}
@@ -1294,23 +1196,16 @@ export default function MPDashboard(props) {
   function renderWorksTable({ title, subtitle, showStageTabs }) {
     return (
       <div className="gov-mp-card gov-register-card">
-        <div className="register-toolbar">
+        {/* Top Header & Actions Row */}
+        <div className="register-header-row">
           <div className="register-headings">
-            <h2 className="register-main-title">{title}</h2>
-            <p className="register-sub-text">{subtitle} ({formatNumber(worksTotal)} total)</p>
+            <h3 className="register-main-title">{title}</h3>
+            <p className="register-sub-text">
+              {subtitle} · <strong style={{ color: "#334155" }}>{formatNumber(worksTotal)} Works</strong>
+            </p>
           </div>
 
-          <div className="register-tools">
-            <div className="gov-table-search-box">
-              <Search size={14} className="search-icon text-slate-400" />
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Search Work ID or description..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+          <div className="register-actions-right">
             <button
               type="button"
               className="gov-export-btn"
@@ -1332,9 +1227,20 @@ export default function MPDashboard(props) {
           </div>
         </div>
 
-        {/* Milestone Stage Filter Tabs in Plain Language */}
-        {showStageTabs && (
-          <div className="register-stage-strip">
+        {/* Unified Search & Stage Filter Strip */}
+        <div className="register-filter-strip">
+          <div className="gov-table-search-box">
+            <Search size={14} className="search-icon" />
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search Work ID, title, or agency..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {showStageTabs && (
             <div className="stage-pills-list">
               {[
                 { id: "All", label: "All Works", count: worksTotal },
@@ -1359,8 +1265,8 @@ export default function MPDashboard(props) {
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Data Table */}
         <div className="register-table-responsive">
