@@ -16,15 +16,10 @@ export default function SharedLayout() {
   const navigate = useNavigate();
 
   const [house, setHouse] = useState("Lok Sabha");
-  const [theme, setTheme] = useState("official"); // "official" (light) or "dark"
   const [fontSize, setFontSize] = useState(15);
   const [summary, setSummary] = useState(null);
   const [selectedWork, setSelectedWork] = useState(null);
   const [backendStatus, setBackendStatus] = useState("connecting"); // "connected" | "connecting" | "offline"
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "official" ? "dark" : "official"));
-  };
 
   const loadSummary = async () => {
     try {
@@ -53,16 +48,14 @@ export default function SharedLayout() {
 
   return (
     <div
-      className={`gov-app-shell theme-${theme}`}
-      data-theme={theme}
+      className="gov-app-shell theme-official"
+      data-theme="official"
       style={{ fontSize: `${fontSize}px` }}
     >
       {/* Shared Government Header */}
       <Header
         house={house}
         setHouse={setHouse}
-        theme={theme}
-        toggleTheme={toggleTheme}
         fontSize={fontSize}
         setFontSize={setFontSize}
         backendStatus={backendStatus}

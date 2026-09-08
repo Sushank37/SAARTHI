@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import pandas as pd
 import math
+import json
+import re
 
 
 
@@ -1223,6 +1225,181 @@ def get_works(
         page,
         limit
     )
+
+
+# ============================================================
+# WORKS GEOJSON (PRODUCTION GIS API)
+# ============================================================
+
+GEO_CACHE_FILE = BASE_DIR / "backend" / "geocoded_localities_cache.json"
+_GEO_CACHE = {}
+if GEO_CACHE_FILE.exists():
+    try:
+        with open(GEO_CACHE_FILE, "r", encoding="utf-8") as f:
+            _GEO_CACHE = json.load(f)
+        print(f"[GIS] Loaded {len(_GEO_CACHE)} verified geocoded localities from cache")
+    except Exception as e:
+        print(f"[GIS] Warning loading geo cache: {e}")
+
+@app.get("/api/works/geo")
+def get_works_geo(
+    mp_name: str | None = None,
+    constituency: str | None = None,
+    state: str | None = None,
+    stage: str | None = None,
+    risk_level: str | None = None,
+    q: str | None = None
+):
+    """
+    Returns verified GeoJSON FeatureCollection for MPLADS works.
+    Distinguishes:
+      1. Exact work location (dataset coordinates)
+      2. Locality-level location (geocoded village / settlement)
+      3. Location unavailable (excluded from features, accounted in meta)
+    Coordinates order in GeoJSON: [longitude, latitude]
+    """
+    data = df
+
+    if q:
+        query = q.strip()
+        if query:
+            search_columns = [
+                "WORK_RECOMMENDATION_DTL_ID",
+                "WORK_ID",
+                "STATE_NAME",
+                "CONSTITUENCY",
+                "MP_NAME",
+                "IDA_NAME",
+                "WORK_DESCRIPTION",
+                "WORK_CATEGORY"
+            ]
+            mask = pd.Series(False, index=data.index)
+            for col in search_columns:
+                if column_exists(col):
+                    mask = mask | text_contains(data[col], query)
+            data = data[mask]
+
+    if state and column_exists("STATE_NAME"):
+        data = data[text_contains(data["STATE_NAME"], state)]
+
+    if constituency and column_exists("CONSTITUENCY"):
+        data = data[text_contains(data["CONSTITUENCY"], constituency)]
+
+    if mp_name and column_exists("MP_NAME"):
+        data = data[text_contains(data["MP_NAME"], mp_name)]
+
+    if stage and column_exists("WORK_STAGE"):
+        data = data[text_contains(data["WORK_STAGE"], stage)]
+
+    if risk_level and column_exists("RISK_LEVEL"):
+        data = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper().eq(risk_level.upper())]
+
+    total_works = len(data)
+    features = []
+    exact_count = 0
+    locality_count = 0
+
+    has_lat = column_exists("LATITUDE")
+    has_lng = column_exists("LONGITUDE")
+
+    for _, row in data.iterrows():
+        lat = None
+        lng = None
+        loc_precision = "unavailable"
+        loc_source = "none"
+        locality_name = None
+
+        # 1. Exact dataset coordinates check
+        if has_lat and has_lng:
+            raw_lat = row.get("LATITUDE")
+            raw_lng = row.get("LONGITUDE")
+            try:
+                plat = float(raw_lat)
+                plng = float(raw_lng)
+                if not (math.isnan(plat) or math.isnan(plng)) and -90 <= plat <= 90 and -180 <= plng <= 180 and (plat != 0 or plng != 0):
+                    lat = plat
+                    lng = plng
+                    loc_precision = "exact"
+                    loc_source = "dataset"
+                    locality_name = str(row.get("VILLAGE") or row.get("CONSTITUENCY") or "Exact Site")
+                    exact_count += 1
+            except (ValueError, TypeError):
+                pass
+
+        # 2. Verified Locality check via persistent cache
+        if lat is None:
+            desc = str(row.get("WORK_DESCRIPTION") or "")
+            matched_entry = None
+
+            # Match from (V) / (M) regex
+            vm_matches = re.findall(r'([A-Za-z\s]+)\(([VMvm])\)', desc)
+            for name, _ in vm_matches:
+                k = name.strip().lower()
+                if k in _GEO_CACHE:
+                    matched_entry = _GEO_CACHE[k]
+                    break
+
+            # Match from cached locality keywords
+            if not matched_entry:
+                desc_lower = desc.lower()
+                for k, entry in _GEO_CACHE.items():
+                    if re.search(r'\b' + re.escape(k) + r'\b', desc_lower):
+                        matched_entry = entry
+                        break
+
+            if matched_entry:
+                try:
+                    plat = float(matched_entry["latitude"])
+                    plng = float(matched_entry["longitude"])
+                    if -90 <= plat <= 90 and -180 <= plng <= 180:
+                        lat = plat
+                        lng = plng
+                        loc_precision = matched_entry.get("location_precision", "locality")
+                        loc_source = matched_entry.get("location_source", "geocoded_locality")
+                        locality_name = matched_entry.get("display_location", matched_entry.get("locality_text"))
+                        locality_count += 1
+                except (ValueError, TypeError):
+                    pass
+
+        # Only add valid coordinates to GeoJSON
+        if lat is not None and lng is not None:
+            work_id_str = str(row.get("WORK_ID") or row.get("WORK_RECOMMENDATION_DTL_ID") or "")
+            features.append({
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [round(lng, 5), round(lat, 5)]  # GeoJSON standard: [longitude, latitude]
+                },
+                "properties": {
+                    "work_id": work_id_str,
+                    "description": clean_value(row.get("WORK_DESCRIPTION")),
+                    "recommended_amount": clean_value(row.get("RECOMMENDED_AMOUNT") or 0),
+                    "sanction_amount": clean_value(row.get("SANCTION_AMOUNT") or 0),
+                    "actual_amount": clean_value(row.get("ACTUAL_AMOUNT") or 0),
+                    "stage": clean_value(row.get("WORK_STAGE") or "Pending"),
+                    "risk_level": clean_value(row.get("RISK_LEVEL") or "LOW"),
+                    "duplicate_risk": clean_value(row.get("DUPLICATE_RISK") or "LOW"),
+                    "locality": locality_name or "Constituency Locality",
+                    "location_precision": loc_precision,
+                    "location_source": loc_source,
+                    "raw_work": row_to_dict(row)
+                }
+            })
+
+    mapped_works = len(features)
+    unmapped_works = total_works - mapped_works
+
+    return {
+        "type": "FeatureCollection",
+        "features": features,
+        "meta": {
+            "total_works": total_works,
+            "mapped_works": mapped_works,
+            "exact_works": exact_count,
+            "locality_works": locality_count,
+            "location_unavailable": unmapped_works
+        }
+    }
 
 
 # ============================================================
