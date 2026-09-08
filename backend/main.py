@@ -1044,31 +1044,97 @@ def get_works(
                     data = data[data["SANCTION_DELAY_DAYS"] > 45]
                 data = data.sort_values("SANCTION_DELAY_DAYS", ascending=False)
 
-        elif t == "completion":
-            if column_exists("SANCTION_DATE") and column_exists("WORK_STAGE"):
-                sanc_dt = pd.to_datetime(data["SANCTION_DATE"], errors="coerce")
-                ref_dt = pd.to_datetime("2026-09-01")
-                elapsed = (ref_dt - sanc_dt).dt.days
-                if sub == "under-construction":
-                    data = data[data["WORK_STAGE"] == "Work partially Completed"]
-                elif sub == "inspection":
+        # ----------------------------------------------------
+        # IA 10 Standard Sections
+        # ----------------------------------------------------
+        elif t in ["assigned-works", "assigned"]:
+            if column_exists("SANCTION_AMOUNT"):
+                data = data[data["SANCTION_AMOUNT"] > 0]
+
+        elif t in ["execution-progress", "progress"]:
+            if column_exists("WORK_STAGE"):
+                st = data["WORK_STAGE"].fillna("").astype(str).str.strip()
+                data = data[st.isin(["Physical Inspection", "Work partially Completed", "Vendor Identification", "Time Estimation", "Sanction"])]
+
+        elif t in ["upcoming-deadlines", "deadlines", "delays", "ia-delays"]:
+            if column_exists("WORK_STAGE") and column_exists("COMPLETION_DURATION_DAYS") and column_exists("PEER_MEDIAN_COMPLETION_DAYS"):
+                ongoing_mask = data["WORK_STAGE"].isin(["Physical Inspection", "Work partially Completed", "Vendor Identification", "Time Estimation"])
+                if sub == "nearing":
+                    data = data[ongoing_mask & (data["COMPLETION_DURATION_DAYS"] >= 0.8 * data["PEER_MEDIAN_COMPLETION_DAYS"]) & (data["COMPLETION_DURATION_DAYS"] <= data["PEER_MEDIAN_COMPLETION_DAYS"]) & (data["COMPLETION_DURATION_DAYS"] > 0)]
+                elif sub == "overdue":
+                    data = data[ongoing_mask & (data["COMPLETION_DURATION_DAYS"] > data["PEER_MEDIAN_COMPLETION_DAYS"]) & (data["COMPLETION_DURATION_DAYS"] > 0)]
+                else:
+                    data = data[ongoing_mask & (data["COMPLETION_DURATION_DAYS"] >= 0.8 * data["PEER_MEDIAN_COMPLETION_DAYS"]) & (data["COMPLETION_DURATION_DAYS"] > 0)]
+                data = data.sort_values("COMPLETION_DURATION_DAYS", ascending=False)
+
+        elif t in ["payment-requests", "payment", "financial", "financials", "ia-financial"]:
+            if sub == "escalation" and column_exists("ACTUAL_AMOUNT") and column_exists("SANCTION_AMOUNT"):
+                data = data[(data["ACTUAL_AMOUNT"] > data["SANCTION_AMOUNT"]) & (data["SANCTION_AMOUNT"] > 0)]
+            elif sub == "disbursed" and column_exists("ACTUAL_AMOUNT"):
+                data = data[(data["ACTUAL_AMOUNT"] > 0) & data["ACTUAL_AMOUNT"].notna()]
+            else:
+                if column_exists("ACTUAL_AMOUNT"):
+                    data = data[(data["ACTUAL_AMOUNT"] > 0) & data["ACTUAL_AMOUNT"].notna()]
+                elif column_exists("SANCTION_AMOUNT"):
+                    data = data[data["SANCTION_AMOUNT"] > 0]
+
+        elif t in ["vendor-activity", "vendors"]:
+            if column_exists("IDA_NAME"):
+                data = data[data["IDA_NAME"].notna()]
+
+        elif t in ["evidence-upload", "evidence", "ia-evidence"]:
+            if column_exists("EVIDENCE") or column_exists("EVIDENCE_SCORE"):
+                e_mask = pd.Series(False, index=data.index)
+                if column_exists("EVIDENCE"):
+                    e_mask = e_mask | data["EVIDENCE"].notna()
+                if column_exists("EVIDENCE_SCORE"):
+                    e_mask = e_mask | data["EVIDENCE_SCORE"].notna()
+                data = data[e_mask]
+
+        elif t in ["geo-photo-verification", "geo-photo", "geo-photos"]:
+            if column_exists("WORK_STAGE"):
+                if sub == "inspection":
                     data = data[data["WORK_STAGE"] == "Physical Inspection"]
                 elif sub == "completed":
                     data = data[data["WORK_STAGE"] == "Work Completed"]
                 else:
-                    is_uncompleted = data["WORK_STAGE"] != "Work Completed"
-                    data = data[is_uncompleted & (elapsed > 365) & sanc_dt.notna()]
+                    data = data[data["WORK_STAGE"].fillna("").astype(str).str.strip().isin(["Physical Inspection", "Work Completed"])]
 
-        elif t == "financials":
-            if sub == "escalation" and column_exists("ACTUAL_AMOUNT") and column_exists("SANCTION_AMOUNT"):
-                data = data[(data["ACTUAL_AMOUNT"] > data["SANCTION_AMOUNT"]) & (data["SANCTION_AMOUNT"] > 0)]
-            elif sub == "sanctioned" and column_exists("SANCTION_AMOUNT"):
-                data = data[data["SANCTION_AMOUNT"] > 0]
-            else:
-                if column_exists("COST_VS_PEER"):
-                    data = data[(data["COST_VS_PEER"] > 1.2) & data["COST_VS_PEER"].notna()]
+        elif t in ["missing-evidence", "evidence-issues"]:
+            m_mask = pd.Series(False, index=data.index)
+            if column_exists("EVIDENCE_SCORE"):
+                m_mask = m_mask | ((data["EVIDENCE_SCORE"] < 60) & data["EVIDENCE_SCORE"].notna())
+            if column_exists("EVIDENCE") and column_exists("WORK_STAGE"):
+                ongoing_mask = data["WORK_STAGE"].isin(["Physical Inspection", "Work partially Completed", "Vendor Identification", "Time Estimation"])
+                m_mask = m_mask | (data["EVIDENCE"].isna() & ongoing_mask)
+            if column_exists("REQUIRES_REVIEW"):
+                m_mask = m_mask | boolean_series(data["REQUIRES_REVIEW"])
+            data = data[m_mask]
 
-        elif t == "risk-cases":
+        elif t in ["completion", "ia-completion"]:
+            if column_exists("WORK_STAGE"):
+                if t == "ia-completion" or sub == "completed":
+                    data = data[data["WORK_STAGE"] == "Work Completed"]
+                elif sub == "ready" or sub == "under-construction":
+                    data = data[data["WORK_STAGE"] == "Work partially Completed"]
+                elif sub == "inspection":
+                    data = data[data["WORK_STAGE"] == "Physical Inspection"]
+                else:
+                    data = data[data["WORK_STAGE"].fillna("").astype(str).str.strip().isin(["Work partially Completed", "Work Completed"])]
+
+        elif t in ["ai-alerts", "alerts-queue", "attention", "ia-attention"]:
+            p_mask = pd.Series(False, index=data.index)
+            if column_exists("REQUIRES_REVIEW"):
+                p_mask = p_mask | boolean_series(data["REQUIRES_REVIEW"])
+            if column_exists("RISK_LEVEL"):
+                p_mask = p_mask | (data["RISK_LEVEL"].fillna("").astype(str).str.upper().isin(["HIGH", "MEDIUM"]))
+            if column_exists("DUPLICATE_RISK"):
+                p_mask = p_mask | (data["DUPLICATE_RISK"].fillna("").astype(str).str.upper() == "HIGH")
+            if column_exists("COST_VARIANCE") and column_exists("SANCTION_AMOUNT"):
+                p_mask = p_mask | ((data["COST_VARIANCE"] > 0) & (data["SANCTION_AMOUNT"] > 0))
+            data = data[p_mask]
+
+        elif t in ["risk", "risk-cases"]:
             if column_exists("RISK_LEVEL"):
                 if sub == "high":
                     data = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper() == "HIGH"]
@@ -1086,29 +1152,10 @@ def get_works(
                 else:
                     data = data[data["DUPLICATE_RISK"].fillna("").astype(str).str.upper().isin(["HIGH", "MEDIUM"])]
 
-        elif t == "evidence":
-            if column_exists("EVIDENCE_SCORE"):
-                if sub == "high-suspicion" and column_exists("SUSPICION_LEVEL"):
-                    data = data[(data["SUSPICION_LEVEL"].fillna("").astype(str).str.upper() == "HIGH SUSPICION") & data["EVIDENCE_SCORE"].notna()]
-                else:
-                    data = data[data["EVIDENCE_SCORE"].notna()]
-
-        elif t == "geo-photo":
+        elif t in ["ongoing", "ia-ongoing"]:
             if column_exists("WORK_STAGE"):
-                if sub == "inspection":
-                    data = data[data["WORK_STAGE"] == "Physical Inspection"]
-                elif sub == "completed":
-                    data = data[data["WORK_STAGE"] == "Work Completed"]
-                else:
-                    data = data[data["WORK_STAGE"].fillna("").astype(str).str.strip().isin(["Physical Inspection", "Work Completed"])]
-
-        elif t == "alerts-queue":
-            p_mask = pd.Series(False, index=data.index)
-            if column_exists("REQUIRES_REVIEW"):
-                p_mask = p_mask | boolean_series(data["REQUIRES_REVIEW"])
-            if column_exists("DUPLICATE_RISK"):
-                p_mask = p_mask | (data["DUPLICATE_RISK"].fillna("").astype(str).str.upper() == "HIGH")
-            data = data[p_mask]
+                st = data["WORK_STAGE"].fillna("").astype(str).str.strip()
+                data = data[st.isin(["Physical Inspection", "Work partially Completed", "Vendor Identification", "Time Estimation"])]
 
     # Sort
     if column_exists("RISK_SCORE"):
@@ -2576,6 +2623,246 @@ def da_analytics(
         "top_authorities": top_idas,
         "ia_performance": ia_performance,
         "priority_cases": priority_records,
+        "sidebar_badges": sidebar_badges
+    }
+
+
+# ============================================================
+# IMPLEMENTING AGENCY (IA) ANALYTICS & EXECUTION TELEMETRY
+# ============================================================
+
+@app.get("/api/analytics/ia")
+def ia_analytics(
+    ida_name: str | None = Query(None, description="Exact or partial IDA_NAME for Implementing Agency"),
+    state: str | None = Query(None, description="State name filter")
+):
+    if not column_exists("IDA_NAME"):
+        raise HTTPException(status_code=404, detail="IDA_NAME column not found in master dataset")
+
+    data = df
+
+    if state and column_exists("STATE_NAME"):
+        data = data[text_contains(data["STATE_NAME"], state.strip())]
+
+    if ida_name and ida_name.strip() and ida_name.strip().upper() != "ALL":
+        data = data[text_contains(data["IDA_NAME"], ida_name.strip())]
+
+    if data.empty:
+        raise HTTPException(status_code=404, detail="No works found for specified Implementing Agency scope")
+
+    # Scope identity
+    if ida_name and ida_name.strip().upper() != "ALL" and not data.empty:
+        canonical_ida = str(data["IDA_NAME"].dropna().iloc[0])
+        clean_agency = canonical_ida.split("(")[0].strip() if "(" in canonical_ida else canonical_ida
+    else:
+        canonical_ida = "All Implementing Agencies (National Scope)"
+        clean_agency = "All Implementing Agencies"
+
+    canonical_state = str(data["STATE_NAME"].dropna().iloc[0]) if "STATE_NAME" in data.columns and not data["STATE_NAME"].dropna().empty else "All States"
+
+    total_works = len(data)
+
+    # Financials (Real columns: SANCTION_AMOUNT, ACTUAL_AMOUNT, RECOMMENDED_AMOUNT)
+    rec_sum = float(data["RECOMMENDED_AMOUNT"].sum()) if column_exists("RECOMMENDED_AMOUNT") else 0.0
+    sanc_sum = float(data["SANCTION_AMOUNT"].sum()) if column_exists("SANCTION_AMOUNT") else 0.0
+    act_sum = float(data["ACTUAL_AMOUNT"].sum()) if column_exists("ACTUAL_AMOUNT") else 0.0
+    remaining_amount = max(0.0, sanc_sum - act_sum)
+    cost_variance_sum = float(data["COST_VARIANCE"].sum()) if column_exists("COST_VARIANCE") else (act_sum - sanc_sum)
+
+    # Stages Breakdown
+    stages_dict = {}
+    if column_exists("WORK_STAGE"):
+        st_counts = data["WORK_STAGE"].fillna("Pending Sanction").astype(str).str.strip().value_counts()
+        stages_dict = {k: int(v) for k, v in st_counts.items() if k and k != "nan"}
+
+    # Execution categorization
+    # Assigned: Sanctioned works
+    assigned_count = int((data["SANCTION_AMOUNT"] > 0).sum()) if column_exists("SANCTION_AMOUNT") else total_works
+
+    # Ongoing works: stages in active execution
+    ongoing_stages = ["Physical Inspection", "Work partially Completed", "Vendor Identification", "Time Estimation"]
+    ongoing_count = sum(stages_dict.get(s, 0) for s in ongoing_stages)
+
+    # Completed works
+    completed_count = stages_dict.get("Work Completed", 0)
+
+    # Delays & Durations
+    avg_completion_duration = 0.0
+    peer_median_completion = 0.0
+    delayed_completion_count = 0
+    if column_exists("COMPLETION_DURATION_DAYS"):
+        valid_cd = data["COMPLETION_DURATION_DAYS"][(data["COMPLETION_DURATION_DAYS"] > 0) & data["COMPLETION_DURATION_DAYS"].notna()]
+        avg_completion_duration = round(float(valid_cd.mean()), 1) if not valid_cd.empty else 0.0
+        if column_exists("PEER_MEDIAN_COMPLETION_DAYS"):
+            peer_cd = data["PEER_MEDIAN_COMPLETION_DAYS"].dropna()
+            peer_median_completion = round(float(peer_cd.median()), 1) if not peer_cd.empty else 0.0
+            delay_mask = (data["COMPLETION_DURATION_DAYS"] > data["PEER_MEDIAN_COMPLETION_DAYS"]) & (data["COMPLETION_DURATION_DAYS"] > 0)
+            delayed_completion_count = int(delay_mask.sum())
+
+    # Evidence & Documentation
+    evidence_records_count = int(data["EVIDENCE"].notna().sum()) if column_exists("EVIDENCE") else 0
+    evidence_scored_count = int(data["EVIDENCE_SCORE"].notna().sum()) if column_exists("EVIDENCE_SCORE") else 0
+    avg_evidence_score = round(float(data["EVIDENCE_SCORE"].dropna().mean()), 1) if evidence_scored_count > 0 else 0.0
+    evidence_issues_count = int(((data["EVIDENCE_SCORE"] < 60) & data["EVIDENCE_SCORE"].notna()).sum()) if column_exists("EVIDENCE_SCORE") else 0
+    if column_exists("REQUIRES_REVIEW"):
+        evidence_issues_count = max(evidence_issues_count, int(boolean_series(data["REQUIRES_REVIEW"]).sum()))
+
+    # Risk summary
+    high_risk = int((data["RISK_LEVEL"].fillna("").astype(str).str.upper() == "HIGH").sum()) if column_exists("RISK_LEVEL") else 0
+    med_risk = int((data["RISK_LEVEL"].fillna("").astype(str).str.upper() == "MEDIUM").sum()) if column_exists("RISK_LEVEL") else 0
+    low_risk = total_works - high_risk - med_risk
+
+    # Duplicate summary
+    high_dup = int((data["DUPLICATE_RISK"].fillna("").astype(str).str.upper() == "HIGH").sum()) if column_exists("DUPLICATE_RISK") else 0
+    med_dup = int((data["DUPLICATE_RISK"].fillna("").astype(str).str.upper() == "MEDIUM").sum()) if column_exists("DUPLICATE_RISK") else 0
+    low_dup = total_works - high_dup - med_dup
+    unique_clusters = int(data["CLUSTER_ID"].dropna().nunique()) if column_exists("CLUSTER_ID") else 0
+
+    # 10 IA Sections Telemetry
+    ongoing_mask = data["WORK_STAGE"].isin(ongoing_stages) if column_exists("WORK_STAGE") else pd.Series(False, index=data.index)
+    
+    # 3. Upcoming Deadlines
+    upcoming_deadlines_count = 0
+    if column_exists("COMPLETION_DURATION_DAYS") and column_exists("PEER_MEDIAN_COMPLETION_DAYS"):
+        upcoming_deadlines_count = int((ongoing_mask & (data["COMPLETION_DURATION_DAYS"] >= 0.8 * data["PEER_MEDIAN_COMPLETION_DAYS"]) & (data["COMPLETION_DURATION_DAYS"] > 0)).sum())
+
+    # 4. Payment Requests
+    payment_requests_count = int((data["ACTUAL_AMOUNT"] > 0).sum()) if column_exists("ACTUAL_AMOUNT") else 0
+
+    # 5. Vendor Activity (Executing Authorities/Vendors)
+    vendor_count = int(data["IDA_NAME"].dropna().nunique()) if column_exists("IDA_NAME") else 0
+
+    # 7. Geo-Photo Verification
+    geo_photo_count = int(data["WORK_STAGE"].isin(["Physical Inspection", "Work Completed"]).sum()) if column_exists("WORK_STAGE") else 0
+
+    # 8. Missing Evidence
+    m_mask = pd.Series(False, index=data.index)
+    if column_exists("EVIDENCE_SCORE"):
+        m_mask = m_mask | ((data["EVIDENCE_SCORE"] < 60) & data["EVIDENCE_SCORE"].notna())
+    if column_exists("EVIDENCE") and column_exists("WORK_STAGE"):
+        m_mask = m_mask | (data["EVIDENCE"].isna() & ongoing_mask)
+    if column_exists("REQUIRES_REVIEW"):
+        m_mask = m_mask | boolean_series(data["REQUIRES_REVIEW"])
+    missing_evidence_count = int(m_mask.sum())
+
+    # 9. Completion Ready
+    completion_ready_count = int(data["WORK_STAGE"].isin(["Work partially Completed", "Work Completed"]).sum()) if column_exists("WORK_STAGE") else completed_count
+
+    # 10. AI Alerts (Inconsistencies requiring correction)
+    ai_alerts_mask = pd.Series(False, index=data.index)
+    if column_exists("REQUIRES_REVIEW"):
+        ai_alerts_mask = ai_alerts_mask | boolean_series(data["REQUIRES_REVIEW"])
+    if column_exists("RISK_LEVEL"):
+        ai_alerts_mask = ai_alerts_mask | (data["RISK_LEVEL"].fillna("").astype(str).str.upper().isin(["HIGH", "MEDIUM"]))
+    if column_exists("DUPLICATE_RISK"):
+        ai_alerts_mask = ai_alerts_mask | (data["DUPLICATE_RISK"].fillna("").astype(str).str.upper() == "HIGH")
+    if column_exists("COST_VARIANCE") and column_exists("SANCTION_AMOUNT"):
+        ai_alerts_mask = ai_alerts_mask | ((data["COST_VARIANCE"] > 0) & (data["SANCTION_AMOUNT"] > 0))
+    ai_alerts_count = int(ai_alerts_mask.sum())
+
+    # Vendor Summary Aggregation (Top 25 implementing agencies/vendors)
+    vendor_summary = []
+    if column_exists("IDA_NAME"):
+        summary_source = data
+        if ida_name and column_exists("STATE_NAME") and not data.empty and not data["STATE_NAME"].dropna().empty:
+            current_state = str(data["STATE_NAME"].dropna().iloc[0])
+            summary_source = df[df["STATE_NAME"] == current_state]
+
+        top_idas = summary_source["IDA_NAME"].value_counts().head(25)
+        for ida_val, w_count in top_idas.items():
+            ida_df = summary_source[summary_source["IDA_NAME"] == ida_val]
+            s_amt = float(ida_df["SANCTION_AMOUNT"].sum()) if column_exists("SANCTION_AMOUNT") else 0.0
+            a_amt = float(ida_df["ACTUAL_AMOUNT"].sum()) if column_exists("ACTUAL_AMOUNT") else 0.0
+            comp_c = int((ida_df["WORK_STAGE"] == "Work Completed").sum()) if column_exists("WORK_STAGE") else 0
+            ong_c = int(ida_df["WORK_STAGE"].isin(ongoing_stages).sum()) if column_exists("WORK_STAGE") else 0
+            clean_name = str(ida_val).split("(")[0].strip() if "(" in str(ida_val) else str(ida_val)
+            vendor_summary.append({
+                "ida_name": str(ida_val),
+                "clean_name": clean_name,
+                "total_works": int(w_count),
+                "sanction_amount": s_amt,
+                "actual_amount": a_amt,
+                "completed_works": comp_c,
+                "ongoing_works": ong_c,
+                "utilization_pct": round((a_amt / s_amt * 100), 1) if s_amt > 0 else 0.0
+            })
+
+    # Primary KPIs (4 standard cards)
+    primary_kpis = {
+        "assigned_works": assigned_count,
+        "ongoing_works": ongoing_count,
+        "attention_required": ai_alerts_count,
+        "evidence_issues": missing_evidence_count
+    }
+
+    # Sidebar 10 sections badges
+    sidebar_badges = {
+        "assigned_works": assigned_count,
+        "execution_progress": ongoing_count,
+        "upcoming_deadlines": upcoming_deadlines_count,
+        "payment_requests": payment_requests_count,
+        "vendor_activity": len(vendor_summary) if vendor_summary else vendor_count,
+        "evidence_upload": evidence_records_count,
+        "geo_photo_verification": geo_photo_count,
+        "missing_evidence": missing_evidence_count,
+        "completion": completion_ready_count,
+        "ai_alerts": ai_alerts_count,
+        # Backward compatibility aliases
+        "overview": total_works,
+        "register": assigned_count,
+        "attention": ai_alerts_count,
+        "ongoing": ongoing_count,
+        "financial": payment_requests_count,
+        "delays": upcoming_deadlines_count,
+        "evidence": evidence_records_count,
+        "geo_photos": geo_photo_count,
+        "risk": int(high_risk + med_risk),
+        "duplicates": int(high_dup + med_dup)
+    }
+
+    return {
+        "ida_name": canonical_ida,
+        "agency_name": clean_agency,
+        "state": canonical_state,
+        "total_works": total_works,
+        "primary_kpis": primary_kpis,
+        "vendor_summary": vendor_summary,
+        "financials": {
+            "recommended_amount": rec_sum,
+            "sanction_amount": sanc_sum,
+            "actual_amount": act_sum,
+            "remaining_amount": remaining_amount,
+            "cost_variance": cost_variance_sum,
+            "expenditure_rate_percent": round((act_sum / sanc_sum * 100), 2) if sanc_sum > 0 else 0.0
+        },
+        "lifecycle": {
+            "assigned": assigned_count,
+            "ongoing": ongoing_count,
+            "completed": completed_count,
+            "stages_breakdown": stages_dict,
+            "completion_rate_percent": round((completed_count / total_works * 100), 2) if total_works > 0 else 0.0
+        },
+        "delays": {
+            "delayed_works_count": delayed_completion_count,
+            "upcoming_deadlines_count": upcoming_deadlines_count,
+            "avg_completion_duration_days": avg_completion_duration,
+            "peer_median_completion_days": peer_median_completion
+        },
+        "evidence": {
+            "total_evidence_records": evidence_records_count,
+            "scored_records": evidence_scored_count,
+            "avg_evidence_score": avg_evidence_score,
+            "evidence_issues_count": missing_evidence_count
+        },
+        "risk_summary": {
+            "high_risk": high_risk,
+            "medium_risk": med_risk,
+            "low_risk": low_risk,
+            "high_duplicate_risk": high_dup,
+            "medium_duplicate_risk": med_dup,
+            "low_duplicate_risk": low_dup,
+            "duplicate_clusters_count": unique_clusters
+        },
         "sidebar_badges": sidebar_badges
     }
 

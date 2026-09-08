@@ -43,11 +43,21 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
   };
 
   const [daBadges, setDaBadges] = useState(null);
+  const [iaBadges, setIaBadges] = useState(null);
+  const [currentIA, setCurrentIA] = useState(() => {
+    return searchParams.get("ia") || localStorage.getItem("mplads_selected_ia") || "PURI(DISTRICT COLLECTOR PURI_IDA)";
+  });
 
   const isDARole =
     roleConfig?.id === ROLE_IDS.DISTRICT_AUTHORITY ||
     roleConfig?.id === "district_authority" ||
     location.pathname.startsWith("/da");
+
+  const isIARole =
+    roleConfig?.id === ROLE_IDS.IMPLEMENTING_AGENCY ||
+    roleConfig?.id === "implementing_agency" ||
+    roleConfig?.id === "IA" ||
+    location.pathname.startsWith("/ia");
 
   const isMPMode =
     roleConfig?.id === ROLE_IDS.MP ||
@@ -92,6 +102,61 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
       cancelled = true;
     };
   }, [isDARole]);
+
+  /* =========================================================
+     IA TELEMETRY / BADGES (Scoped to selected IA)
+     ========================================================= */
+
+  useEffect(() => {
+    const handleIAChange = (e) => {
+      if (e.detail) {
+        setCurrentIA(e.detail);
+      }
+    };
+    window.addEventListener("ia-changed", handleIAChange);
+    return () => window.removeEventListener("ia-changed", handleIAChange);
+  }, []);
+
+  useEffect(() => {
+    const paramIA = searchParams.get("ia");
+    if (paramIA && paramIA !== currentIA) {
+      setCurrentIA(paramIA);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!isIARole) {
+      setIaBadges(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function fetchIABadges() {
+      try {
+        const idaParam = currentIA ? `?ida_name=${encodeURIComponent(currentIA)}` : "";
+        const res = await fetch(`${API_BASE}/api/analytics/ia${idaParam}`);
+
+        if (!res.ok) {
+          return;
+        }
+
+        const data = await res.json();
+
+        if (!cancelled && data?.sidebar_badges) {
+          setIaBadges(data.sidebar_badges);
+        }
+      } catch (err) {
+        console.error("Failed to load IA sidebar badges:", err);
+      }
+    }
+
+    fetchIABadges();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isIARole, currentIA]);
 
   /* =========================================================
      DISTRICT AUTHORITY NAVIGATION (11 Modules)
@@ -241,6 +306,93 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
   ];
 
   /* =========================================================
+     IMPLEMENTING AGENCY NAVIGATION (10 Standard Sections)
+     ========================================================= */
+
+  const iaNavLinks = [
+    {
+      id: "assigned-works",
+      label: "Assigned Works",
+      tab: "assigned-works",
+      icon: Layers,
+      badge: iaBadges?.assigned_works ? formatNumber(iaBadges.assigned_works) : null,
+      badgeType: "accent",
+    },
+    {
+      id: "execution-progress",
+      label: "Execution Progress",
+      tab: "execution-progress",
+      icon: Activity,
+      badge: iaBadges?.execution_progress ? formatNumber(iaBadges.execution_progress) : null,
+      badgeType: "accent",
+    },
+    {
+      id: "upcoming-deadlines",
+      label: "Upcoming Deadlines",
+      tab: "upcoming-deadlines",
+      icon: Clock,
+      badge: iaBadges?.upcoming_deadlines ? formatNumber(iaBadges.upcoming_deadlines) : null,
+      badgeType: "warning",
+    },
+    {
+      id: "payment-requests",
+      label: "Payment Requests",
+      tab: "payment-requests",
+      icon: IndianRupee,
+      badge: iaBadges?.payment_requests ? formatNumber(iaBadges.payment_requests) : null,
+      badgeType: "accent",
+    },
+    {
+      id: "vendor-activity",
+      label: "Vendor Activity",
+      tab: "vendor-activity",
+      icon: Building2,
+      badge: iaBadges?.vendor_activity ? formatNumber(iaBadges.vendor_activity) : null,
+      badgeType: "neutral",
+    },
+    {
+      id: "evidence-upload",
+      label: "Evidence Upload",
+      tab: "evidence-upload",
+      icon: FileCheck,
+      badge: iaBadges?.evidence_upload ? formatNumber(iaBadges.evidence_upload) : null,
+      badgeType: "accent",
+    },
+    {
+      id: "geo-photo-verification",
+      label: "Geo-Photo Verification",
+      tab: "geo-photo-verification",
+      icon: Camera,
+      badge: iaBadges?.geo_photo_verification ? formatNumber(iaBadges.geo_photo_verification) : null,
+      badgeType: "accent",
+    },
+    {
+      id: "missing-evidence",
+      label: "Missing Evidence",
+      tab: "missing-evidence",
+      icon: AlertTriangle,
+      badge: iaBadges?.missing_evidence ? formatNumber(iaBadges.missing_evidence) : null,
+      badgeType: "danger",
+    },
+    {
+      id: "completion",
+      label: "Completion",
+      tab: "completion",
+      icon: CheckCircle2,
+      badge: iaBadges?.completion ? formatNumber(iaBadges.completion) : null,
+      badgeType: "highlight",
+    },
+    {
+      id: "ai-alerts",
+      label: "AI Alerts",
+      tab: "ai-alerts",
+      icon: Sparkles,
+      badge: iaBadges?.ai_alerts ? formatNumber(iaBadges.ai_alerts) : null,
+      badgeType: "danger",
+    },
+  ];
+
+  /* =========================================================
      MP NAVIGATION (9 Modules with Status Badges)
      ========================================================= */
 
@@ -381,7 +533,44 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
 
   return (
     <aside className="gov-sidebar-compact">
-      {isDARole ? (
+      {isIARole ? (
+        /* =====================================================
+           IMPLEMENTING AGENCY NAVIGATION (10 Standard Sections)
+           ===================================================== */
+        <div className="sidebar-nav-list">
+          <div className="sidebar-section-title">
+            Section
+          </div>
+
+          {iaNavLinks.map((item) => {
+            const Icon = item.icon;
+            const isTabActive =
+              location.pathname === "/ia" &&
+              (currentTab === item.tab ||
+                ((!searchParams.get("tab") || searchParams.get("tab") === "overview") && item.tab === "assigned-works"));
+
+            return (
+              <NavLink
+                key={item.id}
+                to={`/ia?tab=${item.tab}${currentIA ? `&ia=${encodeURIComponent(currentIA)}` : ""}`}
+                className={`nav-item-compact ${isTabActive ? "active" : ""}`}
+                title={item.label}
+              >
+                <div className="nav-label-wrap">
+                  <Icon size={16} className="nav-icon" />
+                  <span className="nav-label">{item.label}</span>
+                </div>
+
+                {item.badge !== null && item.badge !== undefined && (
+                  <span className={`nav-badge-pill ${item.badgeType || "neutral"}`}>
+                    {item.badge}
+                  </span>
+                )}
+              </NavLink>
+            );
+          })}
+        </div>
+      ) : isDARole ? (
         /* =====================================================
            DISTRICT AUTHORITY NAVIGATION (Matching MP UI)
            ===================================================== */
