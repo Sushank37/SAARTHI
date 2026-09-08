@@ -93,6 +93,14 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/mospi/:section"
+          element={
+            <RoleRoute allowedRole={ROLE_IDS.MOSPI}>
+              <RouteConsumer Component={MoSPIDashboard} />
+            </RoleRoute>
+          }
+        />
+        <Route
           path="/citizen"
           element={
             <RoleRoute allowedRole={ROLE_IDS.CITIZEN}>

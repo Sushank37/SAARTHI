@@ -22,6 +22,7 @@ import {
   Sparkles,
   TrendingUp,
   Clock,
+  Briefcase,
 } from "lucide-react";
 import { API_BASE, formatNumber } from "../constants";
 import { ROLE_IDS } from "../data/roles";
@@ -59,12 +60,40 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
     roleConfig?.id === "IA" ||
     location.pathname.startsWith("/ia");
 
+  const isMoSPIRole =
+    roleConfig?.id === ROLE_IDS.MOSPI ||
+    roleConfig?.id === "mospi" ||
+    roleConfig?.id === "MoSPI" ||
+    location.pathname.startsWith("/mospi");
+
   const isMPMode =
     roleConfig?.id === ROLE_IDS.MP ||
     roleConfig?.id === "MP" ||
     location.pathname.startsWith("/mp");
 
   const currentTab = searchParams.get("tab") || "overview";
+
+  const [activeMospiTab, setActiveMospiTab] = useState(() => {
+    const t = searchParams.get("tab");
+    return (!t || t === "overview") ? "national-overview" : t;
+  });
+
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t) {
+      setActiveMospiTab(t === "overview" ? "national-overview" : t);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const onMospiTab = (e) => {
+      if (e.detail) {
+        setActiveMospiTab(e.detail);
+      }
+    };
+    window.addEventListener("mospi-tab-changed", onMospiTab);
+    return () => window.removeEventListener("mospi-tab-changed", onMospiTab);
+  }, []);
 
   /* =========================================================
      DA TELEMETRY / BADGES
@@ -393,6 +422,109 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
   ];
 
   /* =========================================================
+     MOSPI / CENTRAL NODAL AUTHORITY NAVIGATION (12 Standard Sections)
+     ========================================================= */
+
+  const mospiNavLinks = [
+    {
+      id: "national-overview",
+      label: "National Overview",
+      tab: "national-overview",
+      icon: LayoutDashboard,
+      badge: summary?.total_works ? formatNumber(summary.total_works) : "1,02,703",
+      badgeType: "accent",
+    },
+    {
+      id: "state-intelligence",
+      label: "State Intelligence",
+      tab: "state-intelligence",
+      icon: Map,
+      badge: "36 States",
+      badgeType: "neutral",
+    },
+    {
+      id: "district-intelligence",
+      label: "District Intelligence",
+      tab: "district-intelligence",
+      icon: Building2,
+      badge: "763 IDAs",
+      badgeType: "neutral",
+    },
+    {
+      id: "risk-intelligence",
+      label: "Risk Intelligence",
+      tab: "risk-intelligence",
+      icon: ShieldAlert,
+      badge: summary?.risk_cases ? formatNumber(summary.risk_cases) : "18",
+      badgeType: "warning",
+    },
+    {
+      id: "anomaly-detection",
+      label: "Anomaly Detection",
+      tab: "anomaly-detection",
+      icon: AlertTriangle,
+      badge: "12,824",
+      badgeType: "highlight",
+    },
+    {
+      id: "duplicate-intelligence",
+      label: "Duplicate Intelligence",
+      tab: "duplicate-intelligence",
+      icon: GitBranch,
+      badge: summary?.duplicate_clusters ? formatNumber(summary.duplicate_clusters) : "1,401",
+      badgeType: "accent",
+    },
+    {
+      id: "financial-intelligence",
+      label: "Financial Intelligence",
+      tab: "financial-intelligence",
+      icon: IndianRupee,
+      badge: "₹ 4,074 Cr",
+      badgeType: "neutral",
+    },
+    {
+      id: "delay-intelligence",
+      label: "Delay Intelligence",
+      tab: "delay-intelligence",
+      icon: Clock,
+      badge: "106d Avg",
+      badgeType: "warning",
+    },
+    {
+      id: "ia-performance",
+      label: "IA Performance",
+      tab: "ia-performance",
+      icon: Briefcase,
+      badge: "763 IAs",
+      badgeType: "neutral",
+    },
+    {
+      id: "evidence-intelligence",
+      label: "Evidence Intelligence",
+      tab: "evidence-intelligence",
+      icon: FileCheck,
+      badge: "8,922",
+      badgeType: "neutral",
+    },
+    {
+      id: "trend-analysis",
+      label: "Trend Analysis",
+      tab: "trend-analysis",
+      icon: TrendingUp,
+      badge: "9 Qtrs",
+      badgeType: "neutral",
+    },
+    {
+      id: "priority-cases",
+      label: "Priority Cases",
+      tab: "priority-cases",
+      icon: ClipboardCheck,
+      badge: summary?.review_required ? formatNumber(summary.review_required) : "4,384",
+      badgeType: "highlight",
+    },
+  ];
+
+  /* =========================================================
      MP NAVIGATION (9 Modules with Status Badges)
      ========================================================= */
 
@@ -533,7 +665,48 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
 
   return (
     <aside className="gov-sidebar-compact">
-      {isIARole ? (
+      {isMoSPIRole ? (
+        /* =====================================================
+           MOSPI NAVIGATION (6 Standard Modules)
+           ===================================================== */
+        <div className="sidebar-nav-list">
+          <div className="sidebar-section-title">
+            Section
+          </div>
+
+          {mospiNavLinks.map((item) => {
+            const Icon = item.icon;
+            const isTabActive =
+              location.pathname.startsWith("/mospi") &&
+              (activeMospiTab === item.tab ||
+                ((!searchParams.get("tab") || searchParams.get("tab") === "overview") && item.tab === "national-overview"));
+
+            return (
+              <NavLink
+                key={item.id}
+                to={`/mospi?tab=${item.tab}`}
+                className={`nav-item-compact ${isTabActive ? "active" : ""}`}
+                title={item.label}
+                onClick={() => {
+                  setActiveMospiTab(item.tab);
+                  window.dispatchEvent(new CustomEvent("mospi-tab-changed", { detail: item.tab }));
+                }}
+              >
+                <div className="nav-label-wrap">
+                  <Icon size={16} className="nav-icon" />
+                  <span className="nav-label">{item.label}</span>
+                </div>
+
+                {item.badge !== null && item.badge !== undefined && (
+                  <span className={`nav-badge-pill ${item.badgeType || "neutral"}`}>
+                    {item.badge}
+                  </span>
+                )}
+              </NavLink>
+            );
+          })}
+        </div>
+      ) : isIARole ? (
         /* =====================================================
            IMPLEMENTING AGENCY NAVIGATION (10 Standard Sections)
            ===================================================== */

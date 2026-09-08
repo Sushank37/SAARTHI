@@ -1,0 +1,723 @@
+/* ============================================================
+   MoSPI / CENTRAL NODAL AUTHORITY DASHBOARD STYLESHEET
+   Clean, classic, professional, government-grade information density.
+   ============================================================ */
+
+.mospi-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 36px 20px;
+  background-color: var(--bg-primary, #f8fafc);
+  color: var(--text-primary, #0f172a);
+  font-family: inherit;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   1. OFFICIAL HEADER CARD
+   ============================================================ */
+
+.mospi-header-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 8px;
+  padding: 18px 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.mospi-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.mospi-title-unit {
+  max-width: 780px;
+}
+
+.mospi-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.mospi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.mospi-location-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-muted, #64748b);
+}
+
+.mospi-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 20px;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.mospi-live-pill.offline {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.mospi-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #16a34a;
+  box-shadow: 0 0 6px rgba(22, 163, 74, 0.6);
+}
+
+.mospi-live-pill.offline .mospi-pulse-dot {
+  background: #dc2626;
+  box-shadow: 0 0 6px rgba(220, 38, 38, 0.6);
+}
+
+.mospi-page-title {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.mospi-page-desc {
+  font-size: 12.5px;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.mospi-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mospi-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mospi-export-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* ============================================================
+   2. 4 CORE NATIONAL KPIS STRIP
+   ============================================================ */
+
+.mospi-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 1024px) {
+  .mospi-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .mospi-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mospi-kpi-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 96px;
+}
+
+.mospi-kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.mospi-kpi-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #64748b);
+}
+
+.mospi-kpi-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+}
+
+.mospi-kpi-icon.blue { background: #eff6ff; color: #2563eb; }
+.mospi-kpi-icon.emerald { background: #ecfdf5; color: #059669; }
+.mospi-kpi-icon.amber { background: #fffbeb; color: #d97706; }
+.mospi-kpi-icon.rose { background: #fff1f2; color: #e11d48; }
+
+.mospi-kpi-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  line-height: 1.15;
+  margin-bottom: 4px;
+}
+
+.mospi-kpi-sub {
+  font-size: 11.5px;
+  color: var(--text-muted, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ============================================================
+   3. TOP MODULE NAVIGATION TABS (6 Standard Sections)
+   ============================================================ */
+
+.mospi-tab-nav-bar {
+  display: flex;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.mospi-tab-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.mospi-tab-pill:hover {
+  background: var(--bg-hover, #f1f5f9);
+  color: var(--text-primary, #0f172a);
+}
+
+.mospi-tab-pill.active {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.mospi-tab-count {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
+}
+
+.mospi-tab-pill.active .mospi-tab-count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+/* ============================================================
+   4. CONTENT PANELS & CARDS
+   ============================================================ */
+
+.mospi-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mospi-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 8px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.mospi-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mospi-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  margin: 0 0 2px 0;
+}
+
+.mospi-card-subtitle {
+  font-size: 12px;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+/* Lifecycle Horizontal Progress Bar */
+.mospi-lifecycle-bar {
+  display: flex;
+  height: 24px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #e2e8f0;
+  margin-bottom: 12px;
+}
+
+.mospi-lifecycle-seg {
+  height: 100%;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.mospi-lifecycle-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+}
+
+.mospi-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-primary, #0f172a);
+}
+
+.mospi-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.mospi-legend-count {
+  font-weight: 700;
+  color: var(--text-muted, #64748b);
+  font-size: 11px;
+}
+
+/* Official Notice Banner */
+.mospi-notice-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.mospi-notice-banner strong {
+  color: #1e293b;
+}
+
+/* ============================================================
+   5. STATE INTELLIGENCE & DRILL-DOWN TABLE
+   ============================================================ */
+
+.mospi-table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.mospi-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 6px;
+  padding: 6px 12px;
+  min-width: 260px;
+}
+
+.mospi-search-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 12.5px;
+  width: 100%;
+  color: var(--text-primary, #0f172a);
+}
+
+.mospi-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mospi-select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: #ffffff;
+  font-size: 12px;
+  color: var(--text-primary, #0f172a);
+  outline: none;
+}
+
+.mospi-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 6px;
+}
+
+.mospi-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.mospi-data-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  padding: 10px 12px;
+  border-bottom: 1px solid #cbd5e1;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.mospi-data-table th:hover {
+  background: #f1f5f9;
+}
+
+.mospi-data-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: var(--text-primary, #0f172a);
+  vertical-align: middle;
+}
+
+.mospi-data-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.mospi-data-table tbody tr.expanded-row {
+  background: #f0fdf4;
+}
+
+.mospi-state-name {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.mospi-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mospi-pill.gray { background: #f1f5f9; color: #475569; }
+.mospi-pill.blue { background: #eff6ff; color: #1d4ed8; }
+.mospi-pill.emerald { background: #ecfdf5; color: #047857; }
+.mospi-pill.amber { background: #fffbeb; color: #b45309; }
+.mospi-pill.rose { background: #fff1f2; color: #be123c; }
+
+/* Drill-Down Panel */
+.mospi-drilldown-box {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 2px solid #cbd5e1;
+  padding: 14px 18px;
+}
+
+.mospi-drilldown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.mospi-drilldown-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.mospi-district-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.mospi-district-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mospi-district-card:hover {
+  border-color: #0284c7;
+  background: #f0f9ff;
+}
+
+.mospi-district-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.mospi-district-sub {
+  font-size: 10.5px;
+  color: #64748b;
+}
+
+/* ============================================================
+   6. RISK FACTORS & ANOMALIES
+   ============================================================ */
+
+.mospi-risk-factor-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .mospi-risk-factor-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.mospi-risk-factor-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+.mospi-rf-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.mospi-rf-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.mospi-rf-desc {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+/* ============================================================
+   7. PAGINATION & FOOTERS
+   ============================================================ */
+
+.mospi-pagination-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mospi-page-info {
+  font-size: 12px;
+  color: var(--text-muted, #64748b);
+}
+
+.mospi-page-btn-group {
+  display: flex;
+  gap: 4px;
+}
+
+.mospi-page-btn {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: #ffffff;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-primary, #0f172a);
+}
+
+.mospi-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mospi-page-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+/* ============================================================
+   8. UTILITY STYLES FOR ALL 12 DASHBOARD SECTIONS
+   ============================================================ */
+
+.mospi-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 6px;
+  background: var(--bg-card, #ffffff);
+}
+
+.mospi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.mospi-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  padding: 10px 12px;
+  border-bottom: 1px solid #cbd5e1;
+  white-space: nowrap;
+}
+
+.mospi-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: var(--text-primary, #0f172a);
+  vertical-align: middle;
+}
+
+.mospi-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.mospi-search-input {
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: #ffffff;
+  font-size: 12px;
+  color: var(--text-primary, #0f172a);
+  padding: 0 10px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.mospi-search-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px #2563eb;
+}
+
+.mospi-btn-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: #ffffff;
+  color: var(--text-primary, #0f172a);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mospi-btn-sm:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.mospi-btn-sm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mospi-pill.neutral { background: #f1f5f9; color: #475569; }
+.mospi-pill.warning { background: #fffbeb; color: #b45309; }
+.mospi-pill.danger { background: #fef2f2; color: #b91c1c; }
+.mospi-pill.success { background: #ecfdf5; color: #047857; }
+

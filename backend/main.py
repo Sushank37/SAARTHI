@@ -1157,6 +1157,57 @@ def get_works(
                 st = data["WORK_STAGE"].fillna("").astype(str).str.strip()
                 data = data[st.isin(["Physical Inspection", "Work partially Completed", "Vendor Identification", "Time Estimation"])]
 
+        # MoSPI 12 Standard Modules Tab Filters
+        elif t in ["anomaly-detection", "anomalies"]:
+            a_mask = pd.Series(False, index=data.index)
+            if sub == "extreme-delay" and column_exists("SANCTION_DELAY_DAYS"):
+                a_mask = data["SANCTION_DELAY_DAYS"] > 180
+            elif sub == "cost-variance" and column_exists("COST_VARIANCE"):
+                a_mask = (data["COST_VARIANCE"] < 0) | (data["ACTUAL_AMOUNT"] > data["SANCTION_AMOUNT"])
+            elif sub == "long-completion" and column_exists("COMPLETION_DURATION_DAYS"):
+                a_mask = data["COMPLETION_DURATION_DAYS"] > 365
+            else:
+                if column_exists("SANCTION_DELAY_DAYS"):
+                    a_mask = a_mask | (data["SANCTION_DELAY_DAYS"] > 180)
+                if column_exists("COST_VARIANCE"):
+                    a_mask = a_mask | (data["COST_VARIANCE"] < 0)
+                if column_exists("COMPLETION_DURATION_DAYS"):
+                    a_mask = a_mask | (data["COMPLETION_DURATION_DAYS"] > 365)
+            data = data[a_mask]
+
+        elif t in ["delay-intelligence", "delays", "delay"]:
+            if column_exists("SANCTION_DELAY_DAYS"):
+                if sub == "under-45":
+                    data = data[data["SANCTION_DELAY_DAYS"] <= 45]
+                elif sub == "46-90":
+                    data = data[(data["SANCTION_DELAY_DAYS"] > 45) & (data["SANCTION_DELAY_DAYS"] <= 90)]
+                elif sub == "91-180":
+                    data = data[(data["SANCTION_DELAY_DAYS"] > 90) & (data["SANCTION_DELAY_DAYS"] <= 180)]
+                elif sub == "over-180":
+                    data = data[data["SANCTION_DELAY_DAYS"] > 180]
+                else:
+                    data = data[data["SANCTION_DELAY_DAYS"].notna()]
+                data = data.sort_values("SANCTION_DELAY_DAYS", ascending=False)
+
+        elif t in ["evidence-intelligence", "evidence-anomalies"]:
+            if column_exists("EVIDENCE_SCORE"):
+                if sub == "low":
+                    data = data[data["EVIDENCE_SCORE"] < 60]
+                elif sub == "moderate":
+                    data = data[(data["EVIDENCE_SCORE"] >= 60) & (data["EVIDENCE_SCORE"] < 80)]
+                elif sub == "verified":
+                    data = data[data["EVIDENCE_SCORE"] >= 80]
+                else:
+                    data = data[data["EVIDENCE_SCORE"].notna()]
+                data = data.sort_values("EVIDENCE_SCORE", ascending=True)
+
+        elif t in ["financial-intelligence", "financial-anomalies"]:
+            if column_exists("COST_VARIANCE") and column_exists("SANCTION_AMOUNT"):
+                if sub == "anomalies":
+                    data = data[(data["COST_VARIANCE"] < 0) | (data["ACTUAL_AMOUNT"] > data["SANCTION_AMOUNT"])]
+                else:
+                    data = data[data["SANCTION_AMOUNT"] > 0]
+
     # Sort
     if column_exists("RISK_SCORE"):
 
@@ -2360,12 +2411,16 @@ def list_idas(
             "district_name": district,
             "state": st,
             "constituency": constituency,
-            "works_count": int(cnt)
+            "works_count": int(cnt),
+            "IDA_NAME": name,
+            "STATE_NAME": st,
+            "total_works": int(cnt)
         })
 
     return {
         "count": len(ida_items),
-        "idas": ida_items
+        "idas": ida_items,
+        "data": ida_items
     }
 
 
@@ -3023,40 +3078,301 @@ def state_analytics():
         )
 
 
-    grouped = grouped.fillna(0)
+    # Sanctioned works and financial totals
+    if column_exists("SANCTION_AMOUNT"):
+        sanc = (
+            df[df["SANCTION_AMOUNT"] > 0]
+            .groupby("STATE_NAME")
+            .size()
+            .reset_index(name="SANCTIONED_WORKS")
+        )
+        grouped = grouped.merge(sanc, on="STATE_NAME", how="left")
 
+        sanc_amt = (
+            df.groupby("STATE_NAME")["SANCTION_AMOUNT"]
+            .sum()
+            .reset_index(name="SANCTION_AMOUNT")
+        )
+        grouped = grouped.merge(sanc_amt, on="STATE_NAME", how="left")
+
+    if column_exists("ACTUAL_AMOUNT"):
+        act_amt = (
+            df.groupby("STATE_NAME")["ACTUAL_AMOUNT"]
+            .sum()
+            .reset_index(name="ACTUAL_AMOUNT")
+        )
+        grouped = grouped.merge(act_amt, on="STATE_NAME", how="left")
+
+    if column_exists("WORK_STAGE"):
+        comp = (
+            df[df["WORK_STAGE"] == "Work Completed"]
+            .groupby("STATE_NAME")
+            .size()
+            .reset_index(name="COMPLETED_WORKS")
+        )
+        grouped = grouped.merge(comp, on="STATE_NAME", how="left")
+
+        ongoing_stages = ["Physical Inspection", "Work partially Completed", "Vendor Identification", "Time Estimation"]
+        ong = (
+            df[df["WORK_STAGE"].isin(ongoing_stages)]
+            .groupby("STATE_NAME")
+            .size()
+            .reset_index(name="ONGOING_WORKS")
+        )
+        grouped = grouped.merge(ong, on="STATE_NAME", how="left")
+
+    if column_exists("SANCTION_DELAY_DAYS"):
+        s_delay = (
+            df.groupby("STATE_NAME")["SANCTION_DELAY_DAYS"]
+            .mean()
+            .round(1)
+            .reset_index(name="AVG_SANCTION_DELAY")
+        )
+        grouped = grouped.merge(s_delay, on="STATE_NAME", how="left")
+
+    if column_exists("COMPLETION_DURATION_DAYS"):
+        c_delay = (
+            df.groupby("STATE_NAME")["COMPLETION_DURATION_DAYS"]
+            .mean()
+            .round(1)
+            .reset_index(name="AVG_COMPLETION_DAYS")
+        )
+        grouped = grouped.merge(c_delay, on="STATE_NAME", how="left")
+
+    grouped = grouped.fillna(0)
 
     numeric_columns = [
         "TOTAL_WORKS",
+        "SANCTIONED_WORKS",
+        "ONGOING_WORKS",
+        "COMPLETED_WORKS",
         "HIGH_RISK",
         "MEDIUM_RISK",
         "HIGH_DUPLICATE",
         "REVIEW_REQUIRED"
     ]
 
-
     for col in numeric_columns:
-
         if col in grouped.columns:
-
             grouped[col] = pd.to_numeric(
                 grouped[col],
                 errors="coerce"
             ).fillna(0).astype(int)
 
+    float_columns = ["SANCTION_AMOUNT", "ACTUAL_AMOUNT", "AVG_SANCTION_DELAY", "AVG_COMPLETION_DAYS"]
+    for col in float_columns:
+        if col in grouped.columns:
+            grouped[col] = pd.to_numeric(
+                grouped[col],
+                errors="coerce"
+            ).fillna(0.0).astype(float)
 
     grouped = grouped.sort_values(
         "TOTAL_WORKS",
         ascending=False
     )
 
+    return {
+        "data": dataframe_to_records(grouped)
+    }
+
+
+# ============================================================
+# MOSPI / CENTRAL NODAL AUTHORITY NATIONAL ANALYTICS
+# ============================================================
+
+_mospi_analytics_cache = None
+
+def compute_mospi_national_analytics():
+    total_works = int(len(df))
+
+    # Financial metrics
+    total_rec = float(df["RECOMMENDED_AMOUNT"].sum()) if column_exists("RECOMMENDED_AMOUNT") else 0.0
+    total_sanc = float(df["SANCTION_AMOUNT"].sum()) if column_exists("SANCTION_AMOUNT") else 0.0
+    total_act = float(df["ACTUAL_AMOUNT"].sum()) if column_exists("ACTUAL_AMOUNT") else 0.0
+    sanc_gap = max(0.0, total_rec - total_sanc)
+    unutilized_balance = max(0.0, total_sanc - total_act)
+    utilization_pct = round((total_act / total_sanc * 100), 1) if total_sanc > 0 else 0.0
+    sanction_rate = round((total_sanc / total_rec * 100), 1) if total_rec > 0 else 0.0
+
+    # Risk metrics
+    med_risk = int((df["RISK_LEVEL"].fillna("").astype(str).str.upper() == "MEDIUM").sum()) if column_exists("RISK_LEVEL") else 0
+    high_risk = int((df["RISK_LEVEL"].fillna("").astype(str).str.upper() == "HIGH").sum()) if column_exists("RISK_LEVEL") else 0
+    low_risk = int((df["RISK_LEVEL"].fillna("").astype(str).str.upper() == "LOW").sum()) if column_exists("RISK_LEVEL") else 0
+    risk_cases_count = med_risk + high_risk
+
+    # Duplicate metrics
+    dup_clusters = int(df["CLUSTER_ID"].dropna().nunique()) if column_exists("CLUSTER_ID") else 0
+    high_dup = int((df["DUPLICATE_RISK"].fillna("").astype(str).str.upper() == "HIGH").sum()) if column_exists("DUPLICATE_RISK") else 0
+    med_dup = int((df["DUPLICATE_RISK"].fillna("").astype(str).str.upper() == "MEDIUM").sum()) if column_exists("DUPLICATE_RISK") else 0
+    works_in_clusters = int(df["CLUSTER_ID"].notna().sum()) if column_exists("CLUSTER_ID") else 0
+
+    # Review required
+    review_required = int(boolean_series(df["REQUIRES_REVIEW"]).sum()) if column_exists("REQUIRES_REVIEW") else 0
+
+    # Stages distribution
+    ongoing_stages = ["Physical Inspection", "Work partially Completed", "Vendor Identification", "Time Estimation"]
+    stage_counts = df["WORK_STAGE"].fillna("Unknown/Unspecified").value_counts() if column_exists("WORK_STAGE") else pd.Series()
+    completed_count = int((df["WORK_STAGE"] == "Work Completed").sum()) if column_exists("WORK_STAGE") else 0
+    ongoing_count = int(df["WORK_STAGE"].isin(ongoing_stages).sum()) if column_exists("WORK_STAGE") else 0
+    sanctioned_count = int((df["SANCTION_AMOUNT"] > 0).sum()) if column_exists("SANCTION_AMOUNT") else 0
+
+    lifecycle_distribution = []
+    for st_name, count in stage_counts.items():
+        pct = round((count / total_works * 100), 1) if total_works > 0 else 0.0
+        lifecycle_distribution.append({
+            "stage": str(st_name),
+            "count": int(count),
+            "percentage": pct
+        })
+
+    # Timeline benchmarks
+    sd = df["SANCTION_DELAY_DAYS"].dropna() if column_exists("SANCTION_DELAY_DAYS") else pd.Series()
+    cd = df["COMPLETION_DURATION_DAYS"].dropna() if column_exists("COMPLETION_DURATION_DAYS") else pd.Series()
+    avg_sanc_delay = round(float(sd.mean()), 1) if not sd.empty else 0.0
+    avg_comp_days = round(float(cd.mean()), 1) if not cd.empty else 0.0
+
+    # Delay Buckets
+    b_under_45 = int((sd <= 45).sum()) if not sd.empty else 0
+    b_46_90 = int(((sd > 45) & (sd <= 90)).sum()) if not sd.empty else 0
+    b_91_180 = int(((sd > 90) & (sd <= 180)).sum()) if not sd.empty else 0
+    b_over_180 = int((sd > 180).sum()) if not sd.empty else 0
+
+    delay_buckets = {
+        "under_45": b_under_45,
+        "from_46_to_90": b_46_90,
+        "from_91_to_180": b_91_180,
+        "over_180": b_over_180,
+        "statutory_limit_days": 45,
+        "over_statutory_count": b_46_90 + b_91_180 + b_over_180,
+        "avg_sanction_delay": avg_sanc_delay,
+        "avg_completion_duration": avg_comp_days
+    }
+
+    # Quarterly Trends
+    trends_quarterly = []
+    try:
+        rec_dt = pd.to_datetime(df["RECOMMENDATION_DATE"], errors="coerce").dt.to_period("Q").astype(str)
+        sanc_dt = pd.to_datetime(df["SANCTION_DATE"], errors="coerce").dt.to_period("Q").astype(str)
+        quarters = ["2024Q3", "2024Q4", "2025Q1", "2025Q2", "2025Q3", "2025Q4", "2026Q1", "2026Q2", "2026Q3"]
+        for q in quarters:
+            r_mask = rec_dt == q
+            s_mask = sanc_dt == q
+            trends_quarterly.append({
+                "quarter": q,
+                "recommended_count": int(r_mask.sum()),
+                "sanctioned_count": int(s_mask.sum()),
+                "recommended_amount_cr": round(float(df.loc[r_mask, "RECOMMENDED_AMOUNT"].sum() / 1e7), 2),
+                "sanctioned_amount_cr": round(float(df.loc[s_mask, "SANCTION_AMOUNT"].sum() / 1e7), 2)
+            })
+    except Exception as e:
+        print("Trends error:", e)
+
+    # Top 25 IA Performance
+    ia_performance_top25 = []
+    try:
+        grouped_ia = (
+            df.groupby(["IDA_NAME", "STATE_NAME"], as_index=False)
+            .agg(
+                total_works=("WORK_RECOMMENDATION_DTL_ID", "count"),
+                sanctioned_works=("SANCTION_AMOUNT", lambda s: int((s > 0).sum())),
+                completed_works=("WORK_STAGE", lambda s: int((s == "Work Completed").sum())),
+                total_sanction_cr=("SANCTION_AMOUNT", lambda s: round(float(s.sum() / 1e7), 2)),
+                total_actual_cr=("ACTUAL_AMOUNT", lambda s: round(float(s.sum() / 1e7), 2)),
+                avg_delay=("SANCTION_DELAY_DAYS", lambda s: round(float(s.dropna().mean()), 1) if not s.dropna().empty else 0.0)
+            )
+            .sort_values("total_works", ascending=False)
+            .head(25)
+        )
+        grouped_ia["completion_rate"] = (grouped_ia["completed_works"] / grouped_ia["total_works"] * 100).round(1)
+        ia_performance_top25 = dataframe_to_records(grouped_ia)
+    except Exception as e:
+        print("IA performance error:", e)
+
+    # Evidence Summary
+    ev_score = df["EVIDENCE_SCORE"].dropna() if column_exists("EVIDENCE_SCORE") else pd.Series()
+    ev_total = int(df["EVIDENCE"].notna().sum()) if column_exists("EVIDENCE") else int(ev_score.notna().sum())
+    evidence_summary = {
+        "total_with_evidence": ev_total,
+        "avg_evidence_score": round(float(ev_score.mean()), 1) if not ev_score.empty else 0.0,
+        "low_score_count": int((ev_score < 60).sum()) if not ev_score.empty else 0,
+        "medium_score_count": int(((ev_score >= 60) & (ev_score < 80)).sum()) if not ev_score.empty else 0,
+        "high_score_count": int((ev_score >= 80).sum()) if not ev_score.empty else 0,
+    }
+
+    # Anomaly Summary
+    extreme_delays = int((sd > 180).sum()) if not sd.empty else 0
+    long_completions = int((cd > 365).sum()) if not cd.empty else 0
+    cost_var_cases = int(((df["COST_VARIANCE"] < 0) | (df["ACTUAL_AMOUNT"] > df["SANCTION_AMOUNT"])).sum()) if column_exists("COST_VARIANCE") else 0
+    sig_var_cases = int((df["COST_VARIANCE_PERCENT"].abs() > 20).sum()) if column_exists("COST_VARIANCE_PERCENT") else 0
+    anomaly_summary = {
+        "extreme_delays_over_180": extreme_delays,
+        "prolonged_completion_over_365": long_completions,
+        "cost_variance_cases": cost_var_cases,
+        "significant_variance_cases": sig_var_cases,
+        "total_anomalies": extreme_delays + cost_var_cases
+    }
+
+    # Risk factor averages among risk-flagged cases
+    risk_mask = df["RISK_LEVEL"].fillna("").astype(str).str.upper().isin(["HIGH", "MEDIUM"]) if column_exists("RISK_LEVEL") else pd.Series(False, index=df.index)
+    risk_sub = df[risk_mask] if risk_mask.any() else df
+
+    delay_rf = round(float(risk_sub["DELAY_RISK"].dropna().mean()), 1) if column_exists("DELAY_RISK") and not risk_sub["DELAY_RISK"].dropna().empty else 0.0
+    comp_rf = round(float(risk_sub["COMPLETION_RISK"].dropna().mean()), 1) if column_exists("COMPLETION_RISK") and not risk_sub["COMPLETION_RISK"].dropna().empty else 0.0
+    cost_rf = round(float(risk_sub["COST_RISK"].dropna().mean()), 1) if column_exists("COST_RISK") and not risk_sub["COST_RISK"].dropna().empty else 0.0
 
     return {
-        "data":
-            dataframe_to_records(
-                grouped
-            )
+        "national_kpis": {
+            "total_works": total_works,
+            "total_recommended_amount": total_rec,
+            "total_sanction_amount": total_sanc,
+            "total_actual_amount": total_act,
+            "sanction_gap": sanc_gap,
+            "unutilized_balance": unutilized_balance,
+            "utilization_pct": utilization_pct,
+            "sanction_rate": sanction_rate,
+            "attention_required": review_required,
+            "risk_cases_count": risk_cases_count,
+            "high_risk": high_risk,
+            "medium_risk": med_risk,
+            "low_risk": low_risk,
+            "duplicate_clusters": dup_clusters,
+            "high_duplicate_works": high_dup,
+            "medium_duplicate_works": med_dup,
+            "works_in_clusters": works_in_clusters,
+            "completed_works": completed_count,
+            "ongoing_works": ongoing_count,
+            "sanctioned_works": sanctioned_count
+        },
+        "lifecycle_distribution": lifecycle_distribution,
+        "timeline_benchmarks": {
+            "avg_sanction_delay_days": avg_sanc_delay,
+            "avg_completion_duration_days": avg_comp_days
+        },
+        "delay_buckets": delay_buckets,
+        "trends_quarterly": trends_quarterly,
+        "ia_performance_top25": ia_performance_top25,
+        "evidence_summary": evidence_summary,
+        "anomaly_summary": anomaly_summary,
+        "risk_factors": {
+            "completion_risk": comp_rf,
+            "cost_risk": cost_rf,
+            "delay_risk": delay_rf,
+            "variance_risk": 0.0
+        },
+        "data_coverage": {
+            "total_states": int(df["STATE_NAME"].dropna().nunique()) if column_exists("STATE_NAME") else 36,
+            "total_authorities": int(df["IDA_NAME"].dropna().nunique()) if column_exists("IDA_NAME") else 763,
+            "coverage_note": "Historical repository spans 1,02,703 records across all 36 States & UTs. Missing entries denote unrecorded historical fields rather than absence of activity."
+        }
     }
+
+@app.get("/api/analytics/mospi")
+def mospi_national_analytics():
+    global _mospi_analytics_cache
+    if _mospi_analytics_cache is None:
+        _mospi_analytics_cache = compute_mospi_national_analytics()
+    return _mospi_analytics_cache
 
 
 # ============================================================
