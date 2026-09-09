@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate, useOutletContext } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { useParams, useOutletContext } from "react-router-dom";
 import {
   Search,
   ChevronDown,
@@ -19,8 +19,6 @@ import {
   Layers,
   Database,
   TrendingUp,
-  Sparkles,
-  Map as MapIcon,
   ShieldAlert,
 } from "lucide-react";
 import {
@@ -31,7 +29,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   PieChart,
   Pie,
   Cell,
@@ -104,7 +101,6 @@ const FundTooltip = ({ active, payload }) => {
 
 export default function MPDashboard(props) {
   const { section = "entitlement" } = useParams();
-  const navigate = useNavigate();
   const outletCtx = useOutletContext() || {};
   const onSelectWork = props.onSelectWork || outletCtx.onSelectWork;
 
@@ -116,7 +112,6 @@ export default function MPDashboard(props) {
 
   // Telemetry state
   const [analytics, setAnalytics] = useState(null);
-  const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [backendOnline, setBackendOnline] = useState(true);
 
   // Works state for pages with data tables
@@ -128,10 +123,6 @@ export default function MPDashboard(props) {
   const [stageFilter, setStageFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  // Map state
-  const [mapFilter, setMapFilter] = useState("All");
-  const [selectedMapWork, setSelectedMapWork] = useState(null);
 
   // Load master list of MPs
   useEffect(() => {
@@ -172,7 +163,6 @@ export default function MPDashboard(props) {
 
   // Load MP Analytics
   const loadMPAnalytics = async (mpName) => {
-    setAnalyticsLoading(true);
     try {
       const res = await fetch(
         `${API_BASE}/api/analytics/mp?mp_name=${encodeURIComponent(mpName)}`
@@ -185,14 +175,11 @@ export default function MPDashboard(props) {
       console.error("Error fetching MP analytics:", err);
       setAnalytics(null);
       setBackendOnline(false);
-    } finally {
-      setAnalyticsLoading(false);
     }
   };
 
   useEffect(() => {
     loadMPAnalytics(selectedMP);
-    setWorksPage(1);
   }, [selectedMP]);
 
   // Load Constituency Works
@@ -259,7 +246,6 @@ export default function MPDashboard(props) {
   const totalWorks = analytics?.total_works || 0;
   const flaggedWorks = analytics?.flagged_works || [];
   const topCategories = analytics?.top_categories || [];
-  const topAgencies = analytics?.top_agencies || [];
 
   const recAmount = Number(financials.recommended_amount || 0);
   const sancAmount = Number(financials.sanction_amount || 0);
@@ -357,45 +343,6 @@ export default function MPDashboard(props) {
     exportToCSV(works, filename);
   };
 
-  // Dynamic Constituency Zones / Implementing Agencies for Map View (Derived 100% from real database)
-  const constituencyLocalities = useMemo(() => {
-    if (topAgencies && topAgencies.length > 0) {
-      const sectorCoords = [
-        { x: 50, y: 50 },
-        { x: 30, y: 62 },
-        { x: 26, y: 35 },
-        { x: 74, y: 36 },
-        { x: 78, y: 65 },
-        { x: 50, y: 82 },
-        { x: 50, y: 20 },
-      ];
-      return topAgencies.map((agency, idx) => {
-        const coords = sectorCoords[idx % sectorCoords.length];
-        const worksCnt = agency.works_count || 0;
-        const agencySanction = (sancAmount / (totalWorks || 1)) * worksCnt;
-        const delayedRatio = riskSummary.delayed_sanctions ? Math.round(riskSummary.delayed_sanctions * (worksCnt / (totalWorks || 1))) : 0;
-        return {
-          name: agency.agency,
-          x: coords.x,
-          y: coords.y,
-          worksCount: worksCnt,
-          sanctioned: formatCrores(agencySanction),
-          highRisk: delayedRatio,
-        };
-      });
-    }
-    const constName = analytics?.constituency || "Constituency";
-    return [
-      { name: `${constName} District Authority`, x: 50, y: 50, worksCount: totalWorks, sanctioned: formatCrores(sancAmount), highRisk: riskSummary.delayed_sanctions || 0 }
-    ];
-  }, [topAgencies, analytics, sancAmount, totalWorks, riskSummary]);
-
-  // Filtered map localities
-  const filteredLocalities = useMemo(() => {
-    if (mapFilter === "Approved") return constituencyLocalities;
-    if (mapFilter === "Needs Attention") return constituencyLocalities.filter((l) => l.highRisk > 0);
-    return constituencyLocalities;
-  }, [constituencyLocalities, mapFilter]);
 
   return (
     <div className="gov-mp-shell">
@@ -459,6 +406,7 @@ export default function MPDashboard(props) {
                         mp.mp_name === selectedMP ? "active" : ""
                       }`}
                       onClick={() => {
+                        setWorksPage(1);
                         setSelectedMP(mp.mp_name);
                         setMpDropdownOpen(false);
                       }}
@@ -563,7 +511,7 @@ export default function MPDashboard(props) {
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                       <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#475569" }} />
                       <YAxis tick={{ fontSize: 11, fill: "#475569" }} tickFormatter={(val) => `₹${val}`} />
-                      <Tooltip content={<FundTooltip />} />
+                      <Tooltip content={FundTooltip} />
                       <Bar dataKey="amountCr" radius={[4, 4, 0, 0]}>
                         {fundFlowBarData.map((entry, index) => (
                           <Cell key={`cell-bar-${index}`} fill={entry.fill} />
@@ -601,7 +549,7 @@ export default function MPDashboard(props) {
                           <Cell key={`pie-cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip content={<FundTooltip />} />
+                      <Tooltip content={FundTooltip} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div
@@ -800,7 +748,7 @@ export default function MPDashboard(props) {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#475569" }} />
                   <YAxis tick={{ fontSize: 11, fill: "#475569" }} />
-                  <Tooltip content={<FundTooltip />} />
+                  <Tooltip content={FundTooltip} />
                   <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                     {workStageBarData.map((entry, idx) => (
                       <Cell key={`stage-bar-${idx}`} fill={entry.fill} />
@@ -997,7 +945,7 @@ export default function MPDashboard(props) {
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                         <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#475569" }} />
                         <YAxis tick={{ fontSize: 11, fill: "#475569" }} />
-                        <Tooltip content={<FundTooltip />} />
+                        <Tooltip content={FundTooltip} />
                         <Bar dataKey="count" fill="#005A9C" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
