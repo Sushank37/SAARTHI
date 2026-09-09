@@ -87,53 +87,83 @@ export default function WorkExplorer({ onSelectWork }) {
   };
 
   return (
-    <div className="compact-page-container">
-      {/* Title */}
-      <div className="gov-page-header">
-        <div>
-          <div className="gov-eyebrow">eSAKSHI REPOSITORY / ALL CONSTITUENCIES</div>
-          <h2>MPLADS Works Explorer</h2>
-          <p>
-            Search, filter, and audit individual developmental works across 102,703 projects nationwide.
-          </p>
-        </div>
+    <div className="gov-mp-shell">
+      {/* Title Header Card */}
+      <div className="gov-mp-header-card">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
+              <span className="gov-parliament-badge" style={{ background: "#eff6ff", color: "#005A9C", borderColor: "#bfdbfe" }}>
+                <Database size={12} />
+                <span>Pan-India Repository · eSAKSHI Integration</span>
+              </span>
+            </div>
+            <h1 className="gov-mp-page-title" style={{ fontSize: "18px", margin: "2px 0" }}>
+              MPLADS Works Explorer
+            </h1>
+            <p className="gov-mp-page-subtitle">
+              Search, filter, and audit individual developmental works across 102,703 projects nationwide.
+            </p>
+          </div>
 
-        {/* Official Export Buttons (Matching Screenshot 1) */}
-        <div className="official-export-group">
-          <button className="gov-export-btn excel" onClick={handleExportCSV}>
-            <FileSpreadsheet size={15} />
-            <span>Excel</span>
-          </button>
-          <button className="gov-export-btn csv" onClick={handleExportCSV}>
-            <FileText size={15} />
-            <span>CSV</span>
-          </button>
-          <button className="gov-export-btn pdf" onClick={handlePrint}>
-            <Printer size={15} />
-            <span>PDF</span>
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <button className="gov-redirect-link-btn" onClick={handleExportCSV}>
+              <FileSpreadsheet size={13} />
+              <span>Excel</span>
+            </button>
+            <button className="gov-redirect-link-btn" onClick={handleExportCSV}>
+              <FileText size={13} />
+              <span>CSV</span>
+            </button>
+            <button className="gov-redirect-link-btn" onClick={handlePrint}>
+              <Printer size={13} />
+              <span>Print</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="gov-card full-width-card">
-        <div className="explorer-filters-grid">
-          <div className="search-field">
-            <label>Search Keyword / ID:</label>
-            <div className="search-input-box">
-              <Search size={15} />
+      {/* Filter Toolbar & Table Card */}
+      <div className="gov-mp-card">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px", marginBottom: "10px" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: "#475569", marginBottom: "3px" }}>Search Keyword / ID:</label>
+            <div style={{ position: "relative" }}>
+              <Search size={14} style={{ position: "absolute", left: "10px", top: "9px", color: "#64748b" }} />
               <input
                 type="text"
                 value={q}
                 onChange={(e) => setFilter("q", e.target.value)}
-                placeholder="Search ID, description, MP, constituency..."
+                placeholder="Search ID, MP, description..."
+                style={{
+                  width: "100%",
+                  height: "32px",
+                  paddingLeft: "32px",
+                  paddingRight: "8px",
+                  fontSize: "12px",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: "4px",
+                  background: "#ffffff",
+                }}
               />
             </div>
           </div>
 
-          <div className="filter-select-field">
-            <label>Filter by State / UT:</label>
-            <select value={state} onChange={(e) => setFilter("state", e.target.value)}>
+          <div>
+            <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: "#475569", marginBottom: "3px" }}>Filter by State / UT:</label>
+            <select
+              value={state}
+              onChange={(e) => setFilter("state", e.target.value)}
+              style={{
+                width: "100%",
+                height: "32px",
+                fontSize: "12px",
+                border: "1px solid #cbd5e1",
+                borderRadius: "4px",
+                padding: "0 8px",
+                background: "#ffffff",
+              }}
+            >
               <option value="">All States & UTs</option>
               {states.map((s) => (
                 <option key={s} value={s}>
@@ -143,9 +173,21 @@ export default function WorkExplorer({ onSelectWork }) {
             </select>
           </div>
 
-          <div className="filter-select-field">
-            <label>Financial Risk Level:</label>
-            <select value={risk} onChange={(e) => setFilter("risk_level", e.target.value)}>
+          <div>
+            <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: "#475569", marginBottom: "3px" }}>Financial Risk Level:</label>
+            <select
+              value={risk}
+              onChange={(e) => setFilter("risk_level", e.target.value)}
+              style={{
+                width: "100%",
+                height: "32px",
+                fontSize: "12px",
+                border: "1px solid #cbd5e1",
+                borderRadius: "4px",
+                padding: "0 8px",
+                background: "#ffffff",
+              }}
+            >
               <option value="">All Risk Tiers</option>
               <option value="HIGH">High Risk</option>
               <option value="MEDIUM">Medium Risk</option>
@@ -153,11 +195,20 @@ export default function WorkExplorer({ onSelectWork }) {
             </select>
           </div>
 
-          <div className="filter-select-field">
-            <label>Duplicate Level:</label>
+          <div>
+            <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: "#475569", marginBottom: "3px" }}>Duplicate Level:</label>
             <select
               value={duplicate}
               onChange={(e) => setFilter("duplicate_risk", e.target.value)}
+              style={{
+                width: "100%",
+                height: "32px",
+                fontSize: "12px",
+                border: "1px solid #cbd5e1",
+                borderRadius: "4px",
+                padding: "0 8px",
+                background: "#ffffff",
+              }}
             >
               <option value="">All Duplicate Tiers</option>
               <option value="HIGH">High Duplicate Risk</option>
@@ -168,18 +219,18 @@ export default function WorkExplorer({ onSelectWork }) {
         </div>
 
         {/* Results Metadata */}
-        <div className="table-meta-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-          <span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", padding: "6px 0", borderTop: "1px solid #f1f5f9", borderBottom: "1px solid #f1f5f9", marginBottom: "8px" }}>
+          <span style={{ fontSize: "11.5px", color: "#475569" }}>
             Showing page <strong>{page}</strong> of <strong>{result.pages || 1}</strong> (
-            <strong>{formatNumber(result.total)}</strong> matching MPLADS works)
+            <strong style={{ color: "#005A9C" }}>{formatNumber(result.total)}</strong> matching MPLADS works)
           </span>
           {mpName && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#e0f2fe', color: '#0369a1', padding: '3px 10px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+            <span className="gov-parliament-badge" style={{ background: "#e0f2fe", color: "#0369a1", borderColor: "#bae6fd" }}>
               Filtered for Hon'ble MP: {mpName}
               <button 
                 type="button"
                 onClick={() => setFilter("mp_name", "")} 
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0369a1', fontWeight: 800, fontSize: '14px', lineHeight: 1 }}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#0369a1", fontWeight: 800, fontSize: "13px", marginLeft: "4px", lineHeight: 1 }}
                 title="Clear MP filter"
               >
                 ×
@@ -189,8 +240,8 @@ export default function WorkExplorer({ onSelectWork }) {
         </div>
 
         {/* Master Table */}
-        <div className="table-responsive">
-          <table className="gov-data-table">
+        <div style={{ overflowX: "auto" }}>
+          <table className="gov-mp-table" style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
                 <th>Sr. No.</th>
@@ -208,49 +259,69 @@ export default function WorkExplorer({ onSelectWork }) {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-5">
-                    <div className="spinner" /> Loading eSAKSHI work records...
+                  <td colSpan={10} style={{ textAlign: "center", padding: "30px", color: "#64748b", fontSize: "12px" }}>
+                    Loading eSAKSHI work records...
                   </td>
                 </tr>
               ) : result.data.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-5">
+                  <td colSpan={10} style={{ textAlign: "center", padding: "30px", color: "#64748b", fontSize: "12px" }}>
                     No records found matching the applied filters.
                   </td>
                 </tr>
               ) : (
                 result.data.map((item, idx) => {
-                  const srNo = (page - 1) * 50 + idx + 1;
+                  const srNo = (page - 1) * 15 + idx + 1;
                   const riskLvl = String(item.RISK_LEVEL || "LOW").toUpperCase();
                   const dupLvl = String(item.DUPLICATE_RISK || "NONE").toUpperCase();
                   return (
-                    <tr key={idx} onClick={() => onSelectWork && onSelectWork(item)}>
+                    <tr key={idx}>
                       <td>{srNo}</td>
                       <td>
-                        <strong>#{item.WORK_ID || item.WORK_RECOMMENDATION_DTL_ID}</strong>
+                        <strong style={{ fontFamily: "monospace", color: "#005A9C", fontSize: "12px" }}>
+                          #{item.WORK_ID || item.WORK_RECOMMENDATION_DTL_ID}
+                        </strong>
                       </td>
                       <td>
-                        <div>{item.STATE_NAME}</div>
-                        <small className="block-muted">{item.CONSTITUENCY}</small>
+                        <div style={{ fontWeight: "600" }}>{item.STATE_NAME}</div>
+                        <small style={{ color: "#64748b", fontSize: "11px" }}>{item.CONSTITUENCY}</small>
                       </td>
                       <td>{item.MP_NAME || "Hon'ble MP"}</td>
-                      <td className="truncate-cell">{item.WORK_CATEGORY || "General"}</td>
-                      <td>{formatCurrency(item.SANCTION_AMOUNT)}</td>
+                      <td style={{ maxWidth: "160px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: "11.5px" }}>
+                        {item.WORK_CATEGORY || "General"}
+                      </td>
+                      <td><strong>{formatCurrency(item.SANCTION_AMOUNT)}</strong></td>
                       <td>
-                        <span className={`risk-tag ${riskLvl.toLowerCase()}`}>
+                        <span
+                          className="gov-parliament-badge"
+                          style={{
+                            background: riskLvl === "HIGH" ? "#fef2f2" : "#fffbeb",
+                            color: riskLvl === "HIGH" ? "#b91c1c" : "#b45309",
+                            borderColor: riskLvl === "HIGH" ? "#fecaca" : "#fde68a",
+                          }}
+                        >
                           {riskLvl} ({formatDecimal(item.RISK_SCORE)})
                         </span>
                       </td>
                       <td>
-                        <span className={`risk-tag ${dupLvl === "HIGH" ? "danger" : "neutral"}`}>
+                        <span
+                          className="gov-parliament-badge"
+                          style={{
+                            background: dupLvl === "HIGH" ? "#fef2f2" : "#f8fafc",
+                            color: dupLvl === "HIGH" ? "#b91c1c" : "#64748b",
+                            borderColor: dupLvl === "HIGH" ? "#fecaca" : "#cbd5e1",
+                          }}
+                        >
                           {dupLvl}
                         </span>
                       </td>
-                      <td>{item.WORK_STAGE || "Sanctioned"}</td>
+                      <td style={{ fontSize: "11.5px", fontWeight: "600", color: "#334155" }}>
+                        {item.WORK_STAGE || "Sanctioned"}
+                      </td>
                       <td>
                         <button
                           type="button"
-                          className="table-action-btn"
+                          className="gov-redirect-link-btn"
                           onClick={() => onSelectWork && onSelectWork(item)}
                         >
                           Inspect Dossier →
@@ -266,21 +337,23 @@ export default function WorkExplorer({ onSelectWork }) {
 
         {/* Pagination */}
         {result.pages > 1 && (
-          <div className="gov-pagination-bar">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", paddingTop: "10px", borderTop: "1px solid #f1f5f9" }}>
             <button
               disabled={page <= 1}
               onClick={() => setFilter("page", String(page - 1))}
-              className="gov-page-btn"
+              className="gov-redirect-link-btn"
+              style={{ opacity: page <= 1 ? 0.5 : 1 }}
             >
               Previous
             </button>
-            <span className="page-indicator">
+            <span style={{ fontSize: "11.5px", color: "#64748b", fontWeight: "600" }}>
               Page {page} of {result.pages}
             </span>
             <button
               disabled={page >= result.pages}
               onClick={() => setFilter("page", String(page + 1))}
-              className="gov-page-btn"
+              className="gov-redirect-link-btn"
+              style={{ opacity: page >= result.pages ? 0.5 : 1 }}
             >
               Next
             </button>

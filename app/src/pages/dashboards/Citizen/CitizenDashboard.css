@@ -1,0 +1,581 @@
+/* =========================================================
+   CITIZEN & PUBLIC TRANSPARENCY PORTAL (JAN SAARTHI)
+   Official Government Light Theme · SIH 2026
+========================================================= */
+
+.citizen-portal-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 0 32px;
+  color: #0f172a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   1. HERO BANNER & CONSTITUENCY CONTEXT
+========================================================= */
+
+.citizen-hero-banner {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-top: 3.5px solid #005A9C;
+  border-radius: 8px;
+  padding: 10px 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: #0f172a;
+}
+
+.citizen-hero-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 780px;
+}
+
+.citizen-emblem-badge {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.citizen-hero-text h1 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 2px 0 0;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.citizen-tag-pill {
+  font-size: 11px;
+  font-weight: 700;
+  background: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.citizen-hero-text p {
+  font-size: 12px;
+  color: #64748b;
+  margin: 2px 0 0;
+  line-height: 1.4;
+}
+
+.citizen-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.citizen-quick-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.citizen-quick-action-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.citizen-quick-action-btn.primary {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.citizen-quick-action-btn.primary:hover {
+  background: #fee2e2;
+}
+
+/* =========================================================
+   2. PUBLIC TAB NAVIGATION BAR
+========================================================= */
+
+.citizen-tab-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 5px 8px;
+  overflow-x: auto;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  scrollbar-width: thin;
+}
+
+.citizen-tab-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s ease;
+}
+
+.citizen-tab-pill:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.citizen-tab-pill.active {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #0284c7;
+  font-weight: 700;
+}
+
+.citizen-tab-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+}
+
+.citizen-tab-pill.active .citizen-tab-badge {
+  background: #bfdbfe;
+  color: #0369a1;
+}
+
+/* =========================================================
+   3. KPI CARDS GRID (PUBLIC TRANSPARENCY)
+========================================================= */
+
+.citizen-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 1024px) {
+  .citizen-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.citizen-kpi-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: all 0.15s ease;
+}
+
+.citizen-kpi-card.blue { border-top: 3.5px solid #0284c7; }
+.citizen-kpi-card.green { border-top: 3.5px solid #0d9488; }
+.citizen-kpi-card.amber { border-top: 3.5px solid #d97706; }
+.citizen-kpi-card.purple { border-top: 3.5px solid #6366f1; }
+.citizen-kpi-card.red { border-top: 3.5px solid #e11d48; }
+
+.citizen-kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.citizen-kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #475569;
+}
+
+.citizen-kpi-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.citizen-kpi-card.blue .citizen-kpi-icon { background: #eff6ff; color: #0284c7; }
+.citizen-kpi-card.green .citizen-kpi-icon { background: #ecfdf5; color: #059669; }
+.citizen-kpi-card.amber .citizen-kpi-icon { background: #fffbeb; color: #d97706; }
+.citizen-kpi-card.purple .citizen-kpi-icon { background: #e0e7ff; color: #4338ca; }
+.citizen-kpi-card.red .citizen-kpi-icon { background: #fef2f2; color: #dc2626; }
+
+.citizen-kpi-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.citizen-kpi-sub {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* =========================================================
+   4. CONTENT CARDS & SECTION CONTAINERS
+========================================================= */
+
+.citizen-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 11px 14px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.citizen-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.citizen-card-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.citizen-card-subtitle {
+  font-size: 11.5px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* =========================================================
+   5. REPORT AN ISSUE & COMPLAINT FORM
+========================================================= */
+
+.citizen-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.citizen-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.citizen-input-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.citizen-input, .citizen-select, .citizen-textarea {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #0f172a;
+  background: #ffffff;
+  transition: border-color 0.15s ease;
+}
+
+.citizen-input:focus, .citizen-select:focus, .citizen-textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.citizen-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.citizen-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.citizen-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #1e293b;
+  cursor: pointer;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.12s ease;
+}
+
+.citizen-radio-label:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.citizen-radio-label input:checked + span {
+  font-weight: 600;
+  color: #1e3a8a;
+}
+
+.citizen-radio-label:has(input:checked) {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+/* =========================================================
+   6. COMPLAINT TRACKING TIMELINE (STEPPER)
+========================================================= */
+
+.complaint-tracker-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.complaint-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin: 24px 0 30px;
+}
+
+.complaint-stepper::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: 30px;
+  right: 30px;
+  height: 3px;
+  background: #e2e8f0;
+  z-index: 1;
+}
+
+.complaint-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 2;
+  width: 80px;
+  text-align: center;
+}
+
+.complaint-step-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.complaint-step-item.completed .complaint-step-circle {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #ffffff;
+}
+
+.complaint-step-item.active .complaint-step-circle {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+}
+
+.complaint-step-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.complaint-step-item.completed .complaint-step-label,
+.complaint-step-item.active .complaint-step-label {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* =========================================================
+   7. QR VERIFICATION SCANNER MOCK
+========================================================= */
+
+.qr-scanner-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 36px 20px;
+  gap: 16px;
+  background: #ffffff;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+}
+
+.qr-frame-box {
+  width: 200px;
+  height: 200px;
+  border: 3px solid #1e3a8a;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #f8fafc;
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.04);
+}
+
+.qr-scan-line {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  background: #ea580c;
+  box-shadow: 0 0 8px #ea580c;
+  animation: qrScanMove 2.5s infinite ease-in-out;
+}
+
+@keyframes qrScanMove {
+  0% { top: 15px; opacity: 0.8; }
+  50% { top: 180px; opacity: 1; }
+  100% { top: 15px; opacity: 0.8; }
+}
+
+.qr-distance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+/* =========================================================
+   8. PUBLIC WORK EXPLORER TABLE & CARDS
+========================================================= */
+
+.citizen-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.citizen-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.citizen-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.citizen-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.citizen-table tr:hover td {
+  background: #f8fafc;
+}
+
+.status-pill-public {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.status-pill-public.completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-pill-public.ongoing {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.status-pill-public.sanctioned {
+  background: #fef9c3;
+  color: #854d0e;
+}

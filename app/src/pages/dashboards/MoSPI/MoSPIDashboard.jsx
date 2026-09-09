@@ -176,61 +176,61 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
     if (!analytics) return;
     const exportData = [
       {
-        "Total National Works": kpis.total_works || 102703,
-        "Total Recommended (₹)": kpis.total_recommended_amount || 0,
-        "Total Sanctioned (₹)": kpis.total_sanction_amount || 0,
-        "Total Disbursed (₹)": kpis.total_actual_amount || 0,
-        "Sanction Rate (%)": kpis.sanction_rate || 72.6,
-        "Disbursement Rate (%)": kpis.utilization_pct || 39.7,
-        "Works Requiring Attention": kpis.attention_required || 4384,
-        "Medium-Risk Cases": kpis.risk_cases_count || 18,
-        "Duplicate Clusters": kpis.duplicate_clusters || 1401,
-        "Works in Clusters": kpis.works_in_clusters || 8922,
-        "Extreme Delays (>180d)": analytics?.anomaly_summary?.extreme_delays_over_180 || 12824,
-        "Total IDAs": analytics?.data_coverage?.total_authorities || 763,
+        "Total National Works": kpis.total_works ?? 0,
+        "Total Recommended (₹)": kpis.total_recommended_amount ?? 0,
+        "Total Sanctioned (₹)": kpis.total_sanction_amount ?? 0,
+        "Total Disbursed (₹)": kpis.total_actual_amount ?? 0,
+        "Sanction Rate (%)": kpis.sanction_rate ?? 0,
+        "Disbursement Rate (%)": kpis.utilization_pct ?? 0,
+        "Works Requiring Attention": kpis.attention_required ?? 0,
+        "Medium-Risk Cases": kpis.risk_cases_count ?? 0,
+        "Duplicate Clusters": kpis.duplicate_clusters ?? 0,
+        "Works in Clusters": kpis.works_in_clusters ?? 0,
+        "Extreme Delays (>180d)": analytics?.anomaly_summary?.extreme_delays_over_180 ?? 0,
+        "Total IDAs": analytics?.data_coverage?.total_authorities ?? 0,
       },
     ];
     exportToCSV(exportData, `MoSPI_National_Executive_Summary_${Date.now()}.csv`);
   };
 
   return (
-    <div className="mospi-dashboard-container">
+    <div className="gov-mp-shell mospi-dashboard-container">
       {/* ============================================================
           1. OFFICIAL HEADER CARD
           ============================================================ */}
-      <div className="mospi-header-card">
-        <div className="mospi-header-top">
-          <div className="mospi-title-unit">
-            <div className="mospi-sub-row">
-              <span className="mospi-badge">
-                <Building2 size={12} />
+      <div className="gov-mp-header-card">
+        <div className="gov-mp-header-top">
+          <div className="gov-mp-title-unit">
+            <div className="gov-mp-sub-row">
+              <span className="gov-parliament-badge">
                 Central Nodal Authority · MoSPI
               </span>
-              <span className="mospi-location-tag">
-                <MapPin size={12} />
-                All 36 States & UTs (Pan-India National Scope)
+              <span className="gov-constituency-tag">
+                <MapPin size={11} style={{ marginRight: "3px" }} />
+                Pan-India National Scope
               </span>
-              <span className={`mospi-live-pill ${backendConnected ? "" : "offline"}`}>
-                <span className="mospi-pulse-dot"></span>
-                {backendConnected ? "Live 1,02,703 Records" : "Data Connection Unavailable"}
+              <span className={`gov-live-status-pill ${backendConnected ? "online" : ""}`}>
+                <span className="gov-live-pulse-dot" />
+                {backendConnected ? "Live Official Dataset" : "Offline"}
               </span>
             </div>
-            <h1 className="mospi-page-title">
+            <h1 className="gov-mp-page-title">
               MoSPI / Central Nodal Authority
             </h1>
-            <p className="mospi-page-desc">
+            <p className="gov-mp-page-subtitle">
               National MPLADS implementation monitoring, cross-state surveillance, duplicate detection, and macro scheme progress across Parliamentary works.
             </p>
           </div>
 
-          <div className="mospi-header-actions">
+          <div className="gov-mp-header-actions" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <button
               type="button"
-              className="mospi-export-btn"
+              className="gov-redirect-link-btn"
               onClick={handleExportSummary}
               title="Download executive national summary report"
+              style={{ cursor: "pointer" }}
             >
-              <Download size={14} />
+              <Download size={13} />
               <span>National Summary CSV</span>
             </button>
           </div>
@@ -240,56 +240,48 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
       {/* ============================================================
           2. MAXIMUM 4 KEY NATIONAL KPIS (Data-Supported)
           ============================================================ */}
-      <div className="mospi-kpi-grid">
-        <div className="mospi-kpi-card">
-          <div className="mospi-kpi-header">
-            <span className="mospi-kpi-title">Total Works</span>
-            <div className="mospi-kpi-icon blue">
-              <Layers size={14} />
-            </div>
+      <div className="gov-mp-kpi-grid">
+        <div className="gov-mp-kpi-card kpi-blue">
+          <div className="kpi-header">
+            <span className="kpi-title">Total Works</span>
+            <Layers size={14} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(kpis.total_works || 102703)}</div>
-          <div className="mospi-kpi-sub">
-            <span>{formatNumber(kpis.sanctioned_works || 77617)} sanctioned ({kpis.sanction_rate || 75.6}%)</span>
+          <div className="kpi-value">{loading && !kpis.total_works ? "..." : formatNumber(kpis.total_works ?? 0)}</div>
+          <div className="kpi-sub">
+            {loading && !kpis.sanctioned_works ? "..." : `${formatNumber(kpis.sanctioned_works ?? 0)} sanctioned (${kpis.sanction_rate ?? 0}%)`}
           </div>
         </div>
 
-        <div className="mospi-card mospi-kpi-card">
-          <div className="mospi-kpi-header">
-            <span className="mospi-kpi-title">Total Sanctioned Value</span>
-            <div className="mospi-kpi-icon emerald">
-              <IndianRupee size={14} />
-            </div>
+        <div className="gov-mp-kpi-card kpi-teal">
+          <div className="kpi-header">
+            <span className="kpi-title">Total Sanctioned Value</span>
+            <IndianRupee size={14} color="#0d9488" />
           </div>
-          <div className="mospi-kpi-value">₹ {formatCrores(kpis.total_sanction_amount || 0)} Cr</div>
-          <div className="mospi-kpi-sub">
-            <span>Disbursed: ₹ {formatCrores(kpis.total_actual_amount || 0)} Cr ({kpis.utilization_pct || 39.7}%)</span>
+          <div className="kpi-value">₹ {formatCrores(kpis.total_sanction_amount || 0)} Cr</div>
+          <div className="kpi-sub">
+            Disbursed: ₹ {formatCrores(kpis.total_actual_amount || 0)} Cr ({kpis.utilization_pct || 0}%)
           </div>
         </div>
 
-        <div className="mospi-card mospi-kpi-card">
-          <div className="mospi-kpi-header">
-            <span className="mospi-kpi-title">Works Requiring Attention</span>
-            <div className="mospi-kpi-icon amber">
-              <ClipboardCheck size={14} />
-            </div>
+        <div className="gov-mp-kpi-card kpi-amber">
+          <div className="kpi-header">
+            <span className="kpi-title">Works Requiring Attention</span>
+            <ClipboardCheck size={14} color="#d97706" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(kpis.attention_required || 4384)}</div>
-          <div className="mospi-kpi-sub">
-            <span>{formatNumber(kpis.duplicate_clusters || 1401)} duplicate clusters flagged</span>
+          <div className="kpi-value">{loading && !kpis.attention_required ? "..." : formatNumber(kpis.attention_required ?? 0)}</div>
+          <div className="kpi-sub">
+            {loading && !kpis.duplicate_clusters ? "..." : `${formatNumber(kpis.duplicate_clusters ?? 0)} duplicate clusters flagged`}
           </div>
         </div>
 
-        <div className="mospi-card mospi-kpi-card">
-          <div className="mospi-kpi-header">
-            <span className="mospi-kpi-title">Audit Risk Cases</span>
-            <div className="mospi-kpi-icon rose">
-              <ShieldAlert size={14} />
-            </div>
+        <div className="gov-mp-kpi-card kpi-rose">
+          <div className="kpi-header">
+            <span className="kpi-title">Audit Risk Cases</span>
+            <ShieldAlert size={14} color="#e11d48" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(kpis.risk_cases_count || 18)}</div>
-          <div className="mospi-kpi-sub">
-            <span>Medium-risk outliers requiring verification</span>
+          <div className="kpi-value">{loading && !kpis.risk_cases_count ? "..." : formatNumber(kpis.risk_cases_count ?? 0)}</div>
+          <div className="kpi-sub">
+            Medium-risk outliers requiring verification
           </div>
         </div>
       </div>
@@ -297,7 +289,7 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
       {/* ============================================================
           3. TOP MODULE NAVIGATION TABS (12 Standard Sections)
           ============================================================ */}
-      <div className="mospi-tab-nav-bar" style={{ overflowX: "auto", flexWrap: "wrap" }}>
+      <div className="gov-mp-nav-bar mospi-tab-nav-bar">
         {MOSPI_MODULES.map((mod) => {
           const Icon = mod.icon;
           const isActive =
@@ -323,7 +315,7 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
             <button
               key={mod.id}
               type="button"
-              className={`mospi-tab-pill ${isActive ? "active" : ""}`}
+              className={`gov-mp-nav-btn ${isActive ? "active" : ""}`}
               onClick={() => handleTabChange(mod.id)}
             >
               <Icon size={14} />

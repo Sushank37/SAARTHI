@@ -7,14 +7,14 @@
 .ia-dashboard-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   margin: 0 auto;
-  padding: 4px 0 32px;
-  color: var(--text-primary, #0f172a);
-  font-family: inherit;
+  padding: 0 0 32px;
+  color: #0f172a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   box-sizing: border-box;
 }
 
@@ -23,11 +23,11 @@
    ============================================================ */
 
 .ia-header-card {
-  background: var(--bg-card, #ffffff);
-  border: 1px solid var(--border-color, #cbd5e1);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   border-top: 3.5px solid #005A9C; /* Parliamentary Navy */
   border-radius: 8px;
-  padding: 16px 20px;
+  padding: 10px 16px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
@@ -108,19 +108,17 @@
 }
 
 .ia-page-title {
-  font-size: 21px;
+  font-size: 20px;
   font-weight: 800;
-  color: var(--text-primary, #0f172a);
-  margin: 0 0 4px 0;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
+  color: #0f172a;
+  margin: 2px 0 0;
+  letter-spacing: -0.02em;
 }
 
 .ia-page-desc {
-  font-size: 12.5px;
-  color: var(--text-muted, #64748b);
+  font-size: 12px;
+  color: #64748b;
   margin: 0;
-  line-height: 1.45;
 }
 
 /* Agency Switcher Dropdown */
@@ -333,57 +331,45 @@
 .ia-kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  gap: 12px;
 }
 
 .ia-kpi-card {
-  background: var(--bg-card, #ffffff);
-  border: 1px solid var(--border-color, #cbd5e1);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
-  padding: 14px 16px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  padding: 12px 14px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   position: relative;
   overflow: hidden;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.15s ease;
 }
 
-.ia-kpi-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-}
-
-.ia-kpi-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3.5px;
-}
-
-.ia-kpi-card.kpi-blue::before { background: #0284c7; }
-.ia-kpi-card.kpi-teal::before { background: #0d9488; }
-.ia-kpi-card.kpi-amber::before { background: #d97706; }
-.ia-kpi-card.kpi-rose::before { background: #dc2626; }
+.ia-kpi-card.kpi-blue { border-top: 3.5px solid #0284c7; }
+.ia-kpi-card.kpi-teal { border-top: 3.5px solid #0d9488; }
+.ia-kpi-card.kpi-amber { border-top: 3.5px solid #d97706; }
+.ia-kpi-card.kpi-rose { border-top: 3.5px solid #e11d48; }
 
 .ia-kpi-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
 }
 
 .ia-kpi-label {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted, #64748b);
+  letter-spacing: 0.03em;
+  color: #475569;
 }
 
 .ia-kpi-icon-wrap {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -391,22 +377,20 @@
 }
 
 .kpi-blue .ia-kpi-icon-wrap { background: #eff6ff; color: #0284c7; }
-.kpi-teal .ia-kpi-icon-wrap { background: #f0fdfa; color: #0d9488; }
+.kpi-teal .ia-kpi-icon-wrap { background: #ecfdf5; color: #059669; }
 .kpi-amber .ia-kpi-icon-wrap { background: #fffbeb; color: #d97706; }
 .kpi-rose .ia-kpi-icon-wrap { background: #fef2f2; color: #dc2626; }
 
 .ia-kpi-value {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
-  color: var(--text-primary, #0f172a);
-  line-height: 1.2;
-  margin-bottom: 4px;
+  color: #0f172a;
+  letter-spacing: -0.02em;
 }
 
 .ia-kpi-sub {
-  font-size: 11.5px;
-  color: var(--text-muted, #64748b);
-  line-height: 1.35;
+  font-size: 11px;
+  color: #64748b;
 }
 
 /* ============================================================

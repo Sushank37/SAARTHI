@@ -1,0 +1,124 @@
+[
+  {
+    "complaint_id": "CIT-2026-001283",
+    "work_id": "W-2026-10291",
+    "work_title": "Construction of Community Hall at Ibrahimpatnam",
+    "issue_type": "Work is incomplete",
+    "description": "Pillars were constructed 8 months ago, but roof slab and plastering remain halted. No workers seen on site for past 3 months.",
+    "location": "Ibrahimpatnam, Nizamabad",
+    "constituency": "Nizamabad",
+    "state": "Telangana",
+    "citizen_name": "Ramesh Goud",
+    "citizen_phone": "+91 98490 XXXXX",
+    "status": "Under Review",
+    "created_at": "2026-08-14T10:30:00Z",
+    "updated_at": "2026-08-28T14:15:00Z",
+    "distance_m": 42,
+    "photo_url": "https://images.unsplash.com/photo-1590402494682-cd3fb53b1f70?w=600&auto=format&fit=crop&q=80",
+    "timeline": [
+      {
+        "status": "Submitted",
+        "timestamp": "2026-08-14 10:30",
+        "note": "Grievance lodged via eSAKSHI Citizen Mobile Portal."
+      },
+      {
+        "status": "Received",
+        "timestamp": "2026-08-15 09:00",
+        "note": "Acknowledged by Central Public Grievance Intake Cell."
+      },
+      {
+        "status": "Under Review",
+        "timestamp": "2026-08-28 14:15",
+        "note": "Referred to District Collectorate (Nizamabad) & Executive Engineer PR for site inspection."
+      }
+    ]
+  },
+  {
+    "complaint_id": "CIT-2026-000921",
+    "work_id": "W-2026-10442",
+    "work_title": "Installation of 25 High Mast Solar LED Lights",
+    "issue_type": "Poor quality / Substandard material",
+    "description": "5 solar lights installed near village junction are non-functional since rainy season began. Batteries not charging properly.",
+    "location": "Armoor Mandal, Nizamabad",
+    "constituency": "Nizamabad",
+    "state": "Telangana",
+    "citizen_name": "S. Kavitha",
+    "citizen_phone": "+91 94401 XXXXX",
+    "status": "Resolved",
+    "created_at": "2026-07-10T11:00:00Z",
+    "updated_at": "2026-08-02T16:45:00Z",
+    "distance_m": 18,
+    "photo_url": "https://images.unsplash.com/photo-1509391365360-2e959784a276?w=600&auto=format&fit=crop&q=80",
+    "timeline": [
+      {
+        "status": "Submitted",
+        "timestamp": "2026-07-10 11:00",
+        "note": "Complaint filed with geo-tagged photograph."
+      },
+      {
+        "status": "Received",
+        "timestamp": "2026-07-11 10:20",
+        "note": "Logged into District Redressal System."
+      },
+      {
+        "status": "Under Review",
+        "timestamp": "2026-07-15 14:00",
+        "note": "Site visit scheduled by nodal assistant engineer."
+      },
+      {
+        "status": "Assigned",
+        "timestamp": "2026-07-18 16:30",
+        "note": "Vendor REDCO issued warranty replacement notice."
+      },
+      {
+        "status": "Action Taken",
+        "timestamp": "2026-07-29 11:30",
+        "note": "Batteries replaced and luminaires restored to working condition."
+      },
+      {
+        "status": "Resolved",
+        "timestamp": "2026-08-02 16:45",
+        "note": "Grievance resolved with verification by Gram Panchayat."
+      }
+    ]
+  },
+  {
+    "complaint_id": "CIT-2026-000415",
+    "work_id": "W-2026-10885",
+    "work_title": "CC Road from Main Road to SC Colony",
+    "issue_type": "Work has not started",
+    "description": "Sanction was accorded over 14 months ago as per digital board, but no civil ground work has started yet.",
+    "location": "Bheemgal, Nizamabad",
+    "constituency": "Nizamabad",
+    "state": "Telangana",
+    "citizen_name": "M. Srinivas",
+    "citizen_phone": "+91 97012 XXXXX",
+    "status": "Assigned",
+    "created_at": "2026-08-01T09:15:00Z",
+    "updated_at": "2026-08-20T12:00:00Z",
+    "distance_m": 55,
+    "photo_url": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=80",
+    "timeline": [
+      {
+        "status": "Submitted",
+        "timestamp": "2026-08-01 09:15",
+        "note": "Report submitted via public web terminal."
+      },
+      {
+        "status": "Received",
+        "timestamp": "2026-08-02 11:45",
+        "note": "Routed to District Planning Cell."
+      },
+      {
+        "status": "Under Review",
+        "timestamp": "2026-08-08 15:10",
+        "note": "Tender allocation delay verified by Assistant Collector."
+      },
+      {
+        "status": "Assigned",
+        "timestamp": "2026-08-20 12:00",
+        "note": "Issued directive to Panchayat Raj Division for immediate re-tendering."
+      }
+    ]
+  }
+]

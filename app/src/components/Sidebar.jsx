@@ -23,6 +23,9 @@ import {
   TrendingUp,
   Clock,
   Briefcase,
+  Flag,
+  QrCode,
+  Search,
 } from "lucide-react";
 import { API_BASE, formatNumber } from "../constants";
 import { ROLE_IDS } from "../data/roles";
@@ -42,6 +45,12 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
       navigate("/login");
     }
   };
+
+  const isCitizenRole =
+    roleConfig?.id === ROLE_IDS.CITIZEN ||
+    roleConfig?.id === "citizen" ||
+    roleConfig?.id === "Citizen" ||
+    location.pathname.startsWith("/citizen");
 
   const [daBadges, setDaBadges] = useState(null);
   const [iaBadges, setIaBadges] = useState(null);
@@ -593,6 +602,90 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
   ];
 
   /* =========================================================
+     CITIZEN / PUBLIC PARTICIPATION NAVIGATION
+     ========================================================= */
+
+  const citizenNavLinks = [
+    {
+      id: "overview",
+      label: "Public Overview",
+      path: "/citizen?tab=overview",
+      tab: "overview",
+      icon: LayoutDashboard,
+      badge: null,
+    },
+    {
+      id: "map",
+      label: "Public Works Map",
+      path: "/citizen?tab=map",
+      tab: "map",
+      icon: Map,
+      badge: "GIS",
+      badgeType: "highlight",
+    },
+    {
+      id: "explore",
+      label: "Explore Works",
+      path: "/citizen?tab=explore",
+      tab: "explore",
+      icon: Search,
+      badge: summary?.total_works ? formatNumber(summary.total_works) : "102K",
+      badgeType: "neutral",
+    },
+    {
+      id: "constituency",
+      label: "Constituency Transparency",
+      path: "/citizen?tab=constituency",
+      tab: "constituency",
+      icon: Building2,
+      badge: null,
+    },
+    {
+      id: "analytics",
+      label: "Progress & Analytics",
+      path: "/citizen?tab=analytics",
+      tab: "analytics",
+      icon: TrendingUp,
+      badge: null,
+    },
+    {
+      id: "evidence",
+      label: "Photo Evidence",
+      path: "/citizen?tab=evidence",
+      tab: "evidence",
+      icon: Camera,
+      badge: "Photos",
+      badgeType: "accent",
+    },
+    {
+      id: "report",
+      label: "Report an Issue",
+      path: "/citizen?tab=report",
+      tab: "report",
+      icon: Flag,
+      badge: "Audit",
+      badgeType: "danger",
+    },
+    {
+      id: "complaints",
+      label: "Track Grievance",
+      path: "/citizen?tab=complaints",
+      tab: "complaints",
+      icon: CheckCircle2,
+      badge: null,
+    },
+    {
+      id: "verify",
+      label: "On-Site QR Verify",
+      path: "/citizen?tab=verify",
+      tab: "verify",
+      icon: QrCode,
+      badge: "QR",
+      badgeType: "accent",
+    },
+  ];
+
+  /* =========================================================
      STANDARD NAVIGATION (Other Personas)
      ========================================================= */
 
@@ -770,6 +863,40 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
 
                 {item.badge !== null && item.badge !== undefined && (
                   <span className={`nav-badge-pill ${item.badgeType}`}>
+                    {item.badge}
+                  </span>
+                )}
+              </NavLink>
+            );
+          })}
+        </div>
+      ) : isCitizenRole ? (
+        /* =====================================================
+           CITIZEN / PUBLIC PARTICIPATION NAVIGATION
+           ===================================================== */
+        <div className="sidebar-nav-list">
+          <div className="sidebar-section-title">
+            Citizen Oversight
+          </div>
+
+          {citizenNavLinks.map((item) => {
+            const Icon = item.icon;
+            const currentTab = searchParams.get("tab") || "overview";
+            const isActive = location.pathname.startsWith("/citizen") && currentTab === item.tab;
+
+            return (
+              <NavLink
+                key={item.id}
+                to={item.path}
+                className={`nav-item-compact ${isActive ? "active" : ""}`}
+              >
+                <div className="nav-label-wrap">
+                  <Icon size={16} className="nav-icon" />
+                  <span className="nav-label">{item.label}</span>
+                </div>
+
+                {item.badge !== null && item.badge !== undefined && (
+                  <span className={`nav-badge-pill ${item.badgeType || "neutral"}`}>
                     {item.badge}
                   </span>
                 )}

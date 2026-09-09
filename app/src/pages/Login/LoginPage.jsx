@@ -177,7 +177,7 @@ export default function LoginPage() {
                 value={selectedRoleId}
                 onChange={(e) => {
                   setSelectedRoleId(e.target.value);
-                  setErrorMessage("");
+                  setLoginError("");
                 }}
               >
                 {ROLE_LIST.map((role) => (
@@ -202,7 +202,7 @@ export default function LoginPage() {
                   value={loginId}
                   onChange={(e) => {
                     setLoginId(e.target.value);
-                    setErrorMessage("");
+                    setLoginError("");
                   }}
                   placeholder="Enter NIC / Parichay User ID or Email"
                   autoComplete="username"
@@ -234,7 +234,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    setErrorMessage("");
+                    setLoginError("");
                   }}
                   placeholder="Enter password"
                   autoComplete="current-password"

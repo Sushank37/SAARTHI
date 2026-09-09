@@ -6,14 +6,14 @@
 .da-dashboard-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   margin: 0 auto;
-  padding: 4px 0 32px;
-  color: #1e293b;
-  font-family: inherit;
+  padding: 0 0 32px;
+  color: #0f172a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   box-sizing: border-box;
 }
 
@@ -67,9 +67,9 @@
 .da-module-banner {
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-left: 4px solid #005A9C;
+  border-top: 3.5px solid #005A9C;
   border-radius: 8px;
-  padding: 14px 18px;
+  padding: 10px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -84,10 +84,10 @@
 }
 
 .da-module-banner-eyebrow {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   color: #0369a1;
   margin-bottom: 2px;
   display: flex;
@@ -96,16 +96,16 @@
 }
 
 .da-module-banner-title {
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 800;
   color: #0f172a;
-  margin: 0 0 3px 0;
-  letter-spacing: -0.01em;
+  margin: 2px 0 0;
+  letter-spacing: -0.02em;
 }
 
 .da-module-banner-desc {
-  font-size: 12.5px;
-  color: #475569;
+  font-size: 12px;
+  color: #64748b;
   margin: 0;
   line-height: 1.4;
 }
@@ -379,20 +379,25 @@
     grid-template-columns: 1fr;
   }
 }
-
 .da-metric-card {
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 14px 16px;
+  border-radius: 8px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  gap: 4px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
   cursor: pointer;
   transition: all 0.15s ease;
   position: relative;
   overflow: hidden;
 }
+
+.da-metric-card:nth-child(1) { border-top: 3.5px solid #0284c7; }
+.da-metric-card:nth-child(2) { border-top: 3.5px solid #d97706; }
+.da-metric-card:nth-child(3) { border-top: 3.5px solid #e11d48; }
+.da-metric-card:nth-child(4) { border-top: 3.5px solid #6366f1; }
 
 .da-metric-card:hover {
   border-color: #94a3b8;
@@ -400,24 +405,23 @@
 }
 
 .da-metric-card.active-filter {
-  border-color: #b45309;
-  background: #fffbeb;
-  box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.2);
+  border-color: #0284c7;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
 }
 
 .da-metric-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
 }
 
 .da-metric-caption {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  color: #64748b;
-  letter-spacing: 0.04em;
+  color: #475569;
+  letter-spacing: 0.03em;
 }
 
 .da-metric-pill {
@@ -443,15 +447,16 @@
 }
 
 .da-metric-figure {
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 800;
   color: #0f172a;
-  line-height: 1.15;
-  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 2px 0 0;
 }
 
 .da-metric-subtext {
-  font-size: 12px;
+  font-size: 11px;
   color: #64748b;
   line-height: 1.35;
 }

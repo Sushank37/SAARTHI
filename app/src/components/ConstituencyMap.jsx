@@ -5,6 +5,7 @@ import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./ConstituencyMap.css";
+import { API_BASE } from "../constants";
 import {
   MapPin,
   Layers,
@@ -47,23 +48,18 @@ export default function ConstituencyMap({ selectedMP, constituency, onSelectWork
 
   // Fetch GeoJSON from backend API
   const fetchGeoData = useCallback(async () => {
-    if (!selectedMP) return;
     setLoading(true);
     setError(null);
 
     try {
-      let url = `http://127.0.0.1:8000/api/works/geo?mp_name=${encodeURIComponent(selectedMP)}`;
-      if (stageFilter === "Approved") {
-        url += `&stage=Sanction`;
-      }
-      if (riskFilter !== "All") {
-        url += `&risk_level=${encodeURIComponent(riskFilter)}`;
-      }
-      if (searchQuery.trim()) {
-        url += `&q=${encodeURIComponent(searchQuery.trim())}`;
-      }
+      const params = new URLSearchParams();
+      if (selectedMP) params.set("mp_name", selectedMP);
+      if (constituency) params.set("constituency", constituency);
+      if (stageFilter === "Approved") params.set("stage", "Sanction");
+      if (riskFilter !== "All") params.set("risk_level", riskFilter);
+      if (searchQuery.trim()) params.set("q", searchQuery.trim());
 
-      const res = await fetch(url);
+      const res = await fetch(`${API_BASE}/api/works/geo?${params.toString()}`);
       if (!res.ok) {
         throw new Error(`Server returned HTTP ${res.status}`);
       }
@@ -75,7 +71,7 @@ export default function ConstituencyMap({ selectedMP, constituency, onSelectWork
     } finally {
       setLoading(false);
     }
-  }, [selectedMP, stageFilter, riskFilter, searchQuery]);
+  }, [selectedMP, constituency, stageFilter, riskFilter, searchQuery]);
 
   // Refetch when MP or filters change
   useEffect(() => {

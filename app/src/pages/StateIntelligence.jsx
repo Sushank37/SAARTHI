@@ -37,42 +37,62 @@ export default function StateIntelligence() {
   };
 
   return (
-    <div className="compact-page-container">
-      <div className="gov-page-header">
-        <div>
-          <div className="gov-eyebrow">eSAKSHI INTEGRATION / STATE-WISE PERFORMANCE</div>
-          <h2>State & Union Territory Overview</h2>
-          <p>
-            Comparative progress of MPLADS work volume, financial risk exposure, and audit workload
-            across all States and UTs. Click any state to explore its individual works.
-          </p>
-        </div>
-        <div className="gov-header-actions">
-          <button className="gov-btn-outline" onClick={handleExport}>
-            <Download size={15} />
-            <span>Export CSV</span>
-          </button>
+    <div className="gov-mp-shell">
+      {/* Page Title & Breadcrumb Header Card */}
+      <div className="gov-mp-header-card">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
+              <span className="gov-parliament-badge" style={{ background: "#eff6ff", color: "#005A9C", borderColor: "#bfdbfe" }}>
+                <Map size={12} />
+                <span>Pan-India Performance · eSAKSHI Integration</span>
+              </span>
+            </div>
+            <h1 className="gov-mp-page-title" style={{ fontSize: "18px", margin: "2px 0" }}>
+              State & Union Territory Overview
+            </h1>
+            <p className="gov-mp-page-subtitle">
+              Comparative progress of MPLADS work volume, financial risk exposure, and audit workload across all States and UTs. Click any state to explore its individual works.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <button className="gov-redirect-link-btn" onClick={handleExport}>
+              <Download size={13} />
+              <span>Export CSV</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="gov-card full-width-card">
-        <div className="table-controls-bar">
-          <div className="search-box-wrap">
-            <Search size={15} />
+      <div className="gov-mp-card">
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap", marginBottom: "10px" }}>
+          <div style={{ position: "relative", flexGrow: 1, maxWidth: "420px" }}>
+            <Search size={14} style={{ position: "absolute", left: "10px", top: "9px", color: "#64748b" }} />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search State or Union Territory..."
+              style={{
+                width: "100%",
+                height: "32px",
+                paddingLeft: "32px",
+                paddingRight: "10px",
+                fontSize: "12px",
+                border: "1px solid #cbd5e1",
+                borderRadius: "4px",
+                background: "#ffffff",
+              }}
             />
           </div>
-          <span className="results-count-tag">
+          <span className="gov-parliament-badge" style={{ marginLeft: "auto" }}>
             {filteredStates.length} States & UTs analyzed
           </span>
         </div>
 
-        <div className="table-responsive">
-          <table className="gov-data-table">
+        <div style={{ overflowX: "auto" }}>
+          <table className="gov-mp-table" style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
                 <th>State / Union Territory</th>
@@ -88,8 +108,8 @@ export default function StateIntelligence() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-5">
-                    <div className="spinner" /> Loading State metrics...
+                  <td colSpan={8} style={{ textAlign: "center", padding: "30px", color: "#64748b", fontSize: "12px" }}>
+                    Loading State metrics...
                   </td>
                 </tr>
               ) : (
@@ -98,39 +118,44 @@ export default function StateIntelligence() {
                   const review = Number(item.REVIEW_REQUIRED || 0);
                   const rate = total ? ((review / total) * 100).toFixed(1) : "0.0";
                   return (
-                    <tr
-                      key={idx}
-                      onClick={() =>
-                        navigate(`/works?state=${encodeURIComponent(item.STATE_NAME)}`)
-                      }
-                    >
+                    <tr key={idx}>
                       <td>
-                        <strong>{item.STATE_NAME || "State Unknown"}</strong>
+                        <strong style={{ color: "#0f172a" }}>{item.STATE_NAME || "State Unknown"}</strong>
                       </td>
-                      <td>{formatNumber(total)}</td>
+                      <td><strong>{formatNumber(total)}</strong></td>
                       <td>
-                        <strong className="danger-text">{formatNumber(item.HIGH_RISK)}</strong>
+                        <span style={{ color: Number(item.HIGH_RISK) > 0 ? "#dc2626" : "#475569", fontWeight: "700" }}>
+                          {formatNumber(item.HIGH_RISK)}
+                        </span>
                       </td>
                       <td>{formatNumber(item.MEDIUM_RISK)}</td>
                       <td>{formatNumber(item.HIGH_DUPLICATE)}</td>
                       <td>
-                        <strong className="warning-text">{formatNumber(review)}</strong>
+                        <strong style={{ color: "#d97706" }}>{formatNumber(review)}</strong>
                       </td>
                       <td>
-                        <div className="progress-cell">
-                          <div className="mini-progress-track">
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <div style={{ height: "6px", width: "60px", background: "#f1f5f9", borderRadius: "3px", overflow: "hidden" }}>
                             <div
-                              className="mini-progress-fill"
-                              style={{ width: `${Math.min(100, Number(rate))}%` }}
+                              style={{
+                                height: "100%",
+                                width: `${Math.min(100, Number(rate))}%`,
+                                background: Number(rate) > 20 ? "#dc2626" : "#0284c7",
+                                borderRadius: "3px",
+                              }}
                             />
                           </div>
-                          <span>{rate}%</span>
+                          <span style={{ fontSize: "11.5px", fontWeight: "600" }}>{rate}%</span>
                         </div>
                       </td>
                       <td>
-                        <button className="table-action-btn">
+                        <button
+                          type="button"
+                          className="gov-redirect-link-btn"
+                          onClick={() => navigate(`/works?state=${encodeURIComponent(item.STATE_NAME)}`)}
+                        >
                           <span>View Works</span>
-                          <ChevronRight size={14} />
+                          <ChevronRight size={13} />
                         </button>
                       </td>
                     </tr>

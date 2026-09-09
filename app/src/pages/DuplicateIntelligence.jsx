@@ -101,41 +101,74 @@ export default function DuplicateIntelligence({ onSelectWork }) {
   };
 
   return (
-    <div className="compact-page-container">
-      <div className="gov-page-header">
-        <div>
-          <div className="gov-eyebrow">eSAKSHI INTEGRATION / AUDIT VERIFICATION</div>
-          <h2>Duplicate Work Proposals</h2>
-          <p>
-            Identifies works with matching titles, identical sanction amounts, or overlapping locations
-            within the same constituency to prevent double funding.
-          </p>
-        </div>
-        <div className="gov-header-actions">
-          <button className="gov-btn-outline" onClick={handleExport}>
-            <Download size={15} />
-            <span>Export CSV</span>
-          </button>
+    <div className="gov-mp-shell">
+      {/* Page Title & Breadcrumb Header Card */}
+      <div className="gov-mp-header-card">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
+              <span className="gov-parliament-badge" style={{ background: "#fef2f2", color: "#b91c1c", borderColor: "#fca5a5" }}>
+                <GitBranch size={12} />
+                <span>AI Deduplication Engine · eSAKSHI Integration</span>
+              </span>
+            </div>
+            <h1 className="gov-mp-page-title" style={{ fontSize: "18px", margin: "2px 0" }}>
+              Duplicate Work Proposals
+            </h1>
+            <p className="gov-mp-page-subtitle">
+              Identifies works with matching titles, identical sanction amounts, or overlapping locations within the same constituency to prevent double funding.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <button className="gov-redirect-link-btn" onClick={handleExport}>
+              <Download size={13} />
+              <span>Export CSV</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Cluster Table */}
-      <div className="gov-card full-width-card">
-        <div className="table-controls-bar">
-          <div className="search-box-wrap">
-            <Search size={15} />
+      {/* Cluster Table Card */}
+      <div className="gov-mp-card">
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap", marginBottom: "10px" }}>
+          <div style={{ position: "relative", flexGrow: 1, maxWidth: "420px" }}>
+            <Search size={14} style={{ position: "absolute", left: "10px", top: "9px", color: "#64748b" }} />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by ID, constituency, state, or MP name..."
+              style={{
+                width: "100%",
+                height: "32px",
+                paddingLeft: "32px",
+                paddingRight: "10px",
+                fontSize: "12px",
+                border: "1px solid #cbd5e1",
+                borderRadius: "4px",
+                background: "#ffffff",
+              }}
             />
           </div>
 
-          <div className="filter-group">
-            <Filter size={15} />
-            <span>Risk Level:</span>
-            <select value={level} onChange={(e) => setLevel(e.target.value)}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <Filter size={14} color="#64748b" />
+            <span style={{ fontSize: "11.5px", fontWeight: "600", color: "#475569" }}>Risk Level:</span>
+            <select
+              value={level}
+              onChange={(e) => setLevel(e.target.value)}
+              style={{
+                height: "32px",
+                fontSize: "12px",
+                border: "1px solid #cbd5e1",
+                borderRadius: "4px",
+                padding: "0 8px",
+                background: "#ffffff",
+                fontWeight: "600",
+                color: "#0f172a",
+              }}
+            >
               <option value="ALL">All Categories</option>
               <option value="HIGH">High Similarity (Priority)</option>
               <option value="MEDIUM">Medium Similarity</option>
@@ -143,13 +176,13 @@ export default function DuplicateIntelligence({ onSelectWork }) {
             </select>
           </div>
 
-          <span className="results-count-tag">
+          <span className="gov-parliament-badge" style={{ marginLeft: "auto" }}>
             {formatNumber(totalClusters)} clusters found
           </span>
         </div>
 
-        <div className="table-responsive">
-          <table className="gov-data-table">
+        <div style={{ overflowX: "auto" }}>
+          <table className="gov-mp-table" style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
                 <th>Group ID</th>
@@ -166,13 +199,13 @@ export default function DuplicateIntelligence({ onSelectWork }) {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-5">
-                    <div className="spinner" /> Loading duplicate clusters...
+                  <td colSpan={9} style={{ textAlign: "center", padding: "30px", color: "#64748b", fontSize: "12px" }}>
+                    Loading duplicate clusters...
                   </td>
                 </tr>
               ) : filteredClusters.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-5">
+                  <td colSpan={9} style={{ textAlign: "center", padding: "30px", color: "#64748b", fontSize: "12px" }}>
                     No duplicate clusters match the current criteria.
                   </td>
                 </tr>
@@ -180,21 +213,23 @@ export default function DuplicateIntelligence({ onSelectWork }) {
                 filteredClusters.map((cluster, idx) => (
                   <tr key={idx} onClick={() => loadClusterDetails(cluster.CLUSTER_ID)}>
                     <td>
-                      <strong className="cluster-tag">Cluster #{cluster.CLUSTER_ID}</strong>
+                      <strong style={{ fontFamily: "monospace", color: "#005A9C", fontSize: "12px" }}>
+                        Cluster #{cluster.CLUSTER_ID}
+                      </strong>
                     </td>
                     <td>
-                      <span className="badge-pill count">
+                      <span className="gov-parliament-badge" style={{ background: "#eff6ff", color: "#005A9C", borderColor: "#bfdbfe" }}>
                         {cluster.CLUSTER_SIZE} works
                       </span>
                     </td>
                     <td>
-                      <div>{cluster.STATE_NAME}</div>
-                      <small className="block-muted">{cluster.CONSTITUENCY}</small>
+                      <div style={{ fontWeight: "600" }}>{cluster.STATE_NAME}</div>
+                      <small style={{ color: "#64748b", fontSize: "11px" }}>{cluster.CONSTITUENCY}</small>
                     </td>
                     <td>
                       <span>{cluster.MP_NAME || "Hon'ble MP"}</span>
                       {cluster.MP_NAMES?.length > 1 && (
-                        <small className="block-muted">
+                        <small style={{ display: "block", color: "#64748b", fontSize: "10.5px" }}>
                           +{cluster.MP_NAMES.length - 1} other MPs
                         </small>
                       )}
@@ -214,19 +249,26 @@ export default function DuplicateIntelligence({ onSelectWork }) {
                       </strong>
                     </td>
                     <td>
-                      <strong className="score-highlight">
+                      <strong style={{ color: "#005A9C" }}>
                         {formatDecimal(cluster.CLUSTER_SUSPICION_SCORE)}
                       </strong>
                     </td>
                     <td>
                       <span
-                        className={`risk-tag ${cluster.DUPLICATE_RISK?.toLowerCase() || "medium"}`}
+                        className="gov-parliament-badge"
+                        style={{
+                          background: cluster.DUPLICATE_RISK === "HIGH" ? "#fef2f2" : "#fffbeb",
+                          color: cluster.DUPLICATE_RISK === "HIGH" ? "#b91c1c" : "#b45309",
+                          borderColor: cluster.DUPLICATE_RISK === "HIGH" ? "#fecaca" : "#fde68a",
+                        }}
                       >
                         {cluster.DUPLICATE_RISK || "FLAGGED"}
                       </span>
                     </td>
                     <td>
-                      <button className="table-action-btn">Inspect Cluster →</button>
+                      <button type="button" className="gov-redirect-link-btn">
+                        Inspect Cluster →
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -236,21 +278,23 @@ export default function DuplicateIntelligence({ onSelectWork }) {
         </div>
 
         {totalPages > 1 && (
-          <div className="gov-pagination-bar">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", paddingTop: "10px", borderTop: "1px solid #f1f5f9" }}>
             <button
               disabled={page <= 1}
               onClick={() => loadClusters(page - 1)}
-              className="gov-page-btn"
+              className="gov-redirect-link-btn"
+              style={{ opacity: page <= 1 ? 0.5 : 1 }}
             >
               Previous
             </button>
-            <span className="page-indicator">
+            <span style={{ fontSize: "11.5px", color: "#64748b", fontWeight: "600" }}>
               Page {page} of {totalPages}
             </span>
             <button
               disabled={page >= totalPages}
               onClick={() => loadClusters(page + 1)}
-              className="gov-page-btn"
+              className="gov-redirect-link-btn"
+              style={{ opacity: page >= totalPages ? 0.5 : 1 }}
             >
               Next
             </button>

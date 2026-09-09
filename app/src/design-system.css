@@ -1,0 +1,720 @@
+/* ==============================================================================
+   SAARTHI / eSAKSHI — GLOBAL DESIGN SYSTEM & UI/UX FOUNDATION
+   Single Source of Truth for Design Tokens, Typography, and Components
+   Applies across ALL Dashboards: MoSPI Admin, MP, Citizen, DA, IA, and Shared Tools
+   ============================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap');
+
+:root {
+  /* =========================================================
+     1. OFFICIAL GOVERNMENT COLOR PALETTE
+  ========================================================= */
+  --gov-primary: #1e3a8a;          /* Official Indian Navy (Primary Brand) */
+  --gov-primary-hover: #172554;
+  --gov-primary-light: #eff6ff;
+  --gov-primary-border: #bfdbfe;
+
+  --gov-accent: #ea580c;           /* Saffron Accent (Active Highlights & Badges) */
+  --gov-accent-hover: #c2410c;
+  --gov-accent-light: #fff7ed;
+  --gov-accent-border: #fed7aa;
+
+  --gov-success: #16a34a;          /* National Green (Approved / Completed) */
+  --gov-success-bg: #f0fdf4;
+  --gov-success-border: #bbf7d0;
+  --gov-success-text: #15803d;
+
+  --gov-warning: #d97706;          /* Amber (Delayed / Under Scrutiny) */
+  --gov-warning-bg: #fffbeb;
+  --gov-warning-border: #fde68a;
+  --gov-warning-text: #b45309;
+
+  --gov-danger: #dc2626;           /* Crimson Alert (High Risk / Flagged) */
+  --gov-danger-bg: #fef2f2;
+  --gov-danger-border: #fecaca;
+  --gov-danger-text: #b91c1c;
+
+  --gov-info: #0284c7;             /* Sky Blue (Informational) */
+  --gov-info-bg: #f0f9ff;
+  --gov-info-border: #bae6fd;
+  --gov-info-text: #0369a1;
+
+  /* Surfaces & Backgrounds */
+  --gov-bg-page: #f8fafc;          /* Slate Page Background */
+  --gov-bg-card: #ffffff;          /* Pure White Card Surface */
+  --gov-bg-muted: #f1f5f9;         /* Subdued Strip / Inactive Header */
+  --gov-bg-hover: #f8fafc;         /* Standard Hover State */
+
+  /* Neutral Borders */
+  --gov-border: #e2e8f0;           /* Standard 1px Surface Border */
+  --gov-border-strong: #cbd5e1;    /* Input, Control & Dropdown Border */
+  --gov-border-focus: #2563eb;     /* Focused Control Ring */
+
+  /* Neutral Text Hierarchy */
+  --gov-text-primary: #0f172a;     /* Headings, titles, high-emphasis values */
+  --gov-text-secondary: #334155;   /* Body copy, labels, primary metadata */
+  --gov-text-muted: #64748b;       /* Supporting captions, column headers, timestamps */
+  --gov-text-light: #94a3b8;       /* Disabled, placeholders, dividers */
+
+  /* Backward Compatibility Aliases */
+  --gov-navy-dark: var(--gov-primary);
+  --gov-navy-mid: var(--gov-primary);
+  --gov-navy-light: #2563eb;
+  --bg-page: var(--gov-bg-page);
+  --bg-card: var(--gov-bg-card);
+  --bg-card-muted: var(--gov-bg-muted);
+  --bg-hover: var(--gov-bg-hover);
+  --border-color: var(--gov-border);
+  --border-subtle: #edf2f7;
+  --border-focus: var(--gov-border-focus);
+  --text-primary: var(--gov-text-primary);
+  --text-secondary: var(--gov-text-secondary);
+  --text-muted: var(--gov-text-muted);
+  --text-light: var(--gov-text-light);
+
+  --danger-bg: var(--gov-danger-bg);
+  --danger-text: var(--gov-danger-text);
+  --danger-border: var(--gov-danger-border);
+  --warning-bg: var(--gov-warning-bg);
+  --warning-text: var(--gov-warning-text);
+  --warning-border: var(--gov-warning-border);
+  --success-bg: var(--gov-success-bg);
+  --success-text: var(--gov-success-text);
+  --success-border: var(--gov-success-border);
+  --info-bg: var(--gov-info-bg);
+  --info-text: var(--gov-info-text);
+  --info-border: var(--gov-info-border);
+
+  /* =========================================================
+     2. GLOBAL TYPOGRAPHY SCALE (Inter / System Sans)
+  ========================================================= */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --text-title: 20px;              /* Page / Hero titles (Weight: 800) */
+  --text-heading: 15px;            /* Card / Section titles (Weight: 700) */
+  --text-subheading: 13.5px;       /* Group labels, sub-headers (Weight: 600) */
+  --text-body: 13px;               /* Standard body text (Weight: 400/500) */
+  --text-table: 12.5px;            /* Table data cell text (Weight: 500) */
+  --text-caption: 12px;            /* Captions, subtext, badges (Weight: 500) */
+  --text-tiny: 11px;               /* Uppercase table headers, KPI labels (Weight: 700) */
+
+  /* =========================================================
+     3. SPACING & SIZING SCALE
+  ========================================================= */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* =========================================================
+     4. BORDER RADII & SHADOWS
+  ========================================================= */
+  --radius-sm: 4px;                /* Minor tags, code blocks */
+  --radius-md: 6px;                /* Buttons, form inputs, dropdowns, pills */
+  --radius-lg: 8px;                /* Standard cards, tables, drawer sections */
+  --radius-xl: 10px;               /* Hero banners, container wrappers */
+  --radius-pill: 9999px;           /* Badges, round pills */
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+  --shadow-popover: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+}
+
+/* Global Reset */
+body, html {
+  font-family: var(--font-sans);
+  background-color: var(--gov-bg-page);
+  color: var(--gov-text-secondary);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==============================================================================
+   5. UNIFIED DASHBOARD LAYOUT & PAGE CONTAINERS
+   All 5 Dashboards share identical padding, max-width, and vertical flow
+   ============================================================================== */
+
+.gov-page-container,
+.mp-dashboard-container,
+.da-dashboard-container,
+.ia-dashboard-container,
+.mospi-dashboard-container,
+.citizen-portal-container,
+.compact-page-container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 14px 18px 36px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 16px !important;
+  font-family: var(--font-sans);
+  box-sizing: border-box;
+}
+
+/* ==============================================================================
+   6. UNIFIED PAGE & HERO HEADERS
+   ============================================================================== */
+
+.gov-page-header,
+.mp-hero-banner,
+.da-header-card,
+.ia-header-card,
+.mospi-header-card,
+.citizen-hero-banner {
+  background: #ffffff !important;
+  border: 1px solid var(--gov-border) !important;
+  border-radius: var(--radius-xl) !important;
+  padding: 18px 22px !important;
+  box-shadow: var(--shadow-sm) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 16px !important;
+  color: var(--gov-text-primary) !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+/* Special High-Identity Tone for Government Banner */
+.mp-hero-banner,
+.citizen-hero-banner {
+  background: linear-gradient(135deg, #0f2744 0%, #1e3a8a 55%, #1e40af 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #1e3a8a !important;
+}
+
+.mp-hero-banner h1,
+.citizen-hero-banner h1 {
+  color: #ffffff !important;
+  font-size: var(--text-title) !important;
+  font-weight: 800 !important;
+  margin: 0 0 4px 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.mp-hero-banner p,
+.citizen-hero-banner p {
+  color: #cbd5e1 !important;
+  font-size: var(--text-body) !important;
+  margin: 0 !important;
+  line-height: 1.45 !important;
+}
+
+.gov-page-header h2,
+.da-header-title h2,
+.ia-header-title h2,
+.mospi-header-title h2 {
+  font-size: var(--text-title) !important;
+  font-weight: 800 !important;
+  color: var(--gov-text-primary) !important;
+  margin: 2px 0 4px 0 !important;
+  letter-spacing: -0.015em !important;
+}
+
+.gov-eyebrow,
+.da-eyebrow,
+.ia-eyebrow,
+.mospi-eyebrow {
+  font-size: var(--text-tiny) !important;
+  font-weight: 700 !important;
+  color: var(--gov-accent) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-bottom: 2px !important;
+}
+
+.gov-page-header p,
+.da-header-desc,
+.ia-header-desc,
+.mospi-header-desc {
+  font-size: var(--text-body) !important;
+  color: var(--gov-text-muted) !important;
+  margin: 0 !important;
+  line-height: 1.45 !important;
+}
+
+/* ==============================================================================
+   7. UNIFIED KPI CARDS GRID & KPI CARDS
+   Identical dimensions, padding, borders, and typography everywhere
+   ============================================================================== */
+
+.gov-kpi-grid,
+.mp-kpi-grid,
+.da-kpi-grid,
+.ia-kpi-grid,
+.mospi-kpi-grid,
+.citizen-kpi-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.gov-kpi-card,
+.mp-kpi-card,
+.da-kpi-card,
+.ia-kpi-card,
+.mospi-kpi-card,
+.citizen-kpi-card {
+  background: var(--gov-bg-card) !important;
+  border: 1px solid var(--gov-border) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 14px 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+  box-shadow: var(--shadow-sm) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  transition: all 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+
+.gov-kpi-card:hover,
+.mp-kpi-card:hover,
+.da-kpi-card:hover,
+.ia-kpi-card:hover,
+.mospi-kpi-card:hover,
+.citizen-kpi-card:hover {
+  border-color: var(--gov-border-strong) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* Top Accent Line (3px) on all KPI Cards */
+.gov-kpi-card::before,
+.mp-kpi-card::before,
+.da-kpi-card::before,
+.ia-kpi-card::before,
+.mospi-kpi-card::before,
+.citizen-kpi-card::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 3px !important;
+  background: var(--gov-border-strong) !important;
+}
+
+/* KPI Card Color Variants */
+.gov-kpi-card.blue::before, .mp-kpi-card.blue::before, .da-kpi-card.blue::before, .ia-kpi-card.blue::before, .mospi-kpi-card.blue::before, .citizen-kpi-card.blue::before,
+.gov-kpi-card.primary::before, .mp-kpi-card.primary::before, .da-kpi-card.primary::before, .ia-kpi-card.primary::before { background: var(--gov-primary) !important; }
+
+.gov-kpi-card.green::before, .mp-kpi-card.green::before, .da-kpi-card.green::before, .ia-kpi-card.green::before, .mospi-kpi-card.green::before, .citizen-kpi-card.green::before,
+.gov-kpi-card.success::before, .mp-kpi-card.success::before, .da-kpi-card.success::before, .ia-kpi-card.success::before { background: var(--gov-success) !important; }
+
+.gov-kpi-card.amber::before, .mp-kpi-card.amber::before, .da-kpi-card.amber::before, .ia-kpi-card.amber::before, .mospi-kpi-card.amber::before, .citizen-kpi-card.amber::before,
+.gov-kpi-card.warning::before, .mp-kpi-card.warning::before, .da-kpi-card.warning::before, .ia-kpi-card.warning::before { background: var(--gov-warning) !important; }
+
+.gov-kpi-card.red::before, .mp-kpi-card.red::before, .da-kpi-card.red::before, .ia-kpi-card.red::before, .mospi-kpi-card.red::before, .citizen-kpi-card.red::before,
+.gov-kpi-card.danger::before, .mp-kpi-card.danger::before, .da-kpi-card.danger::before, .ia-kpi-card.danger::before { background: var(--gov-danger) !important; }
+
+.gov-kpi-card.purple::before, .mp-kpi-card.purple::before, .da-kpi-card.purple::before, .ia-kpi-card.purple::before, .mospi-kpi-card.purple::before, .citizen-kpi-card.purple::before { background: #7c3aed !important; }
+
+/* KPI Card Elements */
+.gov-kpi-header,
+.mp-kpi-header,
+.da-kpi-header,
+.ia-kpi-header,
+.mospi-kpi-header,
+.citizen-kpi-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.gov-kpi-label,
+.mp-kpi-label,
+.da-kpi-label,
+.ia-kpi-label,
+.mospi-kpi-label,
+.citizen-kpi-label {
+  font-size: var(--text-tiny) !important;
+  font-weight: 700 !important;
+  color: var(--gov-text-muted) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+}
+
+.gov-kpi-value,
+.mp-kpi-value,
+.da-kpi-value,
+.ia-kpi-value,
+.mospi-kpi-value,
+.citizen-kpi-value {
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: var(--gov-text-primary) !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.2 !important;
+}
+
+.gov-kpi-sub,
+.mp-kpi-sub,
+.da-kpi-sub,
+.ia-kpi-sub,
+.mospi-kpi-sub,
+.citizen-kpi-sub {
+  font-size: 11.5px !important;
+  color: var(--gov-text-muted) !important;
+  line-height: 1.3 !important;
+}
+
+/* ==============================================================================
+   8. UNIFIED TAB NAVIGATION BAR
+   Segmented pill design with matching active Navy state across all dashboards
+   ============================================================================== */
+
+.gov-tab-bar,
+.mp-tab-bar,
+.da-tab-nav-bar,
+.ia-tab-nav-bar,
+.mospi-tab-bar,
+.citizen-tab-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  background: #ffffff !important;
+  border: 1px solid var(--gov-border) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 5px !important;
+  overflow-x: auto !important;
+  box-shadow: var(--shadow-sm) !important;
+  box-sizing: border-box !important;
+}
+
+.gov-tab-pill,
+.mp-tab-pill,
+.da-tab-pill,
+.ia-tab-pill,
+.mospi-tab-pill,
+.citizen-tab-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  height: 34px !important;
+  padding: 0 14px !important;
+  border-radius: var(--radius-md) !important;
+  font-size: var(--text-body) !important;
+  font-weight: 600 !important;
+  color: var(--gov-text-secondary) !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all 0.12s ease !important;
+  font-family: inherit !important;
+  text-decoration: none !important;
+}
+
+.gov-tab-pill:hover,
+.mp-tab-pill:hover,
+.da-tab-pill:hover,
+.ia-tab-pill:hover,
+.mospi-tab-pill:hover,
+.citizen-tab-pill:hover {
+  background: var(--gov-bg-muted) !important;
+  color: var(--gov-text-primary) !important;
+}
+
+.gov-tab-pill.active,
+.mp-tab-pill.active,
+.da-tab-pill.active,
+.ia-tab-pill.active,
+.mospi-tab-pill.active,
+.citizen-tab-pill.active {
+  background: var(--gov-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(30, 58, 138, 0.25) !important;
+}
+
+/* ==============================================================================
+   9. UNIFIED CONTENT CARDS
+   ============================================================================== */
+
+.gov-card,
+.mp-card,
+.da-section-card,
+.ia-section-card,
+.mospi-card,
+.citizen-card {
+  background: var(--gov-bg-card) !important;
+  border: 1px solid var(--gov-border) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 16px 20px !important;
+  box-shadow: var(--shadow-sm) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  box-sizing: border-box !important;
+}
+
+.gov-card-header,
+.mp-card-header,
+.da-section-header,
+.ia-section-header,
+.citizen-card-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid var(--gov-bg-muted) !important;
+}
+
+.gov-card-title,
+.mp-card-title,
+.citizen-card-title {
+  font-size: var(--text-heading) !important;
+  font-weight: 700 !important;
+  color: var(--gov-text-primary) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+}
+
+.gov-card-subtitle,
+.mp-card-subtitle,
+.citizen-card-subtitle {
+  font-size: var(--text-table) !important;
+  color: var(--gov-text-muted) !important;
+  margin-top: 2px !important;
+}
+
+/* ==============================================================================
+   10. UNIFIED DATA TABLES
+   Sticky header, clean row hover, uniform typography
+   ============================================================================== */
+
+.gov-table-wrapper,
+.mp-table-wrapper,
+.da-table-wrapper,
+.ia-table-wrapper,
+.citizen-table-wrapper {
+  width: 100% !important;
+  overflow-x: auto !important;
+  border: 1px solid var(--gov-border) !important;
+  border-radius: var(--radius-md) !important;
+  background: #ffffff !important;
+}
+
+.gov-table,
+.mp-table,
+.da-table,
+.ia-table,
+.citizen-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  text-align: left !important;
+  font-size: var(--text-table) !important;
+  font-family: inherit !important;
+}
+
+.gov-table th,
+.mp-table th,
+.da-table th,
+.ia-table th,
+.citizen-table th {
+  background: var(--gov-bg-muted) !important;
+  color: var(--gov-text-secondary) !important;
+  font-size: var(--text-tiny) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  padding: 10px 14px !important;
+  border-bottom: 1px solid var(--gov-border) !important;
+  white-space: nowrap !important;
+}
+
+.gov-table td,
+.mp-table td,
+.da-table td,
+.ia-table td,
+.citizen-table td {
+  padding: 10px 14px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: var(--gov-text-primary) !important;
+  vertical-align: middle !important;
+  font-size: var(--text-table) !important;
+}
+
+.gov-table tr:hover td,
+.mp-table tr:hover td,
+.da-table tr:hover td,
+.ia-table tr:hover td,
+.citizen-table tr:hover td {
+  background: var(--gov-bg-hover) !important;
+}
+
+/* ==============================================================================
+   11. UNIFIED BUTTONS
+   ============================================================================== */
+
+.gov-btn,
+.mp-btn,
+.da-btn,
+.ia-btn,
+.citizen-quick-action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  height: 34px !important;
+  padding: 0 14px !important;
+  font-size: var(--text-table) !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-md) !important;
+  cursor: pointer !important;
+  transition: all 0.12s ease !important;
+  text-decoration: none !important;
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
+.gov-btn-primary,
+.mp-btn-primary,
+.citizen-quick-action-btn.primary {
+  background: var(--gov-primary) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--gov-primary) !important;
+  box-shadow: 0 1px 2px rgba(30, 58, 138, 0.2) !important;
+}
+
+.gov-btn-primary:hover,
+.mp-btn-primary:hover,
+.citizen-quick-action-btn.primary:hover {
+  background: var(--gov-primary-hover) !important;
+  border-color: var(--gov-primary-hover) !important;
+}
+
+.gov-btn-secondary,
+.mp-btn-secondary,
+.citizen-quick-action-btn.secondary {
+  background: #ffffff !important;
+  color: var(--gov-text-primary) !important;
+  border: 1px solid var(--gov-border-strong) !important;
+}
+
+.gov-btn-secondary:hover,
+.mp-btn-secondary:hover,
+.citizen-quick-action-btn.secondary:hover {
+  background: var(--gov-bg-muted) !important;
+  border-color: var(--gov-text-muted) !important;
+}
+
+.gov-btn-danger,
+.mp-btn-danger {
+  background: var(--gov-danger-bg) !important;
+  color: var(--gov-danger-text) !important;
+  border: 1px solid var(--gov-danger-border) !important;
+}
+
+.gov-btn-danger:hover,
+.mp-btn-danger:hover {
+  background: #fee2e2 !important;
+}
+
+/* ==============================================================================
+   12. UNIFIED STATUS BADGES & PILLS
+   ============================================================================== */
+
+.gov-badge,
+.mp-badge,
+.da-badge,
+.ia-badge,
+.status-pill-public {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 2px 8px !important;
+  border-radius: var(--radius-pill) !important;
+  font-size: var(--text-tiny) !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+}
+
+.gov-badge-success,
+.status-pill-public.completed {
+  background: var(--gov-success-bg) !important;
+  color: var(--gov-success-text) !important;
+  border: 1px solid var(--gov-success-border) !important;
+}
+
+.gov-badge-info,
+.status-pill-public.ongoing {
+  background: var(--gov-primary-light) !important;
+  color: var(--gov-primary) !important;
+  border: 1px solid var(--gov-primary-border) !important;
+}
+
+.gov-badge-warning,
+.status-pill-public.sanctioned {
+  background: var(--gov-warning-bg) !important;
+  color: var(--gov-warning-text) !important;
+  border: 1px solid var(--gov-warning-border) !important;
+}
+
+.gov-badge-danger,
+.status-pill-public.delayed {
+  background: var(--gov-danger-bg) !important;
+  color: var(--gov-danger-text) !important;
+  border: 1px solid var(--gov-danger-border) !important;
+}
+
+/* ==============================================================================
+   13. UNIFIED FORM INPUTS & DROPDOWNS
+   ============================================================================== */
+
+.gov-input,
+.gov-select,
+.gov-textarea,
+.citizen-input,
+.citizen-select,
+.citizen-textarea,
+.mp-input,
+.da-input,
+.ia-input {
+  height: 34px !important;
+  padding: 0 11px !important;
+  border: 1px solid var(--gov-border-strong) !important;
+  border-radius: var(--radius-md) !important;
+  font-size: var(--text-table) !important;
+  font-family: inherit !important;
+  color: var(--gov-text-primary) !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.gov-textarea,
+.citizen-textarea {
+  height: auto !important;
+  min-height: 90px !important;
+  padding: 8px 11px !important;
+  resize: vertical !important;
+}
+
+.gov-input:focus,
+.gov-select:focus,
+.gov-textarea:focus,
+.citizen-input:focus,
+.citizen-select:focus,
+.citizen-textarea:focus {
+  outline: none !important;
+  border-color: var(--gov-primary) !important;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12) !important;
+}
