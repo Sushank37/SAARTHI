@@ -79,59 +79,58 @@ export default function CitizenEvidenceTab({ onSelectWork, onReportWork }) {
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       {/* Banner */}
-      <div className="citizen-card" style={{ padding: "16px 20px" }}>
-        <div className="citizen-card-title">
-          <Camera size={18} color="#2563eb" />
+      <div className="gov-mp-card">
+        <div className="card-section-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <Camera size={15} color="#005A9C" />
           <span>Physical Evidence & Geo-tagged Photographic Timeline</span>
         </div>
-        <div className="citizen-card-subtitle">
+        <div className="card-section-desc">
           Social audit transparency: compare pre-commencement sites against delivered infrastructure with GPS validation.
         </div>
       </div>
 
       {/* Evidence Cards */}
       {evidenceItems.map((item) => (
-        <div key={item.id} className="citizen-card" style={{ gap: "14px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px" }}>
+        <div key={item.id} className="gov-mp-card" style={{ gap: "10px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                <strong style={{ fontFamily: "monospace", color: "#1e3a8a", fontSize: "14px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
+                <strong style={{ fontFamily: "monospace", color: "#005A9C", fontSize: "13px" }}>
                   {item.id}
                 </strong>
-                <span className="qr-distance-badge">
-                  <ShieldCheck size={13} />
+                <span className="gov-parliament-badge" style={{ background: "#ecfdf5", color: "#047857", borderColor: "#a7f3d0", fontSize: "10.5px" }}>
+                  <ShieldCheck size={12} />
                   <span>GPS Geofence: {item.geofenceMatch}</span>
                 </span>
               </div>
-              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: 0 }}>
+              <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: 0 }}>
                 {item.title}
               </h3>
-              <span style={{ fontSize: "12px", color: "#64748b", display: "flex", alignItems: "center", gap: "4px", marginTop: "3px" }}>
-                <MapPin size={12} color="#ea580c" />
-                {item.location} · Sanctioned: <strong>{item.cost}</strong> · Agency: {item.agency}
+              <span style={{ fontSize: "11.5px", color: "#64748b", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
+                <MapPin size={11} color="#005A9C" />
+                {item.location} · Sanctioned: <strong style={{ color: "#0f172a" }}>{item.cost}</strong> · Agency: {item.agency}
               </span>
             </div>
 
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div style={{ display: "flex", gap: "6px" }}>
               <button
                 type="button"
-                className="citizen-quick-action-btn"
-                style={{ color: "#1e3a8a", borderColor: "#cbd5e1" }}
+                className="gov-redirect-link-btn"
                 onClick={() => onSelectWork && onSelectWork({ WORK_ID: item.id, WORK_DESCRIPTION: item.title })}
               >
-                <Eye size={13} />
+                <Eye size={12} />
                 <span>Full Dossier</span>
               </button>
 
               <button
                 type="button"
-                className="citizen-quick-action-btn"
+                className="gov-redirect-link-btn"
                 style={{ color: "#b91c1c", borderColor: "#fca5a5", background: "#fef2f2" }}
                 onClick={() => onReportWork && onReportWork({ WORK_ID: item.id, WORK_DESCRIPTION: item.title, IDA_NAME: item.location })}
               >
-                <Flag size={13} />
+                <Flag size={12} />
                 <span>Report Discrepancy</span>
               </button>
             </div>

@@ -82,51 +82,54 @@ export default function CitizenComplaintsTab({ initialComplaintId }) {
   const currentStepIdx = getStepIndex(activeComplaint?.status);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       {/* Lookup Bar */}
-      <div className="citizen-card" style={{ padding: "16px 20px" }}>
-        <form onSubmit={handleSearch} style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+      <div className="gov-mp-card">
+        <form onSubmit={handleSearch} style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
           <div style={{ position: "relative", flexGrow: 1, maxWidth: "420px" }}>
-            <Search size={15} style={{ position: "absolute", left: "12px", top: "11px", color: "#64748b" }} />
+            <Search size={14} style={{ position: "absolute", left: "10px", top: "9px", color: "#64748b" }} />
             <input
               type="text"
               className="citizen-input"
-              style={{ paddingLeft: "36px", fontFamily: "monospace" }}
+              style={{ paddingLeft: "32px", fontFamily: "monospace", height: "32px", fontSize: "12px", borderRadius: "4px" }}
               value={searchId}
               onChange={(e) => setSearchId(e.target.value)}
               placeholder="Enter Complaint ID (e.g. CIT-2026-001283)..."
             />
           </div>
-          <button type="submit" className="citizen-quick-action-btn primary">
-            <Search size={14} />
+          <button
+            type="submit"
+            className="gov-redirect-link-btn"
+            style={{ height: "32px", background: "#eff6ff", borderColor: "#bfdbfe", color: "#005A9C" }}
+          >
+            <Search size={13} />
             <span>Track Grievance</span>
           </button>
         </form>
       </div>
 
       {/* Main 2-Column: Active Complaint Stepper + Community Complaints List */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "16px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "10px" }}>
         {/* Active Grievance Tracker Card */}
         {activeComplaint ? (
-          <div className="citizen-card" style={{ gap: "16px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px" }}>
+          <div className="gov-mp-card" style={{ gap: "12px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
               <div>
-                <span style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
+                <span style={{ fontSize: "10.5px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
                   Tracking Active Grievance
                 </span>
-                <h3 style={{ fontSize: "18px", fontWeight: "800", color: "#1e3a8a", margin: "2px 0 0 0", fontFamily: "monospace" }}>
+                <h3 style={{ fontSize: "16px", fontWeight: "800", color: "#005A9C", margin: "1px 0 0 0", fontFamily: "monospace" }}>
                   {activeComplaint.complaint_id}
                 </h3>
               </div>
 
               <span
+                className="gov-parliament-badge"
                 style={{
-                  fontSize: "12px",
-                  fontWeight: "700",
-                  padding: "3px 10px",
-                  borderRadius: "12px",
-                  background: activeComplaint.status === "Resolved" ? "#dcfce7" : "#eff6ff",
-                  color: activeComplaint.status === "Resolved" ? "#166534" : "#1e40af",
+                  background: activeComplaint.status === "Resolved" ? "#ecfdf5" : "#eff6ff",
+                  color: activeComplaint.status === "Resolved" ? "#047857" : "#005A9C",
+                  borderColor: activeComplaint.status === "Resolved" ? "#a7f3d0" : "#bfdbfe",
+                  fontSize: "11px",
                 }}
               >
                 ● {activeComplaint.status}

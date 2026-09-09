@@ -56,50 +56,50 @@ export default function CitizenVerifyTab({ onSelectWork, onReportWork }) {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       {/* Header Banner */}
-      <div className="citizen-card" style={{ padding: "16px 20px" }}>
-        <div className="citizen-card-title">
-          <QrCode size={18} color="#2563eb" />
+      <div className="gov-mp-card">
+        <div className="card-section-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <QrCode size={15} color="#005A9C" />
           <span>On-Site QR Project Verification: Physical Infrastructure → Digital Record</span>
         </div>
-        <div className="citizen-card-subtitle">
+        <div className="card-section-desc">
           Scan the QR plaque installed on the project site to confirm the physical asset exists, verify GPS geofence, and compare actual progress.
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "16px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "10px" }}>
         {/* Scanner Simulation Card */}
-        <div className="citizen-card" style={{ alignItems: "center", textAlign: "center" }}>
-          <div style={{ width: "100%", textAlign: "left", marginBottom: "8px" }}>
-            <h4 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: 0 }}>
+        <div className="gov-mp-card" style={{ alignItems: "center", textAlign: "center" }}>
+          <div style={{ width: "100%", textAlign: "left", marginBottom: "6px" }}>
+            <div className="card-section-title">
               Physical Site QR Scanner
-            </h4>
-            <span style={{ fontSize: "12px", color: "#64748b" }}>
+            </div>
+            <div className="card-section-desc">
               Simulates device camera reading the official eSAKSHI QR plaque on site
-            </span>
+            </div>
           </div>
 
-          <div className="qr-frame-box">
-            <QrCode size={120} color="#1e3a8a" />
+          <div className="qr-frame-box" style={{ margin: "10px auto" }}>
+            <QrCode size={100} color="#005A9C" />
             <div className="qr-scan-line" />
           </div>
 
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center" }}>
+          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center" }}>
             <button
               type="button"
-              className="citizen-quick-action-btn primary"
+              className="gov-redirect-link-btn"
+              style={{ background: "#eff6ff", borderColor: "#bfdbfe", color: "#005A9C" }}
               onClick={() => handleSimulateScan("W-2026-10291")}
               disabled={scanning}
             >
-              <Smartphone size={14} />
+              <Smartphone size={13} />
               <span>{scanning ? "Scanning QR..." : "Scan Sample Site Plaque 1"}</span>
             </button>
 
             <button
               type="button"
-              className="citizen-quick-action-btn"
-              style={{ color: "#1e3a8a", borderColor: "#cbd5e1" }}
+              className="gov-redirect-link-btn"
               onClick={() => handleSimulateScan("W-2026-10442")}
               disabled={scanning}
             >
@@ -109,83 +109,83 @@ export default function CitizenVerifyTab({ onSelectWork, onReportWork }) {
         </div>
 
         {/* Verification Result Card */}
-        <div className="citizen-card" style={{ gap: "16px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px" }}>
+        <div className="gov-mp-card" style={{ gap: "12px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
             <div>
-              <span style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
+              <span style={{ fontSize: "10.5px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
                 Scanned Project Record
               </span>
-              <h3 style={{ fontSize: "18px", fontWeight: "800", color: "#0f172a", margin: "2px 0 0 0" }}>
+              <h3 style={{ fontSize: "15px", fontWeight: "800", color: "#0f172a", margin: "2px 0 0 0" }}>
                 {verifiedWork.title}
               </h3>
-              <span style={{ fontSize: "12.5px", color: "#475569", display: "flex", alignItems: "center", gap: "4px", marginTop: "4px" }}>
-                <MapPin size={13} color="#ea580c" />
+              <span style={{ fontSize: "11.5px", color: "#64748b", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
+                <MapPin size={11} color="#005A9C" />
                 {verifiedWork.location} · {verifiedWork.constituency}
               </span>
             </div>
 
-            <span className="qr-distance-badge">
-              <ShieldCheck size={14} />
-              <span>📍 You are {verifiedWork.gpsDistanceM}m from registered coordinates</span>
+            <span className="gov-parliament-badge" style={{ background: "#ecfdf5", color: "#047857", borderColor: "#a7f3d0", fontSize: "10.5px" }}>
+              <ShieldCheck size={12} />
+              <span>📍 GPS: {verifiedWork.gpsDistanceM}m from coordinates</span>
             </span>
           </div>
 
           {/* Project Details Grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", background: "#f8fafc", padding: "14px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px", background: "#f8fafc", padding: "10px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }}>
             <div>
-              <span style={{ fontSize: "11px", color: "#64748b" }}>Work ID:</span>
-              <div style={{ fontFamily: "monospace", fontWeight: "700", color: "#1e3a8a" }}>{verifiedWork.id}</div>
+              <span style={{ fontSize: "10.5px", color: "#64748b" }}>Work ID:</span>
+              <div style={{ fontFamily: "monospace", fontWeight: "700", color: "#005A9C", fontSize: "12px" }}>{verifiedWork.id}</div>
             </div>
             <div>
-              <span style={{ fontSize: "11px", color: "#64748b" }}>Status:</span>
-              <div style={{ fontWeight: "700", color: "#16a34a" }}>✓ {verifiedWork.status}</div>
+              <span style={{ fontSize: "10.5px", color: "#64748b" }}>Status:</span>
+              <div style={{ fontWeight: "700", color: "#16a34a", fontSize: "12px" }}>✓ {verifiedWork.status}</div>
             </div>
             <div>
-              <span style={{ fontSize: "11px", color: "#64748b" }}>Sanctioned Cost:</span>
-              <div style={{ fontWeight: "800", color: "#0f172a" }}>{verifiedWork.cost}</div>
+              <span style={{ fontSize: "10.5px", color: "#64748b" }}>Sanctioned Cost:</span>
+              <div style={{ fontWeight: "800", color: "#0f172a", fontSize: "12px" }}>{verifiedWork.cost}</div>
             </div>
             <div>
-              <span style={{ fontSize: "11px", color: "#64748b" }}>Executing Agency:</span>
-              <div style={{ fontSize: "12px", fontWeight: "600", color: "#334155" }}>{verifiedWork.agency}</div>
+              <span style={{ fontSize: "10.5px", color: "#64748b" }}>Executing Agency:</span>
+              <div style={{ fontSize: "11.5px", fontWeight: "600", color: "#334155" }}>{verifiedWork.agency}</div>
             </div>
           </div>
 
           {/* Community Confirmation Action */}
           {confirmed ? (
-            <div style={{ background: "#dcfce7", border: "1px solid #86efac", padding: "14px", borderRadius: "8px", textAlign: "center" }}>
-              <CheckCircle2 size={24} color="#16a34a" style={{ margin: "0 auto 6px auto" }} />
-              <strong style={{ display: "block", color: "#166534", fontSize: "14px" }}>
+            <div style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", padding: "10px 12px", borderRadius: "6px", textAlign: "center" }}>
+              <CheckCircle2 size={20} color="#16a34a" style={{ margin: "0 auto 4px auto" }} />
+              <strong style={{ display: "block", color: "#166534", fontSize: "13px" }}>
                 Ground Asset Verified by Citizen!
               </strong>
-              <span style={{ fontSize: "12px", color: "#15803d" }}>
+              <span style={{ fontSize: "11.5px", color: "#15803d" }}>
                 Your confirmation has been logged as a citizen social audit endorsement.
               </span>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <span style={{ fontSize: "12.5px", fontWeight: "600", color: "#334155" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <span style={{ fontSize: "11.5px", fontWeight: "600", color: "#334155" }}>
                 Does this physical infrastructure match what you see on site?
               </span>
 
-              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 <button
                   type="button"
-                  className="citizen-quick-action-btn primary"
-                  style={{ background: "#16a34a", borderColor: "#16a34a", flexGrow: 1, justifyContent: "center" }}
+                  className="gov-redirect-link-btn"
+                  style={{ background: "#16a34a", borderColor: "#16a34a", color: "#ffffff", flexGrow: 1, justifyContent: "center" }}
                   onClick={() => setConfirmed(true)}
                 >
-                  <CheckCircle2 size={15} />
+                  <CheckCircle2 size={13} />
                   <span>Confirm Asset Exists on Ground</span>
                 </button>
 
                 <button
                   type="button"
-                  className="citizen-quick-action-btn"
+                  className="gov-redirect-link-btn"
                   style={{ color: "#b91c1c", borderColor: "#fca5a5", background: "#fef2f2", flexGrow: 1, justifyContent: "center" }}
                   onClick={() => onReportWork && onReportWork({ WORK_ID: verifiedWork.id, WORK_DESCRIPTION: verifiedWork.title, IDA_NAME: verifiedWork.location })}
                 >
-                  <Flag size={15} />
-                  <span>Report Discrepancy / Defect</span>
+                  <Flag size={13} />
+                  <span>Report Discrepancy</span>
                 </button>
               </div>
             </div>

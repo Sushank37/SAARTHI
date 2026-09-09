@@ -29,45 +29,42 @@ export default function CitizenAnalyticsTab() {
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       {/* Financial Pipeline Flow */}
-      <div className="citizen-card">
-        <div className="citizen-card-header">
-          <div>
-            <div className="citizen-card-title">
-              <TrendingUp size={18} color="#2563eb" />
-              <span>Public Fund Pipeline: How MPLADS Money Flows</span>
-            </div>
-            <div className="citizen-card-subtitle">
-              From annual parliamentary sanction to verified physical expenditure on community assets.
-            </div>
+      <div className="gov-mp-card">
+        <div>
+          <div className="card-section-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <TrendingUp size={15} color="#005A9C" />
+            <span>Public Fund Pipeline: How MPLADS Money Flows</span>
+          </div>
+          <div className="card-section-desc">
+            From annual parliamentary sanction to verified physical expenditure on community assets.
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "12px", alignItems: "center" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "10px", marginTop: "6px" }}>
           {pipelineSteps.map((step, idx) => (
             <div
               key={step.label}
               style={{
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0",
-                borderRadius: "8px",
-                padding: "16px",
+                background: "#ffffff",
+                border: "1px solid #cbd5e1",
+                borderRadius: "6px",
+                padding: "10px 12px",
                 display: "flex",
                 flexDirection: "column",
-                gap: "6px",
-                position: "relative",
-                borderTop: `4px solid ${step.color}`,
+                gap: "4px",
+                borderTop: `3px solid ${step.color}`,
               }}
             >
-              <span style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
+              <span style={{ fontSize: "10.5px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
                 Step {idx + 1}
               </span>
-              <strong style={{ fontSize: "14px", color: "#0f172a" }}>{step.label}</strong>
-              <span style={{ fontSize: "20px", fontWeight: "800", color: step.color }}>
+              <strong style={{ fontSize: "12.5px", color: "#0f172a" }}>{step.label}</strong>
+              <span style={{ fontSize: "18px", fontWeight: "800", color: step.color }}>
                 {step.amount}
               </span>
-              <span style={{ fontSize: "11.5px", color: "#64748b", lineHeight: "1.3" }}>
+              <span style={{ fontSize: "11px", color: "#64748b", lineHeight: "1.3" }}>
                 {step.desc}
               </span>
             </div>
@@ -76,35 +73,35 @@ export default function CitizenAnalyticsTab() {
       </div>
 
       {/* Category Breakdown Charts */}
-      <div className="citizen-card">
-        <div className="citizen-card-header">
-          <div className="citizen-card-title">
-            <BarChart3 size={18} color="#7c3aed" />
+      <div className="gov-mp-card">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+          <div className="card-section-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <BarChart3 size={15} color="#005A9C" />
             <span>Community Development Works by Sector</span>
           </div>
-          <span style={{ fontSize: "12px", color: "#64748b" }}>
+          <span style={{ fontSize: "11px", color: "#64748b" }}>
             Total 916 works classified by priority sector
           </span>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "4px" }}>
           {categories.map((cat) => (
-            <div key={cat.name} style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "13px" }}>
-                <span style={{ fontWeight: "600", color: "#1e293b" }}>{cat.name}</span>
-                <span style={{ color: "#64748b" }}>
-                  <strong>{cat.count} works</strong> ({cat.pct}%)
+            <div key={cat.name} style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px" }}>
+                <span style={{ fontWeight: "600", color: "#334155" }}>{cat.name}</span>
+                <span style={{ color: "#64748b", fontSize: "11.5px" }}>
+                  <strong style={{ color: "#0f172a" }}>{cat.count} works</strong> ({cat.pct}%)
                 </span>
               </div>
 
-              <div style={{ height: "9px", background: "#f1f5f9", borderRadius: "5px", overflow: "hidden" }}>
+              <div style={{ height: "7px", background: "#f1f5f9", borderRadius: "3px", overflow: "hidden" }}>
                 <div
                   style={{
                     height: "100%",
                     width: `${cat.pct}%`,
                     background: cat.color,
-                    borderRadius: "5px",
-                    transition: "width 0.5s ease",
+                    borderRadius: "3px",
+                    transition: "width 0.4s ease",
                   }}
                 />
               </div>

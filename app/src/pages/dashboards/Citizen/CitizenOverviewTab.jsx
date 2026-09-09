@@ -70,88 +70,68 @@ export default function CitizenOverviewTab({
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       {/* Transparency KPIs Grid */}
-      <div className="citizen-kpi-grid">
-        <div className="citizen-kpi-card blue">
-          <div className="citizen-kpi-header">
-            <span className="citizen-kpi-label">Total MPLADS Works</span>
-            <div className="citizen-kpi-icon">
-              <Building2 size={18} />
-            </div>
+      <div className="gov-mp-kpi-grid">
+        <div className="gov-mp-kpi-card kpi-blue">
+          <div className="kpi-header">
+            <span className="kpi-title">Total MPLADS Works</span>
+            <Building2 size={14} color="#0284c7" />
           </div>
-          <div className="citizen-kpi-value">{formatNumber(totalWorks)}</div>
-          <div className="citizen-kpi-sub">Across 543 Parliamentary Constituencies</div>
+          <div className="kpi-value">{formatNumber(totalWorks)}</div>
+          <div className="kpi-sub">Across 543 Parliamentary Constituencies</div>
         </div>
 
-        <div className="citizen-kpi-card green">
-          <div className="citizen-kpi-header">
-            <span className="citizen-kpi-label">Completed Assets</span>
-            <div className="citizen-kpi-icon">
-              <CheckCircle2 size={18} />
-            </div>
+        <div className="gov-mp-kpi-card kpi-teal">
+          <div className="kpi-header">
+            <span className="kpi-title">Completed Assets</span>
+            <CheckCircle2 size={14} color="#0d9488" />
           </div>
-          <div className="citizen-kpi-value">{formatNumber(completedWorks)}</div>
-          <div className="citizen-kpi-sub">Delivered for public use and verified</div>
+          <div className="kpi-value">{formatNumber(completedWorks)}</div>
+          <div className="kpi-sub">Delivered for public use and verified</div>
         </div>
 
-        <div className="citizen-kpi-card amber">
-          <div className="citizen-kpi-header">
-            <span className="citizen-kpi-label">Ongoing / Sanctioned</span>
-            <div className="citizen-kpi-icon">
-              <Clock size={18} />
-            </div>
+        <div className="gov-mp-kpi-card kpi-amber">
+          <div className="kpi-header">
+            <span className="kpi-title">Ongoing / Sanctioned</span>
+            <Clock size={14} color="#d97706" />
           </div>
-          <div className="citizen-kpi-value">{formatNumber(ongoingWorks)}</div>
-          <div className="citizen-kpi-sub">Currently under civil execution</div>
+          <div className="kpi-value">{formatNumber(ongoingWorks)}</div>
+          <div className="kpi-sub">Currently under civil execution</div>
         </div>
 
-        <div className="citizen-kpi-card purple">
-          <div className="citizen-kpi-header">
-            <span className="citizen-kpi-label">Total Sanctioned Fund</span>
-            <div className="citizen-kpi-icon">
-              <IndianRupee size={18} />
-            </div>
+        <div className="gov-mp-kpi-card kpi-indigo">
+          <div className="kpi-header">
+            <span className="kpi-title">Total Sanctioned Fund</span>
+            <IndianRupee size={14} color="#6366f1" />
           </div>
-          <div className="citizen-kpi-value">₹{sanctionedCr.toLocaleString()} Cr</div>
-          <div className="citizen-kpi-sub">Expenditure: ₹{expenditureCr.toLocaleString()} Cr</div>
-        </div>
-
-        <div className="citizen-kpi-card red">
-          <div className="citizen-kpi-header">
-            <span className="citizen-kpi-label">Citizen Flagged</span>
-            <div className="citizen-kpi-icon">
-              <Flag size={18} />
-            </div>
-          </div>
-          <div className="citizen-kpi-value">421 Reports</div>
-          <div className="citizen-kpi-sub">Social audit discrepancies under review</div>
+          <div className="kpi-value">₹{sanctionedCr.toLocaleString()} Cr</div>
+          <div className="kpi-sub">Expenditure: ₹{expenditureCr.toLocaleString()} Cr</div>
         </div>
       </div>
 
       {/* 2-Column Split: Map Preview & Action Hub */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "16px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "12px" }}>
         {/* Live Map Preview Card */}
-        <div className="citizen-card">
-          <div className="citizen-card-header">
-            <div>
-              <div className="citizen-card-title">
-                <MapPin size={18} color="#2563eb" />
-                <span>Geographic Work Discovery</span>
-              </div>
-              <div className="citizen-card-subtitle">
-                Explore developmental works around your village, town, or constituency.
-              </div>
+        <div className="gov-mp-card">
+          <div className="card-section-title" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <MapPin size={16} color="#0284c7" />
+              <span>Geographic Work Discovery</span>
             </div>
             <button
               type="button"
-              className="citizen-quick-action-btn primary"
+              className="gov-redirect-link-btn"
               onClick={() => onSwitchTab("map")}
+              style={{ cursor: "pointer" }}
             >
               <span>Open 2D GIS Map</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={12} />
             </button>
           </div>
+          <p className="card-section-desc" style={{ margin: "4px 0 10px 0" }}>
+            Explore developmental works around your village, town, or constituency.
+          </p>
 
           <div
             style={{
@@ -194,18 +174,14 @@ export default function CitizenOverviewTab({
         </div>
 
         {/* Public Participation / Action Hub */}
-        <div className="citizen-card">
-          <div className="citizen-card-header">
-            <div>
-              <div className="citizen-card-title">
-                <ShieldCheck size={18} color="#16a34a" />
-                <span>Citizen Oversight & Participation</span>
-              </div>
-              <div className="citizen-card-subtitle">
-                How citizens participate in social audit and asset verification
-              </div>
-            </div>
+        <div className="gov-mp-card">
+          <div className="card-section-title">
+            <ShieldCheck size={16} color="#0d9488" />
+            <span>Citizen Oversight & Participation</span>
           </div>
+          <p className="card-section-desc" style={{ margin: "4px 0 10px 0" }}>
+            How citizens participate in social audit and asset verification
+          </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div
@@ -293,27 +269,25 @@ export default function CitizenOverviewTab({
       </div>
 
       {/* Recently Delivered Public Works Carousel/Cards */}
-      <div className="citizen-card">
-        <div className="citizen-card-header">
-          <div>
-            <div className="citizen-card-title">
-              <CheckCircle2 size={18} color="#16a34a" />
-              <span>Recently Delivered Public Infrastructure Assets</span>
-            </div>
-            <div className="citizen-card-subtitle">
-              Physically verified completed projects with geotagged photographic records.
-            </div>
+      <div className="gov-mp-card">
+        <div className="card-section-title" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <CheckCircle2 size={16} color="#0d9488" />
+            <span>Recently Delivered Public Infrastructure Assets</span>
           </div>
           <button
             type="button"
-            className="citizen-quick-action-btn"
-            style={{ color: "#1e3a8a", borderColor: "#cbd5e1" }}
+            className="gov-redirect-link-btn"
             onClick={() => onSwitchTab("explore")}
+            style={{ cursor: "pointer" }}
           >
             <span>View All Works</span>
-            <ArrowRight size={13} />
+            <ArrowRight size={12} />
           </button>
         </div>
+        <p className="card-section-desc" style={{ margin: "4px 0 12px 0" }}>
+          Physically verified completed projects with geotagged photographic records.
+        </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "14px" }}>
           {sampleDelivered.map((item) => (

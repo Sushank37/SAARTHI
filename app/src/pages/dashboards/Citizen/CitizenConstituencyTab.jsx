@@ -73,25 +73,25 @@ export default function CitizenConstituencyTab({ onSelectWork }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       {/* Constituency Selector Header */}
-      <div className="citizen-card" style={{ padding: "16px 20px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+      <div className="gov-mp-card" style={{ padding: "10px 14px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
           <div>
-            <div className="citizen-card-title">
-              <MapPin size={18} color="#ea580c" />
+            <div className="card-section-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <MapPin size={15} color="#005A9C" />
               <span>Parliamentary Constituency Transparency Scorecard</span>
             </div>
-            <div className="citizen-card-subtitle">
+            <div className="card-section-desc">
               Select your constituency to inspect public fund utilization, MP recommendations, and asset delivery.
             </div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "12.5px", fontWeight: "600", color: "#475569" }}>Constituency:</span>
+            <span style={{ fontSize: "11.5px", fontWeight: "600", color: "#475569" }}>Constituency:</span>
             <select
               className="citizen-select"
               value={constituency}
               onChange={(e) => setConstituency(e.target.value)}
-              style={{ width: "auto", fontWeight: "700", color: "#1e3a8a" }}
+              style={{ width: "auto", fontWeight: "700", color: "#005A9C", height: "30px", fontSize: "12px", padding: "4px 8px" }}
             >
               {majorConstituencies.map((c) => (
                 <option key={c} value={c}>
@@ -104,71 +104,69 @@ export default function CitizenConstituencyTab({ onSelectWork }) {
       </div>
 
       {loading ? (
-        <div className="citizen-card" style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+        <div className="gov-mp-card" style={{ textAlign: "center", padding: "30px", color: "#64748b", fontSize: "12px" }}>
           Loading constituency transparency records...
         </div>
       ) : (
         <>
           {/* MP Profile & Quota Scorecard */}
           <div
+            className="gov-mp-card"
             style={{
-              background: "#ffffff",
-              border: "1px solid #e2e8f0",
-              borderRadius: "10px",
-              padding: "20px 24px",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               flexWrap: "wrap",
-              gap: "20px",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+              gap: "14px",
+              padding: "12px 16px",
+              borderLeft: "4px solid #005A9C",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div
                 style={{
-                  width: "56px",
-                  height: "56px",
-                  borderRadius: "50%",
+                  width: "44px",
+                  height: "44px",
+                  borderRadius: "6px",
                   background: "#eff6ff",
-                  border: "2px solid #bfdbfe",
+                  border: "1px solid #bfdbfe",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#1e3a8a",
-                  fontSize: "24px",
+                  color: "#005A9C",
+                  fontSize: "20px",
                 }}
               >
                 🎖️
               </div>
               <div>
-                <span style={{ fontSize: "11.5px", fontWeight: "700", color: "#f97316", textTransform: "uppercase" }}>
+                <span className="gov-parliament-badge" style={{ fontSize: "10.5px", padding: "1px 6px" }}>
                   Hon'ble Member of Parliament · {data?.state || "Telangana"}
                 </span>
-                <h2 style={{ fontSize: "20px", fontWeight: "800", color: "#0f172a", margin: "2px 0 4px 0" }}>
+                <h2 style={{ fontSize: "16px", fontWeight: "800", color: "#0f172a", margin: "2px 0" }}>
                   {data?.mp_name || "Arvind Dharmapuri"}
                 </h2>
-                <span style={{ fontSize: "13px", color: "#475569" }}>
-                  Parliamentary Constituency: <strong>{data?.constituency || constituency}</strong> · 18th Lok Sabha
+                <span style={{ fontSize: "11.5px", color: "#64748b" }}>
+                  Parliamentary Constituency: <strong style={{ color: "#0f172a" }}>{data?.constituency || constituency}</strong> · 18th Lok Sabha
                 </span>
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
               <div style={{ textAlign: "right" }}>
-                <span style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
+                <span style={{ fontSize: "10.5px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
                   Total Works Sanctioned
                 </span>
-                <div style={{ fontSize: "22px", fontWeight: "800", color: "#0f172a" }}>
+                <div style={{ fontSize: "18px", fontWeight: "800", color: "#0f172a" }}>
                   {data?.total_works?.toLocaleString() || "916"} Works
                 </div>
               </div>
 
               <div style={{ textAlign: "right" }}>
-                <span style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
+                <span style={{ fontSize: "10.5px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
                   Fund Utilization Rate
                 </span>
-                <div style={{ fontSize: "22px", fontWeight: "800", color: "#16a34a" }}>
+                <div style={{ fontSize: "18px", fontWeight: "800", color: "#16a34a" }}>
                   {financials.utilization_rate}%
                 </div>
               </div>
@@ -212,52 +210,52 @@ export default function CitizenConstituencyTab({ onSelectWork }) {
           </div>
 
           {/* Work Status Distribution Progress Bar */}
-          <div className="citizen-card">
-            <div className="citizen-card-header">
-              <div className="citizen-card-title">
-                <Layers size={18} color="#2563eb" />
+          <div className="gov-mp-card">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+              <div className="card-section-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <Layers size={15} color="#005A9C" />
                 <span>Work Delivery Status Breakdown</span>
               </div>
-              <span style={{ fontSize: "12px", color: "#64748b" }}>
+              <span style={{ fontSize: "11px", color: "#64748b" }}>
                 Based on official eSAKSHI digital records
               </span>
             </div>
 
             {/* Segmented Multi-color Bar */}
-            <div style={{ display: "flex", height: "18px", borderRadius: "9px", overflow: "hidden", background: "#f1f5f9" }}>
+            <div style={{ display: "flex", height: "14px", borderRadius: "4px", overflow: "hidden", background: "#f1f5f9" }}>
               <div
                 style={{ width: `${compPct}%`, background: "#16a34a", transition: "width 0.4s ease" }}
                 title={`Completed: ${statusDist.completed} works (${compPct}%)`}
               />
               <div
-                style={{ width: `${ongoPct}%`, background: "#2563eb", transition: "width 0.4s ease" }}
+                style={{ width: `${ongoPct}%`, background: "#0284c7", transition: "width 0.4s ease" }}
                 title={`Ongoing: ${statusDist.ongoing} works (${ongoPct}%)`}
               />
               <div
-                style={{ width: `${sancPct}%`, background: "#eab308", transition: "width 0.4s ease" }}
+                style={{ width: `${sancPct}%`, background: "#d97706", transition: "width 0.4s ease" }}
                 title={`Sanctioned: ${statusDist.sanctioned} works (${sancPct}%)`}
               />
             </div>
 
             {/* Legend */}
-            <div style={{ display: "flex", justifyContent: "space-around", flexWrap: "wrap", gap: "16px", paddingTop: "8px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#16a34a" }} />
-                <span style={{ fontSize: "13px", color: "#1e293b" }}>
+            <div style={{ display: "flex", justifyContent: "space-around", flexWrap: "wrap", gap: "12px", paddingTop: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "#16a34a" }} />
+                <span style={{ fontSize: "11.5px", color: "#334155" }}>
                   <strong>{statusDist.completed}</strong> Completed ({compPct}%)
                 </span>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#2563eb" }} />
-                <span style={{ fontSize: "13px", color: "#1e293b" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "#0284c7" }} />
+                <span style={{ fontSize: "11.5px", color: "#334155" }}>
                   <strong>{statusDist.ongoing}</strong> Ongoing ({ongoPct}%)
                 </span>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#eab308" }} />
-                <span style={{ fontSize: "13px", color: "#1e293b" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "#d97706" }} />
+                <span style={{ fontSize: "11.5px", color: "#334155" }}>
                   <strong>{statusDist.sanctioned}</strong> Sanctioned ({sancPct}%)
                 </span>
               </div>
@@ -266,30 +264,28 @@ export default function CitizenConstituencyTab({ onSelectWork }) {
 
           {/* Sector Category Breakdown */}
           {data?.category_distribution && Object.keys(data.category_distribution).length > 0 && (
-            <div className="citizen-card">
-              <div className="citizen-card-header">
-                <div className="citizen-card-title">
-                  <Building2 size={18} color="#7c3aed" />
-                  <span>Public Works by Developmental Sector</span>
-                </div>
+            <div className="gov-mp-card">
+              <div className="card-section-title" style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
+                <Building2 size={15} color="#005A9C" />
+                <span>Public Works by Developmental Sector</span>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "8px" }}>
                 {Object.entries(data.category_distribution).map(([cat, cnt]) => (
                   <div
                     key={cat}
                     style={{
-                      padding: "12px 14px",
+                      padding: "8px 12px",
                       background: "#f8fafc",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "8px",
+                      border: "1px solid #cbd5e1",
+                      borderRadius: "6px",
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
                     }}
                   >
-                    <span style={{ fontSize: "12.5px", fontWeight: "600", color: "#334155" }}>{cat}</span>
-                    <strong style={{ fontSize: "13.5px", color: "#1e3a8a" }}>{cnt} Works</strong>
+                    <span style={{ fontSize: "11.5px", fontWeight: "600", color: "#334155" }}>{cat}</span>
+                    <strong style={{ fontSize: "12px", color: "#005A9C" }}>{cnt} Works</strong>
                   </div>
                 ))}
               </div>

@@ -40,18 +40,18 @@ export default function CitizenMapTab({
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       {/* Search and Filter Strip */}
-      <div className="citizen-card" style={{ padding: "14px 18px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+      <div className="gov-mp-card" style={{ padding: "10px 14px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
           {/* Location Search */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexGrow: 1, maxWidth: "450px" }}>
             <div style={{ position: "relative", width: "100%" }}>
-              <Search size={15} style={{ position: "absolute", left: "10px", top: "10px", color: "#64748b" }} />
+              <Search size={14} style={{ position: "absolute", left: "10px", top: "9px", color: "#64748b" }} />
               <input
                 type="text"
-                className="citizen-input"
-                style={{ paddingLeft: "32px" }}
+                className="gov-input citizen-input"
+                style={{ paddingLeft: "30px", width: "100%", height: "32px", fontSize: "12px" }}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search village, mandal, project description..."
@@ -60,12 +60,12 @@ export default function CitizenMapTab({
           </div>
 
           {/* Category & Status Filters */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <Filter size={14} color="#64748b" />
+              <Filter size={13} color="#64748b" />
               <select
-                className="citizen-select"
-                style={{ width: "auto" }}
+                className="gov-select citizen-select"
+                style={{ width: "auto", height: "32px", fontSize: "12px" }}
                 value={sectorFilter}
                 onChange={(e) => setSectorFilter(e.target.value)}
               >
@@ -78,8 +78,8 @@ export default function CitizenMapTab({
             </div>
 
             <select
-              className="citizen-select"
-              style={{ width: "auto" }}
+              className="gov-select citizen-select"
+              style={{ width: "auto", height: "32px", fontSize: "12px" }}
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -90,35 +90,26 @@ export default function CitizenMapTab({
               ))}
             </select>
 
-            <span
-              style={{
-                fontSize: "12px",
-                fontWeight: "700",
-                color: "#1e3a8a",
-                background: "#eff6ff",
-                border: "1px solid #bfdbfe",
-                padding: "6px 12px",
-                borderRadius: "6px",
-              }}
-            >
-              📍 Telangana · Nizamabad (916 Works)
+            <span className="gov-constituency-tag">
+              <MapPin size={11} style={{ marginRight: "3px" }} />
+              Nizamabad (916 Works)
             </span>
           </div>
         </div>
       </div>
 
       {/* Real 2D GIS Leaflet Map with MarkerCluster */}
-      <div className="citizen-card" style={{ padding: "0", overflow: "hidden", border: "1px solid #cbd5e1" }}>
-        <div style={{ padding: "12px 18px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <MapPin size={16} color="#ea580c" />
-            <strong style={{ fontSize: "14px", color: "#0f172a" }}>Public Works GIS Map (Leaflet 2D Engine)</strong>
-            <span style={{ fontSize: "11px", background: "#dcfce7", color: "#166534", fontWeight: "700", padding: "1px 6px", borderRadius: "10px" }}>
+      <div className="gov-mp-card" style={{ padding: "0", overflow: "hidden" }}>
+        <div style={{ padding: "8px 14px", background: "#f8fafc", borderBottom: "1px solid #cbd5e1", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div className="card-section-title">
+            <MapPin size={15} color="#0284c7" />
+            <span>Public Works GIS Spatial Map</span>
+            <span style={{ fontSize: "10.5px", background: "#ecfdf5", color: "#047857", fontWeight: "700", padding: "1px 6px", borderRadius: "10px", border: "1px solid #a7f3d0" }}>
               Live GeoJSON
             </span>
           </div>
-          <span style={{ fontSize: "12px", color: "#64748b" }}>
-            Click any pin to inspect work details or report an issue
+          <span style={{ fontSize: "11.5px", color: "#64748b" }}>
+            Click any pin to inspect work details or report grounds
           </span>
         </div>
 

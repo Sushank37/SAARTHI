@@ -187,31 +187,32 @@ export default function CitizenReportIssueTab({
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       {/* Header card */}
-      <div className="citizen-card" style={{ padding: "16px 20px" }}>
-        <div className="citizen-card-title">
-          <Flag size={18} color="#dc2626" />
+      <div className="gov-mp-card">
+        <div className="card-section-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <Flag size={15} color="#dc2626" />
           <span>Report an Issue / Citizen Social Audit Discrepancy</span>
         </div>
-        <div className="citizen-card-subtitle">
+        <div className="card-section-desc">
           If you observe stalled progress, substandard material, or discrepancies between digital records and ground reality, report it here for district administrative review.
         </div>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="citizen-card" style={{ gap: "20px" }}>
+      <form onSubmit={handleSubmit} className="gov-mp-card" style={{ gap: "16px" }}>
         {/* Step 1: Work Identity */}
         <div>
-          <h4 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", marginBottom: "12px" }}>
+          <div className="card-section-title" style={{ fontSize: "12.5px", marginBottom: "8px" }}>
             1. Project Identification
-          </h4>
+          </div>
           <div className="citizen-form-grid">
             <div className="citizen-input-group">
               <label className="citizen-input-label">Work ID (if known from site board or map)</label>
               <input
                 type="text"
                 className="citizen-input"
+                style={{ height: "32px", fontSize: "12px", borderRadius: "4px" }}
                 value={workId}
                 onChange={(e) => setWorkId(e.target.value)}
                 placeholder="e.g. W-2026-10291"
@@ -223,6 +224,7 @@ export default function CitizenReportIssueTab({
               <input
                 type="text"
                 className="citizen-input"
+                style={{ height: "32px", fontSize: "12px", borderRadius: "4px" }}
                 value={workTitle}
                 onChange={(e) => setWorkTitle(e.target.value)}
                 placeholder="e.g. Construction of Community Hall at Village"
@@ -234,6 +236,7 @@ export default function CitizenReportIssueTab({
               <input
                 type="text"
                 className="citizen-input"
+                style={{ height: "32px", fontSize: "12px", borderRadius: "4px" }}
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g. Ibrahimpatnam, Nizamabad"
@@ -244,6 +247,7 @@ export default function CitizenReportIssueTab({
               <label className="citizen-input-label">Parliamentary Constituency</label>
               <select
                 className="citizen-select"
+                style={{ height: "32px", fontSize: "12px", borderRadius: "4px" }}
                 value={constituency}
                 onChange={(e) => setConstituency(e.target.value)}
               >
@@ -258,12 +262,12 @@ export default function CitizenReportIssueTab({
 
         {/* Step 2: Discrepancy Nature */}
         <div>
-          <h4 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", marginBottom: "8px" }}>
+          <div className="card-section-title" style={{ fontSize: "12.5px", marginBottom: "6px" }}>
             2. Nature of Discrepancy Observed <span style={{ color: "#dc2626" }}>*</span>
-          </h4>
+          </div>
           <div className="citizen-radio-group">
             {issueCategories.map((cat) => (
-              <label key={cat} className="citizen-radio-label">
+              <label key={cat} className="citizen-radio-label" style={{ fontSize: "12px" }}>
                 <input
                   type="radio"
                   name="issue_type"
@@ -316,15 +320,16 @@ export default function CitizenReportIssueTab({
 
         {/* Step 5: Optional Citizen Contact */}
         <div>
-          <h4 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", marginBottom: "12px" }}>
+          <div className="card-section-title" style={{ fontSize: "12.5px", marginBottom: "8px" }}>
             3. Citizen Information (Optional · Kept Confidential)
-          </h4>
+          </div>
           <div className="citizen-form-grid">
             <div className="citizen-input-group">
               <label className="citizen-input-label">Your Name</label>
               <input
                 type="text"
                 className="citizen-input"
+                style={{ height: "32px", fontSize: "12px", borderRadius: "4px" }}
                 value={citizenName}
                 onChange={(e) => setCitizenName(e.target.value)}
                 placeholder="Enter your name (or leave anonymous)"
@@ -336,6 +341,7 @@ export default function CitizenReportIssueTab({
               <input
                 type="text"
                 className="citizen-input"
+                style={{ height: "32px", fontSize: "12px", borderRadius: "4px" }}
                 value={citizenPhone}
                 onChange={(e) => setCitizenPhone(e.target.value)}
                 placeholder="+91 98490 XXXXX"
@@ -344,12 +350,19 @@ export default function CitizenReportIssueTab({
           </div>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "4px" }}>
           <button
             type="submit"
-            className="citizen-quick-action-btn primary"
+            className="gov-redirect-link-btn"
             disabled={submitting}
-            style={{ padding: "10px 24px", fontSize: "14px" }}
+            style={{
+              padding: "7px 16px",
+              fontSize: "12px",
+              fontWeight: "700",
+              background: "#eff6ff",
+              borderColor: "#bfdbfe",
+              color: "#005A9C",
+            }}
           >
             {submitting ? "Registering Report..." : "Submit Grievance to District Authority"}
           </button>

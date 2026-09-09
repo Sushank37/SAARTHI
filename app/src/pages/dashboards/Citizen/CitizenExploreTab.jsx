@@ -54,40 +54,44 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       {/* Search & Filter Header */}
-      <div className="citizen-card" style={{ padding: "16px 20px" }}>
-        <form onSubmit={handleSearchSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+      <div className="gov-mp-card" style={{ padding: "10px 14px" }}>
+        <form onSubmit={handleSearchSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <div style={{ position: "relative", flexGrow: 1, minWidth: "260px" }}>
-              <Search size={16} style={{ position: "absolute", left: "12px", top: "11px", color: "#64748b" }} />
+              <Search size={14} style={{ position: "absolute", left: "10px", top: "9px", color: "#64748b" }} />
               <input
                 type="text"
-                className="citizen-input"
-                style={{ paddingLeft: "36px" }}
+                className="gov-input citizen-input"
+                style={{ paddingLeft: "30px", width: "100%", height: "32px", fontSize: "12px" }}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search works by ID, village, contractor or description..."
               />
             </div>
 
-            <button type="submit" className="citizen-quick-action-btn primary">
-              <Search size={14} />
+            <button
+              type="submit"
+              className="gov-redirect-link-btn"
+              style={{ background: "#005A9C", color: "#ffffff", borderColor: "#005A9C", cursor: "pointer", height: "32px", padding: "0 14px" }}
+            >
+              <Search size={13} />
               <span>Search Works</span>
             </button>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ fontSize: "12px", fontWeight: "600", color: "#64748b" }}>Category:</span>
+              <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", textTransform: "uppercase" }}>Category:</span>
               <select
-                className="citizen-select"
+                className="gov-select citizen-select"
                 value={selectedSector}
                 onChange={(e) => {
                   setSelectedSector(e.target.value);
                   setPage(1);
                 }}
-                style={{ width: "auto" }}
+                style={{ width: "auto", height: "32px", fontSize: "12px" }}
               >
                 <option value="all">All Categories</option>
                 <option value="Roads and Bridges">Roads and Bridges</option>
@@ -101,25 +105,25 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ fontSize: "12px", fontWeight: "600", color: "#64748b" }}>Status:</span>
+              <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", textTransform: "uppercase" }}>Status:</span>
               <select
-                className="citizen-select"
+                className="gov-select citizen-select"
                 value={selectedStatus}
                 onChange={(e) => {
                   setSelectedStatus(e.target.value);
                   setPage(1);
                 }}
-                style={{ width: "auto" }}
+                style={{ width: "auto", height: "32px", fontSize: "12px" }}
               >
-                <option value="all">All Statuses</option>
-                <option value="Completed">Completed</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Sanctioned">Sanctioned</option>
-                <option value="Proposed">Proposed</option>
+                <option value="all">All Execution Stages</option>
+                <option value="Work Completed">100% Completed</option>
+                <option value="Physical Inspection">Physical Inspection</option>
+                <option value="Sanction">Approved / Sanctioned</option>
+                <option value="Pending Sanction">Pending Sanction</option>
               </select>
             </div>
 
-            <span style={{ fontSize: "12.5px", color: "#64748b", marginLeft: "auto" }}>
+            <span style={{ fontSize: "12px", color: "#64748b", marginLeft: "auto" }}>
               Showing {works.length} of {totalCount.toLocaleString()} works in <strong>Nizamabad</strong>
             </span>
           </div>
@@ -127,7 +131,18 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
       </div>
 
       {/* Works Table / List */}
-      <div className="citizen-card" style={{ padding: "0", overflow: "hidden" }}>
+      <div className="gov-mp-card" style={{ padding: "0", overflow: "hidden" }}>
+        <div style={{ padding: "8px 14px", background: "#f8fafc", borderBottom: "1px solid #cbd5e1", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div className="card-section-title">
+            <span>Public Works Master Ledger</span>
+            <span className="gov-constituency-tag" style={{ marginLeft: "6px" }}>
+              {formatNumber(totalCount)} Works
+            </span>
+          </div>
+          <span className="card-section-desc" style={{ margin: "0" }}>
+            Showing Page {page} of {Math.ceil(totalCount / 15) || 1}
+          </span>
+        </div>
         <div className="citizen-table-wrapper">
           <table className="citizen-table">
             <thead>
