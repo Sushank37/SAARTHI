@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Camera,
   MapPin,
@@ -8,196 +8,203 @@ import {
   Building2,
   Eye,
   Flag,
+  RefreshCw,
+  AlertTriangle,
+  Layers,
 } from "lucide-react";
+import { API_BASE, formatNumber, formatCrores } from "../../../constants";
 
 export default function CitizenEvidenceTab({ onSelectWork, onReportWork }) {
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const evidenceItems = [
-    {
-      id: "W-2026-10291",
-      title: "Construction of Community Hall & Skill Training Center",
-      location: "Ibrahimpatnam, Nizamabad",
-      agency: "Panchayat Raj Engineering Division",
-      cost: "₹15.00 Lakh",
-      inspectionDate: "24 August 2026",
-      inspector: "Assistant Executive Engineer (PR)",
-      geofenceMatch: "34 meters (Within 50m tolerance)",
-      completion: 100,
-      photos: [
-        {
-          stage: "Before Construction",
-          date: "Jan 2026",
-          url: "https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=600&auto=format&fit=crop&q=80",
-          note: "Vacant Gram Panchayat plot prior to foundation excavation",
-        },
-        {
-          stage: "Civil Plinth & Roof",
-          date: "May 2026",
-          url: "https://images.unsplash.com/photo-1590402494682-cd3fb53b1f70?w=600&auto=format&fit=crop&q=80",
-          note: "RCC columns and roof slab completed",
-        },
-        {
-          stage: "Final Asset Handover",
-          date: "Aug 2026",
-          url: "https://images.unsplash.com/photo-1577495508048-b635879837f1?w=600&auto=format&fit=crop&q=80",
-          note: "Completed community hall with electrical fittings & solar lighting",
-        },
-      ],
-    },
-    {
-      id: "W-2026-10442",
-      title: "Installation of 25 High Mast Solar LED Lights",
-      location: "Armoor Mandal Villages",
-      agency: "Telangana State Renewable Energy Dev Corp (TSREDCO)",
-      cost: "₹10.50 Lakh",
-      inspectionDate: "12 July 2026",
-      inspector: "Divisional Engineer (Energy)",
-      geofenceMatch: "18 meters (Within 50m tolerance)",
-      completion: 100,
-      photos: [
-        {
-          stage: "Site Foundation",
-          date: "Mar 2026",
-          url: "https://images.unsplash.com/photo-1509391365360-2e959784a276?w=600&auto=format&fit=crop&q=80",
-          note: "RCC pole foundation casting at village crossroads",
-        },
-        {
-          stage: "Erection & PV Panel",
-          date: "May 2026",
-          url: "https://images.unsplash.com/photo-1508873696983-2df57036476b?w=600&auto=format&fit=crop&q=80",
-          note: "Mast erected and solar PV modules mounted",
-        },
-        {
-          stage: "Operational Night Test",
-          date: "Jul 2026",
-          url: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&auto=format&fit=crop&q=80",
-          note: "Night illumination test passed with Gram Panchayat acknowledgment",
-        },
-      ],
-    },
-  ];
+  const fetchEvidence = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/public/evidence?limit=8`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setItems(data.items || []);
+    } catch (err) {
+      console.error("[Evidence] Error loading inspection records:", err);
+      setError("Unable to load verified physical inspection records from backend.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvidence();
+  }, []);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      {/* Banner */}
+      {/* Header Banner */}
       <div className="gov-mp-card">
         <div className="card-section-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <Camera size={15} color="#005A9C" />
-          <span>Physical Evidence & Geo-tagged Photographic Timeline</span>
+          <span>Physical Evidence & Milestone Inspection Registry</span>
         </div>
         <div className="card-section-desc">
-          Social audit transparency: compare pre-commencement sites against delivered infrastructure with GPS validation.
+          Official social audit tracking: developmental works recorded under physical inspection, partial completion, and final delivery in the central MPLADS registry.
         </div>
       </div>
 
-      {/* Evidence Cards */}
-      {evidenceItems.map((item) => (
-        <div key={item.id} className="gov-mp-card" style={{ gap: "10px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
-                <strong style={{ fontFamily: "monospace", color: "#005A9C", fontSize: "13px" }}>
-                  {item.id}
-                </strong>
-                <span className="gov-parliament-badge" style={{ background: "#ecfdf5", color: "#047857", borderColor: "#a7f3d0", fontSize: "10.5px" }}>
-                  <ShieldCheck size={12} />
-                  <span>GPS Geofence: {item.geofenceMatch}</span>
+      {loading ? (
+        <div className="gov-mp-card" style={{ padding: "30px", textAlign: "center", color: "#64748b", fontSize: "13px" }}>
+          <RefreshCw size={18} className="spin-icon" style={{ display: "inline-block", marginRight: "8px" }} />
+          Retrieving real physical inspection records from national dataset...
+        </div>
+      ) : error ? (
+        <div className="gov-mp-card" style={{ padding: "20px", textAlign: "center", color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca" }}>
+          <AlertTriangle size={18} style={{ display: "inline-block", marginRight: "6px" }} />
+          <span>{error}</span>
+          <button
+            type="button"
+            className="gov-redirect-link-btn"
+            onClick={fetchEvidence}
+            style={{ marginLeft: "12px", cursor: "pointer" }}
+          >
+            Retry
+          </button>
+        </div>
+      ) : items.length === 0 ? (
+        <div className="gov-mp-card" style={{ padding: "20px", textAlign: "center", color: "#64748b" }}>
+          No inspection records found in dataset.
+        </div>
+      ) : (
+        items.map((item) => (
+          <div key={item.id} className="gov-mp-card" style={{ gap: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
+                  <strong style={{ fontFamily: "monospace", color: "#005A9C", fontSize: "13px" }}>
+                    #{item.id}
+                  </strong>
+                  <span
+                    className="gov-parliament-badge"
+                    style={{
+                      background: item.has_gps ? "#ecfdf5" : "#f1f5f9",
+                      color: item.has_gps ? "#047857" : "#475569",
+                      borderColor: item.has_gps ? "#a7f3d0" : "#cbd5e1",
+                      fontSize: "10.5px",
+                    }}
+                  >
+                    <ShieldCheck size={12} />
+                    <span>{item.geofence_status}</span>
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "10.5px",
+                      fontWeight: "700",
+                      padding: "1px 6px",
+                      borderRadius: "4px",
+                      background: "#eff6ff",
+                      color: "#005A9C",
+                      border: "1px solid #bfdbfe",
+                    }}
+                  >
+                    {item.status}
+                  </span>
+                </div>
+
+                <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: 0, lineHeight: "1.3" }}>
+                  {item.title}
+                </h3>
+
+                <span style={{ fontSize: "11.5px", color: "#64748b", display: "flex", alignItems: "center", gap: "4px", marginTop: "3px" }}>
+                  <MapPin size={11} color="#005A9C" />
+                  {item.location} · Sanction: <strong style={{ color: "#0f172a" }}>{item.cost}</strong> · Disbursed: <strong style={{ color: "#0d9488" }}>{item.actual_cost}</strong> · Agency: {item.agency}
                 </span>
               </div>
-              <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: 0 }}>
-                {item.title}
-              </h3>
-              <span style={{ fontSize: "11.5px", color: "#64748b", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
-                <MapPin size={11} color="#005A9C" />
-                {item.location} · Sanctioned: <strong style={{ color: "#0f172a" }}>{item.cost}</strong> · Agency: {item.agency}
-              </span>
+
+              <div style={{ display: "flex", gap: "6px" }}>
+                <button
+                  type="button"
+                  className="gov-redirect-link-btn"
+                  onClick={() => onSelectWork && onSelectWork({ WORK_ID: item.id, WORK_DESCRIPTION: item.title, CONSTITUENCY: item.constituency, STATE_NAME: item.state })}
+                  style={{ cursor: "pointer" }}
+                >
+                  <Eye size={12} />
+                  <span>Full Dossier</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="gov-redirect-link-btn"
+                  style={{ color: "#b91c1c", borderColor: "#fca5a5", background: "#fef2f2", cursor: "pointer" }}
+                  onClick={() => onReportWork && onReportWork({ WORK_ID: item.id, WORK_DESCRIPTION: item.title, IDA_NAME: item.location })}
+                >
+                  <Flag size={12} />
+                  <span>Report Discrepancy</span>
+                </button>
+              </div>
             </div>
 
-            <div style={{ display: "flex", gap: "6px" }}>
-              <button
-                type="button"
-                className="gov-redirect-link-btn"
-                onClick={() => onSelectWork && onSelectWork({ WORK_ID: item.id, WORK_DESCRIPTION: item.title })}
-              >
-                <Eye size={12} />
-                <span>Full Dossier</span>
-              </button>
-
-              <button
-                type="button"
-                className="gov-redirect-link-btn"
-                style={{ color: "#b91c1c", borderColor: "#fca5a5", background: "#fef2f2" }}
-                onClick={() => onReportWork && onReportWork({ WORK_ID: item.id, WORK_DESCRIPTION: item.title, IDA_NAME: item.location })}
-              >
-                <Flag size={12} />
-                <span>Report Discrepancy</span>
-              </button>
-            </div>
-          </div>
-
-          {/* 3-Stage Photo Timeline */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "12px", marginTop: "6px" }}>
-            {item.photos.map((photo, idx) => (
+            {/* 3-Stage Milestone Progression Card Strip */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "10px", marginTop: "6px" }}>
               <div
-                key={photo.stage}
                 style={{
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "8px",
-                  overflow: "hidden",
+                  padding: "8px 12px",
                   background: "#f8fafc",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: "6px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "2px",
                 }}
               >
-                <div style={{ height: "160px", position: "relative" }}>
-                  <img
-                    src={photo.url}
-                    alt={photo.stage}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                  <span
-                    style={{
-                      position: "absolute",
-                      bottom: "8px",
-                      left: "8px",
-                      background: "rgba(15, 23, 42, 0.8)",
-                      color: "#fff",
-                      fontSize: "11px",
-                      fontWeight: "700",
-                      padding: "2px 8px",
-                      borderRadius: "4px",
-                      backdropFilter: "blur(4px)",
-                    }}
-                  >
-                    Stage {idx + 1}: {photo.stage}
-                  </span>
-                  <span
-                    style={{
-                      position: "absolute",
-                      bottom: "8px",
-                      right: "8px",
-                      background: "rgba(30, 58, 138, 0.85)",
-                      color: "#fff",
-                      fontSize: "10px",
-                      padding: "2px 6px",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    {photo.date}
-                  </span>
-                </div>
-                <div style={{ padding: "10px 12px", fontSize: "11.5px", color: "#475569" }}>
-                  {photo.note}
-                </div>
+                <span style={{ fontSize: "10.5px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
+                  1. Recommendation
+                </span>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Official Submission</strong>
+                <span style={{ fontSize: "11px", color: "#64748b" }}>Date: {item.recommendation_date}</span>
               </div>
-            ))}
-          </div>
 
-          <div style={{ fontSize: "11.5px", color: "#64748b", background: "#f8fafc", padding: "8px 12px", borderRadius: "6px", display: "flex", justifyContent: "space-between" }}>
-            <span>Last Field Inspection: <strong>{item.inspectionDate}</strong> by {item.inspector}</span>
-            <span style={{ color: "#16a34a", fontWeight: "700" }}>✓ Verification Passed</span>
+              <div
+                style={{
+                  padding: "8px 12px",
+                  background: "#f8fafc",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: "6px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "2px",
+                }}
+              >
+                <span style={{ fontSize: "10.5px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
+                  2. Administrative Sanction
+                </span>
+                <strong style={{ fontSize: "12px", color: "#005A9C" }}>Collectorate Approval</strong>
+                <span style={{ fontSize: "11px", color: "#64748b" }}>Date: {item.sanction_date}</span>
+              </div>
+
+              <div
+                style={{
+                  padding: "8px 12px",
+                  background: "#f8fafc",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: "6px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "2px",
+                  borderLeft: "3.5px solid #0d9488",
+                }}
+              >
+                <span style={{ fontSize: "10.5px", fontWeight: "700", color: "#0d9488", textTransform: "uppercase" }}>
+                  3. Execution & Verification
+                </span>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>{item.status}</strong>
+                <span style={{ fontSize: "11px", color: "#64748b" }}>
+                  Milestone Completed ({item.completion}%)
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 }

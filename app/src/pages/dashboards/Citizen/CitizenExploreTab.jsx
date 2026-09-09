@@ -11,33 +11,68 @@ import {
   CheckCircle2,
   Clock,
   Download,
+  RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import { API_BASE, formatNumber, formatCrores, exportToCSV } from "../../../constants";
 
 export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
   const [works, setWorks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedConstituency, setSelectedConstituency] = useState("all");
+  const [constituencyList, setConstituencyList] = useState([]);
   const [selectedSector, setSelectedSector] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
+  // Load constituencies for dropdown
+  useEffect(() => {
+    async function loadConstituencies() {
+      try {
+        const res = await fetch(`${API_BASE}/api/constituencies`);
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            setConstituencyList(list);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load constituencies for explore:", e);
+      }
+    }
+    loadConstituencies();
+  }, []);
+
   const fetchWorks = async () => {
     setLoading(true);
+    setError(null);
     try {
-      let url = `${API_BASE}/api/works?page=${page}&page_size=15&constituency=Nizamabad`;
-      if (selectedSector !== "all") url += `&sector=${encodeURIComponent(selectedSector)}`;
-      if (selectedStatus !== "all") url += `&status=${encodeURIComponent(selectedStatus)}`;
-      if (searchQuery.trim()) url += `&search=${encodeURIComponent(searchQuery.trim())}`;
+      let url = `${API_BASE}/api/works?page=${page}&limit=15`;
+      if (selectedConstituency && selectedConstituency !== "all") {
+        url += `&constituency=${encodeURIComponent(selectedConstituency)}`;
+      }
+      if (selectedSector !== "all") {
+        url += `&category=${encodeURIComponent(selectedSector)}`;
+      }
+      if (selectedStatus !== "all") {
+        url += `&stage=${encodeURIComponent(selectedStatus)}`;
+      }
+      if (searchQuery.trim()) {
+        url += `&q=${encodeURIComponent(searchQuery.trim())}`;
+      }
 
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setWorks(data.works || []);
+      const list = data.data || data.works || [];
+      setWorks(list);
       setTotalCount(data.total || 0);
     } catch (err) {
       console.error("Failed to load public works:", err);
+      setError("Unable to load public works records from server.");
     } finally {
       setLoading(false);
     }
@@ -45,13 +80,21 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
 
   useEffect(() => {
     fetchWorks();
-  }, [page, selectedSector, selectedStatus]);
+  }, [page, selectedConstituency, selectedSector, selectedStatus]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setPage(1);
     fetchWorks();
   };
+
+  const handleExportCSV = () => {
+    if (works.length > 0) {
+      exportToCSV(works, `mplads_public_works_page_${page}.csv`);
+    }
+  };
+
+  const totalPages = Math.ceil(totalCount / 15) || 1;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -67,7 +110,7 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
                 style={{ paddingLeft: "30px", width: "100%", height: "32px", fontSize: "12px" }}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search works by ID, village, contractor or description..."
+                placeholder="Search works by ID, description, MP, or locality..."
               />
             </div>
 
@@ -79,9 +122,40 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
               <Search size={13} />
               <span>Search Works</span>
             </button>
+
+            <button
+              type="button"
+              className="gov-redirect-link-btn"
+              onClick={handleExportCSV}
+              style={{ cursor: "pointer", height: "32px" }}
+              disabled={works.length === 0}
+            >
+              <Download size={13} />
+              <span>Export CSV</span>
+            </button>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", textTransform: "uppercase" }}>Constituency:</span>
+              <select
+                className="gov-select citizen-select"
+                value={selectedConstituency}
+                onChange={(e) => {
+                  setSelectedConstituency(e.target.value);
+                  setPage(1);
+                }}
+                style={{ width: "auto", height: "32px", fontSize: "12px", color: "#005A9C", fontWeight: "700" }}
+              >
+                <option value="all">All Parliamentary Constituencies</option>
+                {constituencyList.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", textTransform: "uppercase" }}>Category:</span>
               <select
@@ -105,7 +179,7 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", textTransform: "uppercase" }}>Status:</span>
+              <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", textTransform: "uppercase" }}>Stage:</span>
               <select
                 className="gov-select citizen-select"
                 value={selectedStatus}
@@ -115,115 +189,135 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
                 }}
                 style={{ width: "auto", height: "32px", fontSize: "12px" }}
               >
-                <option value="all">All Execution Stages</option>
-                <option value="Work Completed">100% Completed</option>
+                <option value="all">All Stages</option>
+                <option value="Work Completed">Work Completed</option>
                 <option value="Physical Inspection">Physical Inspection</option>
-                <option value="Sanction">Approved / Sanctioned</option>
-                <option value="Pending Sanction">Pending Sanction</option>
+                <option value="Sanction">Sanction Approved</option>
+                <option value="Work partially Completed">Partially Completed</option>
+                <option value="Vendor Identification">Vendor Identification</option>
               </select>
             </div>
-
-            <span style={{ fontSize: "12px", color: "#64748b", marginLeft: "auto" }}>
-              Showing {works.length} of {totalCount.toLocaleString()} works in <strong>Nizamabad</strong>
-            </span>
           </div>
         </form>
       </div>
 
-      {/* Works Table / List */}
-      <div className="gov-mp-card" style={{ padding: "0", overflow: "hidden" }}>
-        <div style={{ padding: "8px 14px", background: "#f8fafc", borderBottom: "1px solid #cbd5e1", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div className="card-section-title">
-            <span>Public Works Master Ledger</span>
-            <span className="gov-constituency-tag" style={{ marginLeft: "6px" }}>
-              {formatNumber(totalCount)} Works
+      {/* Results Table Card */}
+      <div className="gov-mp-card">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", flexWrap: "wrap", gap: "8px" }}>
+          <div>
+            <div className="card-section-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <Building2 size={15} color="#005A9C" />
+              <span>Public Works Registry</span>
+            </div>
+            <span style={{ fontSize: "11.5px", color: "#64748b" }}>
+              Total <strong style={{ color: "#0f172a" }}>{formatNumber(totalCount)}</strong> works matching chosen criteria
             </span>
           </div>
-          <span className="card-section-desc" style={{ margin: "0" }}>
-            Showing Page {page} of {Math.ceil(totalCount / 15) || 1}
+          <span style={{ fontSize: "11.5px", color: "#64748b" }}>
+            Page {page} of {totalPages}
           </span>
         </div>
-        <div className="citizen-table-wrapper">
-          <table className="citizen-table">
+
+        <div style={{ overflowX: "auto" }}>
+          <table className="gov-mp-table" style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
-                <th>Work ID & Sector</th>
-                <th>Public Description & Locality</th>
-                <th>Hon'ble MP</th>
-                <th>Sanctioned (₹)</th>
-                <th>Expenditure (₹)</th>
-                <th>Status</th>
-                <th style={{ textAlign: "right" }}>Citizen Actions</th>
+                <th style={{ textAlign: "left" }}>Work ID & Sector</th>
+                <th style={{ textAlign: "left" }}>Public Description & Locality</th>
+                <th style={{ textAlign: "left" }}>Hon'ble MP</th>
+                <th style={{ textAlign: "right" }}>Sanctioned</th>
+                <th style={{ textAlign: "right" }}>Disbursed</th>
+                <th style={{ textAlign: "center" }}>Execution Stage</th>
+                <th style={{ textAlign: "right" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
-                    Loading public work records from master repository...
+                  <td colSpan="7" style={{ textAlign: "center", padding: "30px", color: "#64748b", fontSize: "13px" }}>
+                    <RefreshCw size={16} className="spin-icon" style={{ display: "inline-block", marginRight: "6px" }} />
+                    Loading official records from dataset...
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: "center", padding: "20px", color: "#b91c1c" }}>
+                    <AlertTriangle size={16} style={{ display: "inline-block", marginRight: "6px" }} />
+                    {error}
                   </td>
                 </tr>
               ) : works.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                  <td colSpan="7" style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                     No works found matching the chosen search and filter criteria.
                   </td>
                 </tr>
               ) : (
                 works.map((w) => {
-                  const statusLower = (w.WORK_STATUS || "").toLowerCase();
-                  const pillClass = statusLower.includes("complete")
-                    ? "completed"
-                    : statusLower.includes("progress") || statusLower.includes("ongoing")
-                    ? "ongoing"
-                    : "sanctioned";
+                  const stageStr = (w.WORK_STAGE || w.WORK_STATUS || "Sanction").toString();
+                  const isCompleted = stageStr.toLowerCase().includes("completed");
+                  const isInspection = stageStr.toLowerCase().includes("inspection");
+
+                  const wid = w.WORK_ID || w.WORK_RECOMMENDATION_DTL_ID;
+                  const sanc = Number(w.SANCTION_AMOUNT || 0);
+                  const exp = Number(w.ACTUAL_AMOUNT || 0);
 
                   return (
-                    <tr key={w.WORK_ID}>
+                    <tr key={wid}>
                       <td>
                         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                          <strong style={{ fontFamily: "monospace", fontSize: "12.5px", color: "#1e3a8a" }}>
-                            {w.WORK_ID}
+                          <strong style={{ fontFamily: "monospace", fontSize: "12px", color: "#005A9C" }}>
+                            #{wid}
                           </strong>
                           <span style={{ fontSize: "11px", color: "#64748b" }}>
-                            {w.SECTOR || "Community Asset"}
+                            {w.WORK_CATEGORY || w.SECTOR || "Community Infrastructure"}
                           </span>
                         </div>
                       </td>
 
                       <td style={{ maxWidth: "340px" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-                          <span style={{ fontWeight: "600", color: "#0f172a", lineHeight: "1.3" }}>
-                            {w.WORK_DESCRIPTION || "MPLADS Development Project"}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                          <span style={{ fontWeight: "600", color: "#0f172a", fontSize: "12px", lineHeight: "1.3" }}>
+                            {w.WORK_DESCRIPTION || "MPLADS Developmental Work"}
                           </span>
-                          <span style={{ fontSize: "11.5px", color: "#64748b", display: "flex", alignItems: "center", gap: "4px" }}>
-                            <MapPin size={11} color="#ea580c" />
-                            {w.IDA_NAME || w.CONSTITUENCY || "Local Site"}
+                          <span style={{ fontSize: "11px", color: "#64748b", display: "flex", alignItems: "center", gap: "4px" }}>
+                            <MapPin size={11} color="#005A9C" />
+                            {w.CONSTITUENCY || w.IDA_NAME || "Local Site"}, {w.STATE_NAME || ""}
                           </span>
                         </div>
                       </td>
 
                       <td>
                         <span style={{ fontSize: "12px", color: "#334155" }}>
-                          {w.MP_NAME || "Arvind Dharmapuri"}
+                          {w.MP_NAME || "Hon'ble MP"}
                         </span>
                       </td>
 
-                      <td>
-                        <strong style={{ fontSize: "12.5px", color: "#0f172a" }}>
-                          ₹{w.SANCTION_AMOUNT ? Number(w.SANCTION_AMOUNT).toLocaleString("en-IN") : "0"}
+                      <td style={{ textAlign: "right" }}>
+                        <strong style={{ fontSize: "12px", color: "#0f172a" }}>
+                          {sanc > 0 ? (sanc >= 1e7 ? `₹${(sanc / 1e7).toFixed(2)} Cr` : `₹${(sanc / 1e5).toFixed(2)} L`) : "₹0"}
                         </strong>
                       </td>
 
-                      <td>
-                        <span style={{ fontSize: "12.5px", color: "#16a34a", fontWeight: "600" }}>
-                          ₹{w.ACTUAL_AMOUNT ? Number(w.ACTUAL_AMOUNT).toLocaleString("en-IN") : "0"}
+                      <td style={{ textAlign: "right" }}>
+                        <span style={{ fontSize: "12px", color: exp > 0 ? "#0d9488" : "#64748b", fontWeight: "600" }}>
+                          {exp > 0 ? (exp >= 1e7 ? `₹${(exp / 1e7).toFixed(2)} Cr` : `₹${(exp / 1e5).toFixed(2)} L`) : "₹0"}
                         </span>
                       </td>
 
-                      <td>
-                        <span className={`status-pill-public ${pillClass}`}>
-                          {w.WORK_STATUS || "Sanctioned"}
+                      <td style={{ textAlign: "center" }}>
+                        <span
+                          style={{
+                            fontSize: "10.5px",
+                            fontWeight: "700",
+                            padding: "2px 7px",
+                            borderRadius: "4px",
+                            background: isCompleted ? "#f0fdf4" : isInspection ? "#eff6ff" : "#fff7ed",
+                            color: isCompleted ? "#15803d" : isInspection ? "#005A9C" : "#c2410c",
+                            border: `1px solid ${isCompleted ? "#bbf7d0" : isInspection ? "#bfdbfe" : "#fed7aa"}`,
+                          }}
+                        >
+                          {stageStr}
                         </span>
                       </td>
 
@@ -231,43 +325,21 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
                         <div style={{ display: "inline-flex", gap: "6px" }}>
                           <button
                             type="button"
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "4px",
-                              padding: "5px 9px",
-                              fontSize: "11.5px",
-                              fontWeight: "600",
-                              borderRadius: "5px",
-                              border: "1px solid #cbd5e1",
-                              background: "#f8fafc",
-                              color: "#1e293b",
-                              cursor: "pointer",
-                            }}
+                            className="gov-redirect-link-btn"
                             onClick={() => onSelectWork && onSelectWork(w)}
-                            title="Inspect complete public dossier"
+                            style={{ cursor: "pointer" }}
+                            title="Inspect complete work dossier"
                           >
                             <Eye size={12} />
-                            <span>Details</span>
+                            <span>Dossier</span>
                           </button>
 
                           <button
                             type="button"
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "4px",
-                              padding: "5px 9px",
-                              fontSize: "11.5px",
-                              fontWeight: "600",
-                              borderRadius: "5px",
-                              border: "1px solid #fca5a5",
-                              background: "#fef2f2",
-                              color: "#b91c1c",
-                              cursor: "pointer",
-                            }}
+                            className="gov-redirect-link-btn"
+                            style={{ color: "#b91c1c", borderColor: "#fca5a5", background: "#fef2f2", cursor: "pointer" }}
                             onClick={() => onReportWork && onReportWork(w)}
-                            title="Report discrepancy or defect for this work"
+                            title="Flag grievance or discrepancy"
                           >
                             <Flag size={12} />
                             <span>Report</span>
@@ -282,32 +354,40 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
           </table>
         </div>
 
-        {/* Pagination Bar */}
-        <div style={{ padding: "12px 18px", background: "#f8fafc", borderTop: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: "12px", color: "#64748b" }}>
-            Page {page} of {Math.ceil(totalCount / 15) || 1}
-          </span>
-          <div style={{ display: "flex", gap: "8px" }}>
-            <button
-              type="button"
-              className="citizen-quick-action-btn"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              style={{ color: "#1e293b", borderColor: "#cbd5e1", opacity: page <= 1 ? 0.5 : 1 }}
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              className="citizen-quick-action-btn"
-              disabled={page * 15 >= totalCount}
-              onClick={() => setPage((p) => p + 1)}
-              style={{ color: "#1e293b", borderColor: "#cbd5e1", opacity: page * 15 >= totalCount ? 0.5 : 1 }}
-            >
-              Next
-            </button>
+        {/* Pagination controls */}
+        {totalPages > 1 && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px", flexWrap: "wrap", gap: "8px" }}>
+            <span style={{ fontSize: "11.5px", color: "#64748b" }}>
+              Showing {works.length} of {formatNumber(totalCount)} records
+            </span>
+
+            <div style={{ display: "flex", gap: "6px" }}>
+              <button
+                type="button"
+                className="gov-redirect-link-btn"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                style={{ cursor: page <= 1 ? "not-allowed" : "pointer", opacity: page <= 1 ? 0.5 : 1 }}
+              >
+                Previous
+              </button>
+
+              <span style={{ fontSize: "12px", fontWeight: "600", padding: "5px 8px", color: "#0f172a" }}>
+                {page} / {totalPages}
+              </span>
+
+              <button
+                type="button"
+                className="gov-redirect-link-btn"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                style={{ cursor: page >= totalPages ? "not-allowed" : "pointer", opacity: page >= totalPages ? 0.5 : 1 }}
+              >
+                Next
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

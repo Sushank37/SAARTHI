@@ -176,18 +176,18 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
     if (!analytics) return;
     const exportData = [
       {
-        "Total National Works": kpis.total_works || 102703,
-        "Total Recommended (₹)": kpis.total_recommended_amount || 0,
-        "Total Sanctioned (₹)": kpis.total_sanction_amount || 0,
-        "Total Disbursed (₹)": kpis.total_actual_amount || 0,
-        "Sanction Rate (%)": kpis.sanction_rate || 72.6,
-        "Disbursement Rate (%)": kpis.utilization_pct || 39.7,
-        "Works Requiring Attention": kpis.attention_required || 4384,
-        "Medium-Risk Cases": kpis.risk_cases_count || 18,
-        "Duplicate Clusters": kpis.duplicate_clusters || 1401,
-        "Works in Clusters": kpis.works_in_clusters || 8922,
-        "Extreme Delays (>180d)": analytics?.anomaly_summary?.extreme_delays_over_180 || 12824,
-        "Total IDAs": analytics?.data_coverage?.total_authorities || 763,
+        "Total National Works": kpis.total_works ?? 0,
+        "Total Recommended (₹)": kpis.total_recommended_amount ?? 0,
+        "Total Sanctioned (₹)": kpis.total_sanction_amount ?? 0,
+        "Total Disbursed (₹)": kpis.total_actual_amount ?? 0,
+        "Sanction Rate (%)": kpis.sanction_rate ?? 0,
+        "Disbursement Rate (%)": kpis.utilization_pct ?? 0,
+        "Works Requiring Attention": kpis.attention_required ?? 0,
+        "Medium-Risk Cases": kpis.risk_cases_count ?? 0,
+        "Duplicate Clusters": kpis.duplicate_clusters ?? 0,
+        "Works in Clusters": kpis.works_in_clusters ?? 0,
+        "Extreme Delays (>180d)": analytics?.anomaly_summary?.extreme_delays_over_180 ?? 0,
+        "Total IDAs": analytics?.data_coverage?.total_authorities ?? 0,
       },
     ];
     exportToCSV(exportData, `MoSPI_National_Executive_Summary_${Date.now()}.csv`);
@@ -211,7 +211,7 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
               </span>
               <span className={`gov-live-status-pill ${backendConnected ? "online" : ""}`}>
                 <span className="gov-live-pulse-dot" />
-                {backendConnected ? "Live 1,02,703 Records" : "Offline"}
+                {backendConnected ? "Live Official Dataset" : "Offline"}
               </span>
             </div>
             <h1 className="gov-mp-page-title">
@@ -246,9 +246,9 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
             <span className="kpi-title">Total Works</span>
             <Layers size={14} color="#0284c7" />
           </div>
-          <div className="kpi-value">{formatNumber(kpis.total_works || 102703)}</div>
+          <div className="kpi-value">{loading && !kpis.total_works ? "..." : formatNumber(kpis.total_works ?? 0)}</div>
           <div className="kpi-sub">
-            {formatNumber(kpis.sanctioned_works || 77617)} sanctioned ({kpis.sanction_rate || 75.6}%)
+            {loading && !kpis.sanctioned_works ? "..." : `${formatNumber(kpis.sanctioned_works ?? 0)} sanctioned (${kpis.sanction_rate ?? 0}%)`}
           </div>
         </div>
 
@@ -259,7 +259,7 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
           </div>
           <div className="kpi-value">₹ {formatCrores(kpis.total_sanction_amount || 0)} Cr</div>
           <div className="kpi-sub">
-            Disbursed: ₹ {formatCrores(kpis.total_actual_amount || 0)} Cr ({kpis.utilization_pct || 39.7}%)
+            Disbursed: ₹ {formatCrores(kpis.total_actual_amount || 0)} Cr ({kpis.utilization_pct || 0}%)
           </div>
         </div>
 
@@ -268,9 +268,9 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
             <span className="kpi-title">Works Requiring Attention</span>
             <ClipboardCheck size={14} color="#d97706" />
           </div>
-          <div className="kpi-value">{formatNumber(kpis.attention_required || 4384)}</div>
+          <div className="kpi-value">{loading && !kpis.attention_required ? "..." : formatNumber(kpis.attention_required ?? 0)}</div>
           <div className="kpi-sub">
-            {formatNumber(kpis.duplicate_clusters || 1401)} duplicate clusters flagged
+            {loading && !kpis.duplicate_clusters ? "..." : `${formatNumber(kpis.duplicate_clusters ?? 0)} duplicate clusters flagged`}
           </div>
         </div>
 
@@ -279,7 +279,7 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
             <span className="kpi-title">Audit Risk Cases</span>
             <ShieldAlert size={14} color="#e11d48" />
           </div>
-          <div className="kpi-value">{formatNumber(kpis.risk_cases_count || 18)}</div>
+          <div className="kpi-value">{loading && !kpis.risk_cases_count ? "..." : formatNumber(kpis.risk_cases_count ?? 0)}</div>
           <div className="kpi-sub">
             Medium-risk outliers requiring verification
           </div>

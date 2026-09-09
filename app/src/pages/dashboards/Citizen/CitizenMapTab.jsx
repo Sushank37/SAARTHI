@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MapPin,
   Filter,
@@ -9,34 +9,52 @@ import {
   Flag,
   Eye,
   Layers,
-  Sparkles,
 } from "lucide-react";
+import { API_BASE } from "../../../constants";
 import ConstituencyMap from "../../../components/ConstituencyMap";
 
 export default function CitizenMapTab({
   onSelectWork,
   onReportWork,
 }) {
+  const [constituencyList, setConstituencyList] = useState([]);
+  const [selectedConstituency, setSelectedConstituency] = useState("Nizamabad");
   const [sectorFilter, setSectorFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeLocality, setActiveLocality] = useState("Nizamabad");
+
+  useEffect(() => {
+    async function loadConstituencies() {
+      try {
+        const res = await fetch(`${API_BASE}/api/constituencies`);
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            setConstituencyList(list);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load constituencies for map:", e);
+      }
+    }
+    loadConstituencies();
+  }, []);
 
   const sectors = [
     { id: "all", label: "All Categories" },
-    { id: "roads", label: "Roads & Bridges" },
-    { id: "water", label: "Drinking Water" },
-    { id: "education", label: "Education & Schools" },
-    { id: "health", label: "Healthcare & Clinics" },
-    { id: "community", label: "Community Halls" },
-    { id: "electricity", label: "Solar & Electrification" },
+    { id: "Roads and Bridges", label: "Roads & Bridges" },
+    { id: "Drinking Water", label: "Drinking Water" },
+    { id: "Education", label: "Education & Schools" },
+    { id: "Health and Family Welfare", label: "Healthcare & Clinics" },
+    { id: "Community Infrastructure", label: "Community Halls" },
+    { id: "Electricity", label: "Solar & Electrification" },
   ];
 
   const statuses = [
-    { id: "all", label: "All Statuses" },
-    { id: "completed", label: "Completed" },
-    { id: "ongoing", label: "Ongoing" },
-    { id: "sanctioned", label: "Sanctioned" },
+    { id: "All", label: "All Statuses" },
+    { id: "Approved", label: "Approved / Sanctioned" },
+    { id: "Completed", label: "Work Completed" },
+    { id: "Physical Inspection", label: "Physical Inspection" },
   ];
 
   return (
@@ -54,22 +72,47 @@ export default function CitizenMapTab({
                 style={{ paddingLeft: "30px", width: "100%", height: "32px", fontSize: "12px" }}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search village, mandal, project description..."
+                placeholder="Search village, mandal, or project description..."
               />
             </div>
           </div>
 
-          {/* Category & Status Filters */}
+          {/* Constituency, Category & Status Filters */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", textTransform: "uppercase" }}>Constituency:</span>
+              <select
+                className="gov-select citizen-select"
+                style={{ width: "auto", height: "32px", fontSize: "12px", fontWeight: "700", color: "#005A9C" }}
+                value={selectedConstituency}
+                onChange={(e) => setSelectedConstituency(e.target.value)}
+              >
+                {constituencyList.length > 0 ? (
+                  constituencyList.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="Nizamabad">Nizamabad</option>
+                    <option value="Varanasi">Varanasi</option>
+                    <option value="Guntur">Guntur</option>
+                    <option value="Jaunpur">Jaunpur</option>
+                  </>
+                )}
+              </select>
+            </div>
+
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <Filter size={13} color="#64748b" />
               <select
                 className="gov-select citizen-select"
                 style={{ width: "auto", height: "32px", fontSize: "12px" }}
-                value={sectorFilter}
-                onChange={(e) => setSectorFilter(e.target.value)}
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
               >
-                {sectors.map((s) => (
+                {statuses.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.label}
                   </option>
@@ -77,22 +120,9 @@ export default function CitizenMapTab({
               </select>
             </div>
 
-            <select
-              className="gov-select citizen-select"
-              style={{ width: "auto", height: "32px", fontSize: "12px" }}
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              {statuses.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-
             <span className="gov-constituency-tag">
               <MapPin size={11} style={{ marginRight: "3px" }} />
-              Nizamabad (916 Works)
+              {selectedConstituency}
             </span>
           </div>
         </div>
@@ -103,18 +133,19 @@ export default function CitizenMapTab({
         <div style={{ padding: "8px 14px", background: "#f8fafc", borderBottom: "1px solid #cbd5e1", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div className="card-section-title">
             <MapPin size={15} color="#0284c7" />
-            <span>Public Works GIS Spatial Map</span>
+            <span>Public Works GIS Spatial Distribution</span>
             <span style={{ fontSize: "10.5px", background: "#ecfdf5", color: "#047857", fontWeight: "700", padding: "1px 6px", borderRadius: "10px", border: "1px solid #a7f3d0" }}>
-              Live GeoJSON
+              Verified Telemetry
             </span>
           </div>
           <span style={{ fontSize: "11.5px", color: "#64748b" }}>
-            Click any pin to inspect work details or report grounds
+            Click any pin to inspect work details or verify milestone execution
           </span>
         </div>
 
         <div style={{ height: "620px", width: "100%", position: "relative" }}>
           <ConstituencyMap
+            constituency={selectedConstituency}
             onSelectWork={(work) => {
               if (onSelectWork) onSelectWork(work);
             }}
@@ -126,24 +157,20 @@ export default function CitizenMapTab({
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#16a34a" }} />
-              Completed Asset
+              Normal / Low Risk
             </span>
             <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#2563eb" }} />
-              Ongoing Project
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#eab308" }} />
-              Sanctioned / Planning
+              <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#d97706" }} />
+              Medium Risk (Attention)
             </span>
             <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#dc2626" }} />
-              Delayed / Attention Required
+              High Risk / Cost Anomaly
             </span>
           </div>
 
           <span style={{ fontStyle: "italic", fontSize: "11.5px", color: "#64748b" }}>
-            * Verified locality coordinates geocoded via Survey of India & Census directory
+            * Verified locality coordinates geocoded via Survey of India & Census directory (unmapped works accounted separately)
           </span>
         </div>
       </div>

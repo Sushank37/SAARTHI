@@ -10,29 +10,42 @@ import {
   ArrowRight,
   Eye,
   User,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import { API_BASE, formatNumber, formatCrores } from "../../../constants";
 
 export default function CitizenConstituencyTab({ onSelectWork }) {
   const [constituency, setConstituency] = useState("Nizamabad");
+  const [constituencyList, setConstituencyList] = useState([]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const majorConstituencies = [
-    "Nizamabad",
-    "Varanasi",
-    "New Delhi",
-    "Thiruvananthapuram",
-    "Bengaluru South",
-    "Guntur",
-    "Nagpur",
-    "Ahmedabad East",
-  ];
+  // Load available parliamentary constituencies from backend
+  useEffect(() => {
+    async function loadConstituencies() {
+      try {
+        const res = await fetch(`${API_BASE}/api/constituencies`);
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            setConstituencyList(list);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load constituencies list:", e);
+      }
+    }
+    loadConstituencies();
+  }, []);
 
+  // Fetch real data for selected constituency
   useEffect(() => {
     let cancelled = false;
-    async function loadConstituency() {
+    async function loadConstituencyData() {
       setLoading(true);
+      setError(null);
       try {
         const res = await fetch(`${API_BASE}/api/public/constituency/${encodeURIComponent(constituency)}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -42,36 +55,33 @@ export default function CitizenConstituencyTab({ onSelectWork }) {
         }
       } catch (err) {
         console.error("Constituency load error:", err);
+        if (!cancelled) {
+          setError(`Unable to load data for constituency '${constituency}'.`);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
-    loadConstituency();
+    loadConstituencyData();
     return () => {
       cancelled = true;
     };
   }, [constituency]);
 
-  const financials = data?.financials || {
-    recommended_cr: 28.5,
-    sanctioned_cr: 24.2,
-    expenditure_cr: 18.9,
-    utilization_rate: 78.1,
-  };
+  const financials = data?.financials;
+  const statusDist = data?.status_distribution;
+  const total = data?.total_works || 0;
 
-  const statusDist = data?.status_distribution || {
-    completed: 440,
-    ongoing: 310,
-    sanctioned: 166,
-  };
+  const compCount = statusDist?.completed || 0;
+  const ongoCount = statusDist?.ongoing || 0;
+  const sancCount = statusDist?.sanctioned || 0;
 
-  const total = data?.total_works || 916;
-  const compPct = Math.round((statusDist.completed / total) * 100) || 48;
-  const ongoPct = Math.round((statusDist.ongoing / total) * 100) || 34;
-  const sancPct = 100 - compPct - ongoPct;
+  const compPct = total > 0 ? Math.round((compCount / total) * 100) : 0;
+  const ongoPct = total > 0 ? Math.round((ongoCount / total) * 100) : 0;
+  const sancPct = total > 0 ? Math.max(0, 100 - compPct - ongoPct) : 0;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       {/* Constituency Selector Header */}
       <div className="gov-mp-card" style={{ padding: "10px 14px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
@@ -81,35 +91,50 @@ export default function CitizenConstituencyTab({ onSelectWork }) {
               <span>Parliamentary Constituency Transparency Scorecard</span>
             </div>
             <div className="card-section-desc">
-              Select your constituency to inspect public fund utilization, MP recommendations, and asset delivery.
+              Select any parliamentary constituency to inspect live MPLADS allocation, MP recommendations, and asset execution.
             </div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontSize: "11.5px", fontWeight: "600", color: "#475569" }}>Constituency:</span>
             <select
-              className="citizen-select"
+              className="gov-select citizen-select"
               value={constituency}
               onChange={(e) => setConstituency(e.target.value)}
-              style={{ width: "auto", fontWeight: "700", color: "#005A9C", height: "30px", fontSize: "12px", padding: "4px 8px" }}
+              style={{ width: "auto", fontWeight: "700", color: "#005A9C", height: "32px", fontSize: "12px", padding: "0 10px" }}
             >
-              {majorConstituencies.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
+              {constituencyList.length > 0 ? (
+                constituencyList.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="Nizamabad">Nizamabad</option>
+                  <option value="Varanasi">Varanasi</option>
+                  <option value="New Delhi">New Delhi</option>
+                  <option value="Guntur">Guntur</option>
+                </>
+              )}
             </select>
           </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="gov-mp-card" style={{ textAlign: "center", padding: "30px", color: "#64748b", fontSize: "12px" }}>
-          Loading constituency transparency records...
+        <div className="gov-mp-card" style={{ textAlign: "center", padding: "30px", color: "#64748b", fontSize: "13px" }}>
+          <RefreshCw size={18} className="spin-icon" style={{ display: "inline-block", marginRight: "8px" }} />
+          Loading official records for {constituency}...
+        </div>
+      ) : error ? (
+        <div className="gov-mp-card" style={{ textAlign: "center", padding: "20px", color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca" }}>
+          <AlertTriangle size={18} style={{ display: "inline-block", marginRight: "6px" }} />
+          <span>{error}</span>
         </div>
       ) : (
         <>
-          {/* MP Profile & Quota Scorecard */}
+          {/* MP Profile Banner Card */}
           <div
             className="gov-mp-card"
             style={{
@@ -125,8 +150,8 @@ export default function CitizenConstituencyTab({ onSelectWork }) {
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div
                 style={{
-                  width: "44px",
-                  height: "44px",
+                  width: "42px",
+                  height: "42px",
                   borderRadius: "6px",
                   background: "#eff6ff",
                   border: "1px solid #bfdbfe",
@@ -134,31 +159,31 @@ export default function CitizenConstituencyTab({ onSelectWork }) {
                   alignItems: "center",
                   justifyContent: "center",
                   color: "#005A9C",
-                  fontSize: "20px",
+                  fontSize: "18px",
                 }}
               >
-                🎖️
+                <User size={22} color="#005A9C" />
               </div>
               <div>
                 <span className="gov-parliament-badge" style={{ fontSize: "10.5px", padding: "1px 6px" }}>
-                  Hon'ble Member of Parliament · {data?.state || "Telangana"}
+                  Hon'ble Member of Parliament · {data?.state}
                 </span>
                 <h2 style={{ fontSize: "16px", fontWeight: "800", color: "#0f172a", margin: "2px 0" }}>
-                  {data?.mp_name || "Arvind Dharmapuri"}
+                  {data?.mp_name}
                 </h2>
                 <span style={{ fontSize: "11.5px", color: "#64748b" }}>
-                  Parliamentary Constituency: <strong style={{ color: "#0f172a" }}>{data?.constituency || constituency}</strong> · 18th Lok Sabha
+                  Constituency: <strong style={{ color: "#0f172a" }}>{data?.constituency}</strong> · 18th Lok Sabha
                 </span>
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
               <div style={{ textAlign: "right" }}>
                 <span style={{ fontSize: "10.5px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
                   Total Works Sanctioned
                 </span>
                 <div style={{ fontSize: "18px", fontWeight: "800", color: "#0f172a" }}>
-                  {data?.total_works?.toLocaleString() || "916"} Works
+                  {formatNumber(data?.total_works || 0)} Works
                 </div>
               </div>
 
@@ -166,46 +191,46 @@ export default function CitizenConstituencyTab({ onSelectWork }) {
                 <span style={{ fontSize: "10.5px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
                   Fund Utilization Rate
                 </span>
-                <div style={{ fontSize: "18px", fontWeight: "800", color: "#16a34a" }}>
-                  {financials.utilization_rate}%
+                <div style={{ fontSize: "18px", fontWeight: "800", color: "#0d9488" }}>
+                  {financials?.utilization_rate ?? 0}%
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Financial Breakdown (Allocated vs Sanctioned vs Spent) */}
-          <div className="citizen-kpi-grid">
-            <div className="citizen-kpi-card blue">
-              <div className="citizen-kpi-header">
-                <span className="citizen-kpi-label">Recommended by MP</span>
-                <div className="citizen-kpi-icon">
-                  <IndianRupee size={16} />
-                </div>
+          {/* 3-Column Gold Standard Financial KPI Grid */}
+          <div className="gov-mp-kpi-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+            <div className="gov-mp-kpi-card kpi-blue">
+              <div className="kpi-header">
+                <span className="kpi-title">Recommended by MP</span>
+                <IndianRupee size={14} color="#0284c7" />
               </div>
-              <div className="citizen-kpi-value">₹{financials.recommended_cr} Cr</div>
-              <div className="citizen-kpi-sub">Total works proposed by Hon'ble MP</div>
+              <div className="kpi-value">
+                {financials?.recommended_cr != null ? `₹ ${financials.recommended_cr} Cr` : "N/A"}
+              </div>
+              <div className="kpi-sub">Total developmental works proposed</div>
             </div>
 
-            <div className="citizen-kpi-card purple">
-              <div className="citizen-kpi-header">
-                <span className="citizen-kpi-label">Sanctioned by Collector</span>
-                <div className="citizen-kpi-icon">
-                  <Building2 size={16} />
-                </div>
+            <div className="gov-mp-kpi-card kpi-indigo">
+              <div className="kpi-header">
+                <span className="kpi-title">Sanctioned by District Authority</span>
+                <Building2 size={14} color="#6366f1" />
               </div>
-              <div className="citizen-kpi-value">₹{financials.sanctioned_cr} Cr</div>
-              <div className="citizen-kpi-sub">Approved by District Authority</div>
+              <div className="kpi-value">
+                {financials?.sanctioned_cr != null ? `₹ ${financials.sanctioned_cr} Cr` : "N/A"}
+              </div>
+              <div className="kpi-sub">Technically and administratively approved</div>
             </div>
 
-            <div className="citizen-kpi-card green">
-              <div className="citizen-kpi-header">
-                <span className="citizen-kpi-label">Expenditure Incurred</span>
-                <div className="citizen-kpi-icon">
-                  <CheckCircle2 size={16} />
-                </div>
+            <div className="gov-mp-kpi-card kpi-teal">
+              <div className="kpi-header">
+                <span className="kpi-title">Expenditure Incurred</span>
+                <CheckCircle2 size={14} color="#0d9488" />
               </div>
-              <div className="citizen-kpi-value">₹{financials.expenditure_cr} Cr</div>
-              <div className="citizen-kpi-sub">Disbursed for completed and ongoing civil works</div>
+              <div className="kpi-value">
+                {financials?.expenditure_cr != null ? `₹ ${financials.expenditure_cr} Cr` : "N/A"}
+              </div>
+              <div className="kpi-sub">Verified disbursement on ground assets</div>
             </div>
           </div>
 
@@ -217,46 +242,46 @@ export default function CitizenConstituencyTab({ onSelectWork }) {
                 <span>Work Delivery Status Breakdown</span>
               </div>
               <span style={{ fontSize: "11px", color: "#64748b" }}>
-                Based on official eSAKSHI digital records
+                Total {formatNumber(total)} records in official MPLADS registry
               </span>
             </div>
 
             {/* Segmented Multi-color Bar */}
-            <div style={{ display: "flex", height: "14px", borderRadius: "4px", overflow: "hidden", background: "#f1f5f9" }}>
+            <div style={{ display: "flex", height: "12px", borderRadius: "4px", overflow: "hidden", background: "#f1f5f9" }}>
               <div
-                style={{ width: `${compPct}%`, background: "#16a34a", transition: "width 0.4s ease" }}
-                title={`Completed: ${statusDist.completed} works (${compPct}%)`}
+                style={{ width: `${compPct}%`, background: "#0d9488", transition: "width 0.4s ease" }}
+                title={`Completed: ${compCount} works (${compPct}%)`}
               />
               <div
                 style={{ width: `${ongoPct}%`, background: "#0284c7", transition: "width 0.4s ease" }}
-                title={`Ongoing: ${statusDist.ongoing} works (${ongoPct}%)`}
+                title={`Ongoing: ${ongoCount} works (${ongoPct}%)`}
               />
               <div
                 style={{ width: `${sancPct}%`, background: "#d97706", transition: "width 0.4s ease" }}
-                title={`Sanctioned: ${statusDist.sanctioned} works (${sancPct}%)`}
+                title={`Sanctioned: ${sancCount} works (${sancPct}%)`}
               />
             </div>
 
             {/* Legend */}
-            <div style={{ display: "flex", justifyContent: "space-around", flexWrap: "wrap", gap: "12px", paddingTop: "4px" }}>
+            <div style={{ display: "flex", justifyContent: "space-around", flexWrap: "wrap", gap: "12px", paddingTop: "8px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "#16a34a" }} />
+                <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "#0d9488" }} />
                 <span style={{ fontSize: "11.5px", color: "#334155" }}>
-                  <strong>{statusDist.completed}</strong> Completed ({compPct}%)
+                  <strong>{formatNumber(compCount)}</strong> Completed ({compPct}%)
                 </span>
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "#0284c7" }} />
                 <span style={{ fontSize: "11.5px", color: "#334155" }}>
-                  <strong>{statusDist.ongoing}</strong> Ongoing ({ongoPct}%)
+                  <strong>{formatNumber(ongoCount)}</strong> Ongoing ({ongoPct}%)
                 </span>
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "#d97706" }} />
                 <span style={{ fontSize: "11.5px", color: "#334155" }}>
-                  <strong>{statusDist.sanctioned}</strong> Sanctioned ({sancPct}%)
+                  <strong>{formatNumber(sancCount)}</strong> Sanctioned ({sancPct}%)
                 </span>
               </div>
             </div>
@@ -267,10 +292,10 @@ export default function CitizenConstituencyTab({ onSelectWork }) {
             <div className="gov-mp-card">
               <div className="card-section-title" style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
                 <Building2 size={15} color="#005A9C" />
-                <span>Public Works by Developmental Sector</span>
+                <span>Public Works by Priority Sector</span>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "8px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "8px" }}>
                 {Object.entries(data.category_distribution).map(([cat, cnt]) => (
                   <div
                     key={cat}
@@ -285,7 +310,7 @@ export default function CitizenConstituencyTab({ onSelectWork }) {
                     }}
                   >
                     <span style={{ fontSize: "11.5px", fontWeight: "600", color: "#334155" }}>{cat}</span>
-                    <strong style={{ fontSize: "12px", color: "#005A9C" }}>{cnt} Works</strong>
+                    <strong style={{ fontSize: "12px", color: "#005A9C" }}>{formatNumber(cnt)} Works</strong>
                   </div>
                 ))}
               </div>
