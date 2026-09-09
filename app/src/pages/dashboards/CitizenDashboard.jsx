@@ -61,47 +61,58 @@ export default function CitizenDashboard({ summary, onSelectWork }) {
   };
 
   return (
-    <div className="citizen-portal-container">
-      {/* 1. Official Citizen Hero Banner */}
-      <div className="citizen-hero-banner">
-        <div className="citizen-hero-brand">
-          <div className="citizen-emblem-badge" title="National Emblem of India">
-            🏛️
-          </div>
-          <div className="citizen-hero-text">
-            <h1>
-              <span>Jan Saarthi · Public Transparency & Social Audit</span>
-              <span className="citizen-tag-pill">Citizen Oversight</span>
+    <div className="gov-mp-shell citizen-portal-container">
+      {/* 1. Official Header Card */}
+      <div className="gov-mp-header-card">
+        <div className="gov-mp-header-top">
+          <div className="gov-mp-title-unit">
+            <div className="gov-mp-sub-row">
+              <span className="gov-parliament-badge">
+                PUBLIC PORTAL
+              </span>
+              <span className="gov-constituency-tag">
+                <MapPin size={11} style={{ marginRight: "3px" }} />
+                Nizamabad, Telangana
+              </span>
+              <span className="gov-live-status-pill online">
+                <span className="gov-live-pulse-dot" />
+                Live Transparency Feed
+              </span>
+            </div>
+            <h1 className="gov-mp-page-title">
+              Jan Saarthi · Public Transparency & Social Audit
             </h1>
-            <p>
-              Direct citizen portal for MPLADS developmental works: explore public community assets, verify ground completion against digital records, and participate in participatory democracy.
+            <p className="gov-mp-page-subtitle">
+              Direct citizen portal for MPLADS developmental works: explore public community assets, verify ground completion against digital records, and participate in social audit.
             </p>
           </div>
-        </div>
 
-        <div className="citizen-hero-actions">
-          <button
-            type="button"
-            className="citizen-quick-action-btn"
-            onClick={() => handleTabChange("verify")}
-          >
-            <QrCode size={14} />
-            <span>On-Site QR Scan</span>
-          </button>
+          <div className="gov-mp-header-actions" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button
+              type="button"
+              className="gov-redirect-link-btn"
+              onClick={() => handleTabChange("verify")}
+              style={{ cursor: "pointer" }}
+            >
+              <QrCode size={13} />
+              <span>On-Site QR Scan</span>
+            </button>
 
-          <button
-            type="button"
-            className="citizen-quick-action-btn primary"
-            onClick={() => handleTabChange("report")}
-          >
-            <Flag size={14} />
-            <span>Report Discrepancy</span>
-          </button>
+            <button
+              type="button"
+              className="gov-redirect-link-btn"
+              onClick={() => handleTabChange("report")}
+              style={{ cursor: "pointer", background: "#fef2f2", color: "#b91c1c", borderColor: "#fecaca" }}
+            >
+              <Flag size={13} />
+              <span>Report Discrepancy</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* 2. Public Tab Navigation Bar */}
-      <div className="citizen-tab-bar">
+      <div className="gov-mp-nav-bar citizen-tab-bar">
         {CITIZEN_TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = currentTab === tab.id;
@@ -109,10 +120,10 @@ export default function CitizenDashboard({ summary, onSelectWork }) {
             <button
               key={tab.id}
               type="button"
-              className={`citizen-tab-pill ${isActive ? "active" : ""}`}
+              className={`gov-mp-nav-btn ${isActive ? "active" : ""}`}
               onClick={() => handleTabChange(tab.id)}
             >
-              <Icon size={15} />
+              <Icon size={14} />
               <span>{tab.label}</span>
               {tab.badge && <span className="citizen-tab-badge">{tab.badge}</span>}
             </button>

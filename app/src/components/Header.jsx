@@ -18,7 +18,7 @@ export default function Header({
   onLogout,
 }) {
   const navigate = useNavigate();
-  const { logout, login, role: authRole } = useAuth();
+  const { logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleLogout = () => {
@@ -128,76 +128,7 @@ export default function Header({
 
 
 
-
-          <div
-            className={`live-status-tag ${
-              backendStatus === "connected"
-                ? "connected"
-                : backendStatus === "connecting"
-                ? "connecting"
-                : "offline"
-            }`}
-            title={
-              backendStatus === "connected"
-                ? `Connected to FastAPI Backend · ${
-                    totalWorks ? totalWorks.toLocaleString("en-IN") : "102,703"
-                  } works loaded`
-                : "Backend Disconnected. Click to retry connection."
-            }
-            onClick={backendStatus !== "connected" ? onReconnect : undefined}
-            style={{ cursor: backendStatus !== "connected" ? "pointer" : "default" }}
-          >
-            <span
-              className={`live-dot ${
-                backendStatus === "connected"
-                  ? "green"
-                  : backendStatus === "connecting"
-                  ? "yellow"
-                  : "red"
-              }`}
-            />
-            <span>
-              {backendStatus === "connected"
-                ? `Live: ${
-                    totalWorks
-                      ? totalWorks.toLocaleString("en-IN")
-                      : "102,703"
-                  } Works`
-                : backendStatus === "connecting"
-                ? "Connecting..."
-                : "Offline (Retry)"}
-            </span>
-          </div>
-
           <LanguageSelector />
-
-          {authRole !== "CITIZEN" ? (
-            <button
-              type="button"
-              className="external-portal-btn"
-              style={{ background: "#f0fdf4", color: "#166534", borderColor: "#bbf7d0", fontWeight: "700" }}
-              onClick={() => {
-                if (login) login("CITIZEN");
-                navigate("/citizen");
-              }}
-              title="Switch to Public / Citizen Oversight Portal"
-            >
-              <span>👥 Public Portal</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="external-portal-btn"
-              style={{ background: "#eff6ff", color: "#1e40af", borderColor: "#bfdbfe", fontWeight: "700" }}
-              onClick={() => {
-                if (login) login("MOSPI");
-                navigate("/mospi");
-              }}
-              title="Switch to Central MoSPI Admin Portal"
-            >
-              <span>🏛️ Admin Portal</span>
-            </button>
-          )}
 
           <a
             href="https://mplads.mospi.gov.in/digigov/dashboard.html"

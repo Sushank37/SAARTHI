@@ -6,12 +6,14 @@
 .citizen-portal-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   width: 100%;
-  max-width: 1400px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 12px 16px 32px;
-  font-family: inherit;
+  padding: 0 0 32px;
+  color: #0f172a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
 }
 
 /* =========================================================
@@ -19,118 +21,105 @@
 ========================================================= */
 
 .citizen-hero-banner {
-  background: linear-gradient(135deg, #0f2744 0%, #1e3a8a 55%, #1e40af 100%);
-  color: #ffffff;
-  border-radius: 12px;
-  padding: 22px 26px;
-  box-shadow: 0 4px 18px rgba(15, 39, 68, 0.12);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-top: 3.5px solid #005A9C;
+  border-radius: 8px;
+  padding: 10px 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 16px;
   flex-wrap: wrap;
-  gap: 20px;
-  position: relative;
-  overflow: hidden;
-}
-
-.citizen-hero-banner::after {
-  content: "";
-  position: absolute;
-  right: -50px;
-  top: -50px;
-  width: 250px;
-  height: 250px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
+  color: #0f172a;
 }
 
 .citizen-hero-brand {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  max-width: 700px;
+  gap: 12px;
+  max-width: 780px;
 }
 
 .citizen-emblem-badge {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 10px;
-  width: 52px;
-  height: 52px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 18px;
   flex-shrink: 0;
-  backdrop-filter: blur(4px);
 }
 
 .citizen-hero-text h1 {
-  font-size: 21px;
+  font-size: 20px;
   font-weight: 800;
-  margin: 0 0 4px 0;
+  color: #0f172a;
+  margin: 2px 0 0;
   letter-spacing: -0.02em;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .citizen-tag-pill {
   font-size: 11px;
   font-weight: 700;
-  background: #f97316;
-  color: #fff;
-  padding: 2px 8px;
-  border-radius: 20px;
+  background: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  padding: 2px 7px;
+  border-radius: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
 }
 
 .citizen-hero-text p {
-  font-size: 13.5px;
-  color: #cbd5e1;
-  margin: 0;
-  line-height: 1.45;
+  font-size: 12px;
+  color: #64748b;
+  margin: 2px 0 0;
+  line-height: 1.4;
 }
 
 .citizen-hero-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .citizen-quick-action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 14px;
-  font-size: 13px;
+  gap: 6px;
+  padding: 6px 11px;
+  font-size: 12px;
   font-weight: 600;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
   cursor: pointer;
   transition: all 0.15s ease;
-  backdrop-filter: blur(4px);
 }
 
 .citizen-quick-action-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+  background: #f1f5f9;
+  border-color: #94a3b8;
 }
 
 .citizen-quick-action-btn.primary {
-  background: #ea580c;
-  border-color: #f97316;
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.35);
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
 }
 
 .citizen-quick-action-btn.primary:hover {
-  background: #c2410c;
+  background: #fee2e2;
 }
 
 /* =========================================================
@@ -142,27 +131,28 @@
   align-items: center;
   gap: 6px;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 5px 8px;
   overflow-x: auto;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  scrollbar-width: thin;
 }
 
 .citizen-tab-pill {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 14px;
-  border-radius: 7px;
-  font-size: 13px;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 4px;
+  font-size: 12px;
   font-weight: 600;
   color: #475569;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease;
 }
 
 .citizen-tab-pill:hover {
@@ -171,9 +161,10 @@
 }
 
 .citizen-tab-pill.active {
-  background: #1e3a8a;
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #0284c7;
+  font-weight: 700;
 }
 
 .citizen-tab-badge {
@@ -181,13 +172,13 @@
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 10px;
-  background: #e2e8f0;
-  color: #1e293b;
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
 }
 
 .citizen-tab-pill.active .citizen-tab-badge {
-  background: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+  background: #bfdbfe;
+  color: #0369a1;
 }
 
 /* =========================================================
@@ -196,44 +187,33 @@
 
 .citizen-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
+}
+
+@media (max-width: 1024px) {
+  .citizen-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .citizen-kpi-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 16px 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  gap: 4px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
   transition: all 0.15s ease;
-  position: relative;
-  overflow: hidden;
 }
 
-.citizen-kpi-card:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
-}
-
-.citizen-kpi-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: #cbd5e1;
-}
-
-.citizen-kpi-card.blue::before { background: #2563eb; }
-.citizen-kpi-card.green::before { background: #16a34a; }
-.citizen-kpi-card.amber::before { background: #d97706; }
-.citizen-kpi-card.purple::before { background: #7c3aed; }
-.citizen-kpi-card.red::before { background: #dc2626; }
+.citizen-kpi-card.blue { border-top: 3.5px solid #0284c7; }
+.citizen-kpi-card.green { border-top: 3.5px solid #0d9488; }
+.citizen-kpi-card.amber { border-top: 3.5px solid #d97706; }
+.citizen-kpi-card.purple { border-top: 3.5px solid #6366f1; }
+.citizen-kpi-card.red { border-top: 3.5px solid #e11d48; }
 
 .citizen-kpi-header {
   display: flex;
@@ -242,17 +222,17 @@
 }
 
 .citizen-kpi-label {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: #64748b;
+  letter-spacing: 0.03em;
+  color: #475569;
 }
 
 .citizen-kpi-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -260,21 +240,21 @@
   color: #475569;
 }
 
-.citizen-kpi-card.blue .citizen-kpi-icon { background: #eff6ff; color: #2563eb; }
-.citizen-kpi-card.green .citizen-kpi-icon { background: #f0fdf4; color: #16a34a; }
+.citizen-kpi-card.blue .citizen-kpi-icon { background: #eff6ff; color: #0284c7; }
+.citizen-kpi-card.green .citizen-kpi-icon { background: #ecfdf5; color: #059669; }
 .citizen-kpi-card.amber .citizen-kpi-icon { background: #fffbeb; color: #d97706; }
-.citizen-kpi-card.purple .citizen-kpi-icon { background: #faf5ff; color: #7c3aed; }
+.citizen-kpi-card.purple .citizen-kpi-icon { background: #e0e7ff; color: #4338ca; }
 .citizen-kpi-card.red .citizen-kpi-icon { background: #fef2f2; color: #dc2626; }
 
 .citizen-kpi-value {
-  font-size: 23px;
+  font-size: 20px;
   font-weight: 800;
   color: #0f172a;
   letter-spacing: -0.02em;
 }
 
 .citizen-kpi-sub {
-  font-size: 11.5px;
+  font-size: 11px;
   color: #64748b;
 }
 
@@ -284,13 +264,13 @@
 
 .citizen-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 11px 14px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .citizen-card-header {
@@ -298,22 +278,23 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
-  padding-bottom: 12px;
+  gap: 10px;
+  padding-bottom: 8px;
   border-bottom: 1px solid #f1f5f9;
 }
 
 .citizen-card-title {
-  font-size: 16px;
+  font-size: 13.5px;
   font-weight: 700;
   color: #0f172a;
   display: flex;
   align-items: center;
   gap: 8px;
+  margin: 0;
 }
 
 .citizen-card-subtitle {
-  font-size: 12.5px;
+  font-size: 11.5px;
   color: #64748b;
   margin-top: 2px;
 }
@@ -325,27 +306,27 @@
 .citizen-form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .citizen-input-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .citizen-input-label {
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 600;
   color: #334155;
 }
 
 .citizen-input, .citizen-select, .citizen-textarea {
   width: 100%;
-  padding: 9px 12px;
+  padding: 6px 10px;
   border: 1px solid #cbd5e1;
-  border-radius: 7px;
-  font-size: 13.5px;
+  border-radius: 6px;
+  font-size: 12px;
   font-family: inherit;
   color: #0f172a;
   background: #ffffff;
