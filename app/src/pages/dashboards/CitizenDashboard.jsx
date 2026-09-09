@@ -1,139 +1,184 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../../context/useAuth";
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
-  Users,
-  ShieldCheck,
+  LayoutDashboard,
+  Map,
   Search,
+  Building2,
+  TrendingUp,
+  Camera,
+  Flag,
   CheckCircle2,
-  FileCheck,
-  Eye,
+  QrCode,
+  ShieldCheck,
   MapPin,
 } from "lucide-react";
-import { formatNumber, formatCrores } from "../../constants";
-import "./PlaceholderDashboard.css";
+
+import CitizenOverviewTab from "./Citizen/CitizenOverviewTab";
+import CitizenMapTab from "./Citizen/CitizenMapTab";
+import CitizenExploreTab from "./Citizen/CitizenExploreTab";
+import CitizenConstituencyTab from "./Citizen/CitizenConstituencyTab";
+import CitizenAnalyticsTab from "./Citizen/CitizenAnalyticsTab";
+import CitizenEvidenceTab from "./Citizen/CitizenEvidenceTab";
+import CitizenReportIssueTab from "./Citizen/CitizenReportIssueTab";
+import CitizenComplaintsTab from "./Citizen/CitizenComplaintsTab";
+import CitizenVerifyTab from "./Citizen/CitizenVerifyTab";
+
+import "./Citizen/CitizenDashboard.css";
+
+const CITIZEN_TABS = [
+  { id: "overview", label: "Public Overview", icon: LayoutDashboard },
+  { id: "map", label: "Public Works Map", icon: Map, badge: "GIS" },
+  { id: "explore", label: "Explore Works", icon: Search },
+  { id: "constituency", label: "Constituency Transparency", icon: Building2 },
+  { id: "analytics", label: "Progress & Analytics", icon: TrendingUp },
+  { id: "evidence", label: "Photo Evidence", icon: Camera },
+  { id: "report", label: "Report an Issue", icon: Flag, badge: "Audit" },
+  { id: "complaints", label: "Track Grievance", icon: CheckCircle2 },
+  { id: "verify", label: "On-Site QR Verify", icon: QrCode },
+];
 
 export default function CitizenDashboard({ summary, onSelectWork }) {
-  const { roleConfig } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTab = searchParams.get("tab") || "overview";
+
+  const [targetWorkForReport, setTargetWorkForReport] = useState(null);
+  const [trackedComplaintId, setTrackedComplaintId] = useState(null);
+
+  const handleTabChange = (tabId) => {
+    setSearchParams({ tab: tabId });
+    window.dispatchEvent(new CustomEvent("citizen-tab-changed", { detail: tabId }));
+  };
+
+  const handleReportWork = (work) => {
+    setTargetWorkForReport(work);
+    handleTabChange("report");
+  };
+
+  const handleTrackComplaint = (complaintId) => {
+    setTrackedComplaintId(complaintId);
+    handleTabChange("complaints");
+  };
 
   return (
-    <div className="compact-page-container">
-      {/* Official Government Page Header */}
-      <div className="gov-page-header">
-        <div>
-          <div className="gov-eyebrow">
-            PUBLIC TRANSPARENCY & CITIZEN OVERSIGHT · JAN SAARTHI
+    <div className="citizen-portal-container">
+      {/* 1. Official Citizen Hero Banner */}
+      <div className="citizen-hero-banner">
+        <div className="citizen-hero-brand">
+          <div className="citizen-emblem-badge" title="National Emblem of India">
+            🏛️
           </div>
-          <h2>Citizen Dashboard</h2>
-          <p>
-            Public transparency and social audit portal: track community development works in your constituency,
-            verify completed infrastructure, and inspect public fund utilization.
-          </p>
-        </div>
-        <div className="gov-header-actions">
-          <Link to="/works" className="gov-btn-primary">
-            <Search size={15} />
-            <span>Search Your Constituency Works</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Role Scope & Single Source of Truth Card */}
-      <div className="placeholder-scope-card accent-info">
-        <div className="scope-header">
-          <div className="scope-badge">
-            <span className="scope-icon">{roleConfig?.icon || "👥"}</span>
-            <span className="scope-title">{roleConfig?.displayName || "Citizen Transparency Portal"}</span>
-          </div>
-          <div className="truth-indicator">
-            <ShieldCheck size={16} />
-            <span>Single Source of Truth: Active (FastAPI / 102,703 Works)</span>
-          </div>
-        </div>
-
-        <div className="scope-body">
-          <div className="scope-meta-grid">
-            <div className="meta-item">
-              <span className="meta-label">Assigned Persona Path</span>
-              <strong className="meta-val font-mono">/citizen</strong>
-            </div>
-            <div className="meta-item">
-              <span className="meta-label">Public Access Scope</span>
-              <strong className="meta-val">Sanctioned & Completed Works (Public Transparency)</strong>
-            </div>
-            <div className="meta-item">
-              <span className="meta-label">Completed Public Assets</span>
-              <strong className="meta-val">
-                {summary?.completed_works_count !== undefined
-                  ? `${formatNumber(summary.completed_works_count)} Assets Delivered`
-                  : "Connecting to master repository..."}
-              </strong>
-            </div>
-            <div className="meta-item">
-              <span className="meta-label">Total Public Database</span>
-              <strong className="meta-val">
-                {summary?.total_works !== undefined
-                  ? `${formatNumber(summary.total_works)} Records`
-                  : "Connecting to master repository..."}
-              </strong>
-            </div>
-          </div>
-
-          <div className="scope-description-box">
-            <strong>Scope & Authority Description:</strong>
+          <div className="citizen-hero-text">
+            <h1>
+              <span>Jan Saarthi · Public Transparency & Social Audit</span>
+              <span className="citizen-tag-pill">Citizen Oversight</span>
+            </h1>
             <p>
-              {roleConfig?.description ||
-                "Open public transparency dashboard for citizens to view sanctioned development projects in their constituency, verify physical completion, and participate in social audit."}
+              Direct citizen portal for MPLADS developmental works: explore public community assets, verify ground completion against digital records, and participate in participatory democracy.
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Shared Foundation Quick Links */}
-      <div className="placeholder-tools-section mt-3">
-        <h3 className="section-subtitle">Public Verification Tools</h3>
-        <div className="shared-tools-grid">
-          <Link to="/works" className="tool-card">
-            <div className="tool-icon-wrap blue">
-              <Search size={20} />
-            </div>
-            <div className="tool-info">
-              <h4>Constituency Work Search</h4>
-              <p>Find roads, solar lighting, schools, and drinking water facilities in your village or town.</p>
-            </div>
-          </Link>
+        <div className="citizen-hero-actions">
+          <button
+            type="button"
+            className="citizen-quick-action-btn"
+            onClick={() => handleTabChange("verify")}
+          >
+            <QrCode size={14} />
+            <span>On-Site QR Scan</span>
+          </button>
 
-          <Link to="/photo-verifier" className="tool-card">
-            <div className="tool-icon-wrap green">
-              <FileCheck size={20} />
-            </div>
-            <div className="tool-info">
-              <h4>Geo-Tagged Photo Inspection</h4>
-              <p>View verified site photographs and GPS geofence matching for completed assets.</p>
-            </div>
-          </Link>
-
-          <Link to="/states" className="tool-card">
-            <div className="tool-icon-wrap amber">
-              <MapPin size={20} />
-            </div>
-            <div className="tool-info">
-              <h4>State & UT Progress Summary</h4>
-              <p>Compare project delivery numbers and fund utilization across all 36 States and UTs.</p>
-            </div>
-          </Link>
+          <button
+            type="button"
+            className="citizen-quick-action-btn primary"
+            onClick={() => handleTabChange("report")}
+          >
+            <Flag size={14} />
+            <span>Report Discrepancy</span>
+          </button>
         </div>
       </div>
 
-      {/* Development Roadmap Note */}
-      <div className="foundation-notice-strip mt-3">
-        <CheckCircle2 size={16} />
-        <span>
-          <strong>Phase 10 Foundation Active:</strong> Full Citizen Transparency Dashboard analytics
-          (Geo-spatial constituency map, community grievance/feedback module, and social audit report card) will be
-          expanded in Phase 15.
-        </span>
+      {/* 2. Public Tab Navigation Bar */}
+      <div className="citizen-tab-bar">
+        {CITIZEN_TABS.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = currentTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              className={`citizen-tab-pill ${isActive ? "active" : ""}`}
+              onClick={() => handleTabChange(tab.id)}
+            >
+              <Icon size={15} />
+              <span>{tab.label}</span>
+              {tab.badge && <span className="citizen-tab-badge">{tab.badge}</span>}
+            </button>
+          );
+        })}
       </div>
+
+      {/* 3. Tab Viewport */}
+      {currentTab === "overview" && (
+        <CitizenOverviewTab
+          summary={summary}
+          onSwitchTab={handleTabChange}
+          onSelectWork={onSelectWork}
+        />
+      )}
+
+      {currentTab === "map" && (
+        <CitizenMapTab
+          onSelectWork={onSelectWork}
+          onReportWork={handleReportWork}
+        />
+      )}
+
+      {currentTab === "explore" && (
+        <CitizenExploreTab
+          onSelectWork={onSelectWork}
+          onReportWork={handleReportWork}
+        />
+      )}
+
+      {currentTab === "constituency" && (
+        <CitizenConstituencyTab
+          onSelectWork={onSelectWork}
+        />
+      )}
+
+      {currentTab === "analytics" && (
+        <CitizenAnalyticsTab />
+      )}
+
+      {currentTab === "evidence" && (
+        <CitizenEvidenceTab
+          onSelectWork={onSelectWork}
+          onReportWork={handleReportWork}
+        />
+      )}
+
+      {currentTab === "report" && (
+        <CitizenReportIssueTab
+          targetWork={targetWorkForReport}
+          onTrackComplaint={handleTrackComplaint}
+        />
+      )}
+
+      {currentTab === "complaints" && (
+        <CitizenComplaintsTab
+          initialComplaintId={trackedComplaintId}
+        />
+      )}
+
+      {currentTab === "verify" && (
+        <CitizenVerifyTab
+          onSelectWork={onSelectWork}
+          onReportWork={handleReportWork}
+        />
+      )}
     </div>
   );
 }

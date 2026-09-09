@@ -4085,6 +4085,278 @@ def validate_proposal(
 
 
 # ============================================================
+# PUBLIC / CITIZEN TRANSPARENCY & GRIEVANCE APIS
+# ============================================================
+
+GRIEVANCES_FILE = BASE_DIR / "backend" / "citizen_grievances.json"
+
+DEFAULT_GRIEVANCES = [
+    {
+        "complaint_id": "CIT-2026-001283",
+        "work_id": "W-2026-10291",
+        "work_title": "Construction of Community Hall at Ibrahimpatnam",
+        "issue_type": "Work is incomplete",
+        "description": "Pillars were constructed 8 months ago, but roof slab and plastering remain halted. No workers seen on site for past 3 months.",
+        "location": "Ibrahimpatnam, Nizamabad",
+        "constituency": "Nizamabad",
+        "state": "Telangana",
+        "citizen_name": "Ramesh Goud",
+        "citizen_phone": "+91 98490 XXXXX",
+        "status": "Under Review",
+        "created_at": "2026-08-14T10:30:00Z",
+        "updated_at": "2026-08-28T14:15:00Z",
+        "distance_m": 42,
+        "photo_url": "https://images.unsplash.com/photo-1590402494682-cd3fb53b1f70?w=600&auto=format&fit=crop&q=80",
+        "timeline": [
+            {"status": "Submitted", "timestamp": "2026-08-14 10:30", "note": "Grievance lodged via eSAKSHI Citizen Mobile Portal."},
+            {"status": "Received", "timestamp": "2026-08-15 09:00", "note": "Acknowledged by Central Public Grievance Intake Cell."},
+            {"status": "Under Review", "timestamp": "2026-08-28 14:15", "note": "Referred to District Collectorate (Nizamabad) & Executive Engineer PR for site inspection."}
+        ]
+    },
+    {
+        "complaint_id": "CIT-2026-000921",
+        "work_id": "W-2026-10442",
+        "work_title": "Installation of 25 High Mast Solar LED Lights",
+        "issue_type": "Poor quality / Substandard material",
+        "description": "5 solar lights installed near village junction are non-functional since rainy season began. Batteries not charging properly.",
+        "location": "Armoor Mandal, Nizamabad",
+        "constituency": "Nizamabad",
+        "state": "Telangana",
+        "citizen_name": "S. Kavitha",
+        "citizen_phone": "+91 94401 XXXXX",
+        "status": "Resolved",
+        "created_at": "2026-07-10T11:00:00Z",
+        "updated_at": "2026-08-02T16:45:00Z",
+        "distance_m": 18,
+        "photo_url": "https://images.unsplash.com/photo-1509391365360-2e959784a276?w=600&auto=format&fit=crop&q=80",
+        "timeline": [
+            {"status": "Submitted", "timestamp": "2026-07-10 11:00", "note": "Complaint filed with geo-tagged photograph."},
+            {"status": "Received", "timestamp": "2026-07-11 10:20", "note": "Logged into District Redressal System."},
+            {"status": "Under Review", "timestamp": "2026-07-15 14:00", "note": "Site visit scheduled by nodal assistant engineer."},
+            {"status": "Assigned", "timestamp": "2026-07-18 16:30", "note": "Vendor REDCO issued warranty replacement notice."},
+            {"status": "Action Taken", "timestamp": "2026-07-29 11:30", "note": "Batteries replaced and luminaires restored to working condition."},
+            {"status": "Resolved", "timestamp": "2026-08-02 16:45", "note": "Grievance resolved with verification by Gram Panchayat."}
+        ]
+    },
+    {
+        "complaint_id": "CIT-2026-000415",
+        "work_id": "W-2026-10885",
+        "work_title": "CC Road from Main Road to SC Colony",
+        "issue_type": "Work has not started",
+        "description": "Sanction was accorded over 14 months ago as per digital board, but no civil ground work has started yet.",
+        "location": "Bheemgal, Nizamabad",
+        "constituency": "Nizamabad",
+        "state": "Telangana",
+        "citizen_name": "M. Srinivas",
+        "citizen_phone": "+91 97012 XXXXX",
+        "status": "Assigned",
+        "created_at": "2026-08-01T09:15:00Z",
+        "updated_at": "2026-08-20T12:00:00Z",
+        "distance_m": 55,
+        "photo_url": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=80",
+        "timeline": [
+            {"status": "Submitted", "timestamp": "2026-08-01 09:15", "note": "Report submitted via public web terminal."},
+            {"status": "Received", "timestamp": "2026-08-02 11:45", "note": "Routed to District Planning Cell."},
+            {"status": "Under Review", "timestamp": "2026-08-08 15:10", "note": "Tender allocation delay verified by Assistant Collector."},
+            {"status": "Assigned", "timestamp": "2026-08-20 12:00", "note": "Issued directive to Panchayat Raj Division for immediate re-tendering."}
+        ]
+    }
+]
+
+def load_grievances():
+    if not GRIEVANCES_FILE.exists():
+        try:
+            with open(GRIEVANCES_FILE, "w", encoding="utf-8") as f:
+                json.dump(DEFAULT_GRIEVANCES, f, indent=2)
+            return list(DEFAULT_GRIEVANCES)
+        except Exception as e:
+            print("Error initializing grievances file:", e)
+            return list(DEFAULT_GRIEVANCES)
+    try:
+        with open(GRIEVANCES_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print("Error reading grievances file:", e)
+        return list(DEFAULT_GRIEVANCES)
+
+def save_grievances(grievances_list):
+    try:
+        with open(GRIEVANCES_FILE, "w", encoding="utf-8") as f:
+            json.dump(grievances_list, f, indent=2)
+    except Exception as e:
+        print("Error saving grievances file:", e)
+
+
+@app.get("/api/public/grievances")
+def get_public_grievances(
+    constituency: str = Query(None),
+    work_id: str = Query(None),
+    status: str = Query(None)
+):
+    """List public grievances with optional filters."""
+    grievances = load_grievances()
+    filtered = grievances
+
+    if constituency:
+        c_lower = constituency.strip().lower()
+        filtered = [g for g in filtered if c_lower in str(g.get("constituency", "")).lower()]
+
+    if work_id:
+        w_lower = work_id.strip().lower()
+        filtered = [g for g in filtered if w_lower in str(g.get("work_id", "")).lower()]
+
+    if status:
+        s_lower = status.strip().lower()
+        filtered = [g for g in filtered if s_lower == str(g.get("status", "")).lower()]
+
+    return {
+        "total": len(filtered),
+        "grievances": filtered
+    }
+
+
+@app.get("/api/public/grievances/{complaint_id}")
+def get_public_grievance_by_id(complaint_id: str):
+    """Get single grievance details and tracking history."""
+    grievances = load_grievances()
+    cid_upper = complaint_id.strip().upper()
+    for g in grievances:
+        if g.get("complaint_id", "").upper() == cid_upper:
+            return g
+    raise HTTPException(status_code=404, detail="Complaint ID not found")
+
+
+@app.post("/api/public/grievances")
+def create_public_grievance(payload: dict):
+    """Submit a new citizen grievance / issue report."""
+    import random
+    from datetime import datetime
+
+    grievances = load_grievances()
+    
+    # Generate CIT-2026-XXXXXX
+    complaint_id = f"CIT-2026-{random.randint(100000, 999999)}"
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    iso_now = datetime.now().isoformat()
+
+    new_grievance = {
+        "complaint_id": complaint_id,
+        "work_id": payload.get("work_id", "GENERAL-MPLADS"),
+        "work_title": payload.get("work_title", "MPLADS Community Infrastructure"),
+        "issue_type": payload.get("issue_type", "Other"),
+        "description": payload.get("description", "").strip(),
+        "location": payload.get("location", "").strip() or "Constituency Site",
+        "constituency": payload.get("constituency", "Nizamabad").strip(),
+        "state": payload.get("state", "Telangana").strip(),
+        "citizen_name": payload.get("citizen_name", "Anonymous Citizen").strip(),
+        "citizen_phone": payload.get("citizen_phone", "").strip(),
+        "status": "Submitted",
+        "created_at": iso_now,
+        "updated_at": iso_now,
+        "distance_m": payload.get("distance_m", random.randint(15, 85)),
+        "photo_url": payload.get("photo_url") or "https://images.unsplash.com/photo-1590402494682-cd3fb53b1f70?w=600&auto=format&fit=crop&q=80",
+        "timeline": [
+            {
+                "status": "Submitted",
+                "timestamp": now_str,
+                "note": "Grievance received and registered on eSAKSHI Citizen Public Portal."
+            }
+        ]
+    }
+
+    # Prepend new grievance so it appears first
+    grievances.insert(0, new_grievance)
+    save_grievances(grievances)
+
+    return {
+        "success": True,
+        "complaint_id": complaint_id,
+        "message": f"Grievance successfully submitted under Tracking Code {complaint_id}",
+        "grievance": new_grievance
+    }
+
+
+@app.get("/api/public/constituency/{constituency_name}")
+def get_public_constituency_transparency(constituency_name: str):
+    """Aggregate high-level public transparency data for a chosen constituency."""
+    c_name = constituency_name.strip()
+    c_df = df[df["CONSTITUENCY"].astype(str).str.lower() == c_name.lower()]
+    
+    if len(c_df) == 0:
+        # Fallback partial search
+        c_df = df[df["CONSTITUENCY"].astype(str).str.contains(c_name, case=False, na=False)]
+
+    if len(c_df) == 0:
+        raise HTTPException(status_code=404, detail="Constituency not found")
+
+    mp_name = str(c_df["MP_NAME"].dropna().iloc[0]) if "MP_NAME" in c_df.columns and not c_df["MP_NAME"].dropna().empty else "Hon'ble Member of Parliament"
+    state_name = str(c_df["STATE"].dropna().iloc[0]) if "STATE" in c_df.columns and not c_df["STATE"].dropna().empty else "India"
+
+    total_works = len(c_df)
+    
+    rec_sum = float(c_df["RECOMMENDED_AMOUNT"].fillna(0).sum()) if "RECOMMENDED_AMOUNT" in c_df.columns else 0.0
+    sanc_sum = float(c_df["SANCTION_AMOUNT"].fillna(0).sum()) if "SANCTION_AMOUNT" in c_df.columns else 0.0
+    exp_sum = float(c_df["ACTUAL_AMOUNT"].fillna(0).sum()) if "ACTUAL_AMOUNT" in c_df.columns else 0.0
+
+    # Status distribution
+    status_counts = {}
+    if "WORK_STATUS" in c_df.columns:
+        counts = c_df["WORK_STATUS"].value_counts().to_dict()
+        for k, v in counts.items():
+            status_counts[str(k)] = int(v)
+
+    completed_count = status_counts.get("Completed", 0) + status_counts.get("COMPLETED", 0)
+    ongoing_count = status_counts.get("In Progress", 0) + status_counts.get("IN PROGRESS", 0) + status_counts.get("Ongoing", 0)
+    sanctioned_count = status_counts.get("Sanctioned", 0) + status_counts.get("SANCTIONED", 0)
+
+    # Categories
+    category_counts = {}
+    if "SECTOR" in c_df.columns:
+        for k, v in c_df["SECTOR"].value_counts().head(8).to_dict().items():
+            category_counts[str(k)] = int(v)
+
+    # Recent works preview
+    sample_cols = ["WORK_ID", "WORK_DESCRIPTION", "SECTOR", "SANCTION_AMOUNT", "ACTUAL_AMOUNT", "WORK_STATUS", "IDA_NAME"]
+    available_cols = [c for c in sample_cols if c in c_df.columns]
+    sample_works = []
+    for _, row in c_df.head(10).iterrows():
+        item = {}
+        for col in available_cols:
+            val = row[col]
+            if pd.isna(val):
+                item[col] = None
+            elif isinstance(val, (int, float)):
+                item[col] = float(val) if not math.isnan(val) else 0
+            else:
+                item[col] = str(val)
+        sample_works.append(item)
+
+    return {
+        "constituency": c_name.title(),
+        "state": state_name,
+        "mp_name": mp_name,
+        "total_works": total_works,
+        "financials": {
+            "recommended_amount": rec_sum,
+            "sanctioned_amount": sanc_sum,
+            "expenditure_amount": exp_sum,
+            "recommended_cr": round(rec_sum / 1e7, 2),
+            "sanctioned_cr": round(sanc_sum / 1e7, 2),
+            "expenditure_cr": round(exp_sum / 1e7, 2),
+            "utilization_rate": round((exp_sum / sanc_sum * 100), 1) if sanc_sum > 0 else 0
+        },
+        "status_distribution": {
+            "completed": completed_count,
+            "ongoing": ongoing_count,
+            "sanctioned": sanctioned_count,
+            "all_counts": status_counts
+        },
+        "category_distribution": category_counts,
+        "recent_works": sample_works
+    }
+
+
+# ============================================================
 # SERVER MESSAGE & MAIN RUNNER
 # ============================================================
 
