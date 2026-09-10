@@ -48,7 +48,8 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
         }
         if (stateRes.ok) {
           const stateData = await stateRes.json();
-          setStates(stateData.data || []);
+          const rawStates = stateData.data || (stateData.states || []).map((s) => ({ STATE_NAME: s, state: s }));
+          setStates(rawStates);
         }
       } catch (err) {
         console.error("Failed to load District Intelligence data:", err);

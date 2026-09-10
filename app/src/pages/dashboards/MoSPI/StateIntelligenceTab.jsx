@@ -196,8 +196,8 @@ export default function StateIntelligenceTab({ onSelectWork }) {
                         <td>
                           <span className="mospi-pill emerald">{formatNumber(st.COMPLETED_WORKS || 0)}</span>
                         </td>
-                        <td>₹ {formatCrores(st.SANCTION_AMOUNT || 0)}</td>
-                        <td>₹ {formatCrores(st.ACTUAL_AMOUNT || 0)}</td>
+                        <td>{formatCrores(st.SANCTION_AMOUNT || 0)}</td>
+                        <td>{formatCrores(st.ACTUAL_AMOUNT || 0)}</td>
                         <td>
                           {st.REVIEW_REQUIRED > 0 ? (
                             <span className="mospi-pill rose">{formatNumber(st.REVIEW_REQUIRED)}</span>

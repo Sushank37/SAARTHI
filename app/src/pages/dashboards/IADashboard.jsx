@@ -56,7 +56,7 @@ const IA_MODULES = [
 ];
 
 // Helper to format clean, human-readable agency titles
-export const cleanAgencyName = (raw) => {
+const cleanAgencyName = (raw) => {
   if (!raw) return "Select Implementing Agency";
   if (raw === "ALL") return "All Implementing Agencies";
 
@@ -492,7 +492,7 @@ export default function IADashboard({ summary, onSelectWork }) {
             {analyticsLoading ? "..." : formatNumber(analytics?.primary_kpis?.assigned_works || 0)}
           </div>
           <div className="ia-kpi-sub">
-            ₹ {formatCrores(analytics?.financials?.sanction_amount || 0)} Cr Sanctioned Value
+            {formatCrores(analytics?.financials?.sanction_amount || 0)} Sanctioned Value
           </div>
         </div>
 
@@ -512,7 +512,7 @@ export default function IADashboard({ summary, onSelectWork }) {
             {analyticsLoading ? "..." : formatNumber(analytics?.primary_kpis?.ongoing_works || 0)}
           </div>
           <div className="ia-kpi-sub">
-            ₹ {formatCrores(analytics?.financials?.actual_amount || 0)} Cr Disbursed Spend
+            {formatCrores(analytics?.financials?.actual_amount || 0)} Disbursed Spend
           </div>
         </div>
 
@@ -1289,11 +1289,11 @@ export default function IADashboard({ summary, onSelectWork }) {
                     <div className="ia-vendor-metrics-row">
                       <div className="ia-vendor-metric-item">
                         <span>Sanctioned</span>
-                        <strong>₹ {formatCrores(vend.sanction_amount)} Cr</strong>
+                        <strong>{formatCrores(vend.sanction_amount)}</strong>
                       </div>
                       <div className="ia-vendor-metric-item">
                         <span>Disbursed</span>
-                        <strong>₹ {formatCrores(vend.actual_amount)} Cr</strong>
+                        <strong>{formatCrores(vend.actual_amount)}</strong>
                       </div>
                       <div className="ia-vendor-metric-item">
                         <span>Completed</span>

@@ -44,7 +44,7 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Total Recommended</span>
             <IndianRupee size={16} className="text-blue-500" />
           </div>
-          <div className="mospi-kpi-value">₹ {formatCrores(kpis.total_recommended_amount || 0)} Cr</div>
+          <div className="mospi-kpi-value">{formatCrores(kpis.total_recommended_amount || 0)}</div>
           <div className="mospi-kpi-sub">100% of MP recommendations</div>
         </div>
 
@@ -53,7 +53,7 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Total Sanctioned</span>
             <IndianRupee size={16} className="text-emerald-500" />
           </div>
-          <div className="mospi-kpi-value">₹ {formatCrores(kpis.total_sanction_amount || 0)} Cr</div>
+          <div className="mospi-kpi-value">{formatCrores(kpis.total_sanction_amount || 0)}</div>
           <div className="mospi-kpi-sub">{kpis.sanction_rate || 72.6}% Sanction Conversion Rate</div>
         </div>
 
@@ -62,7 +62,7 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Total Disbursed</span>
             <IndianRupee size={16} className="text-sky-500" />
           </div>
-          <div className="mospi-kpi-value">₹ {formatCrores(kpis.total_actual_amount || 0)} Cr</div>
+          <div className="mospi-kpi-value">{formatCrores(kpis.total_actual_amount || 0)}</div>
           <div className="mospi-kpi-sub">{kpis.utilization_pct || 39.7}% Utilization of Sanctioned</div>
         </div>
 
@@ -72,7 +72,7 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
             <AlertCircle size={16} className="text-amber-500" />
           </div>
           <div className="mospi-kpi-value">
-            ₹ {formatCrores((kpis.total_sanction_amount || 0) - (kpis.total_actual_amount || 0))} Cr
+            {formatCrores((kpis.total_sanction_amount || 0) - (kpis.total_actual_amount || 0))}
           </div>
           <div className="mospi-kpi-sub">Committed but undisbursed funds</div>
         </div>
@@ -88,7 +88,7 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
             </p>
           </div>
           <span className="mospi-pill emerald">
-            ₹ {formatCrores(kpis.total_sanction_amount || 0)} Cr Committed
+            {formatCrores(kpis.total_sanction_amount || 0)} Committed
           </span>
         </div>
 
@@ -96,7 +96,7 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px" }}>
               <span style={{ fontWeight: 600 }}>Recommended Amount</span>
-              <span style={{ fontWeight: 700 }}>₹ {formatCrores(kpis.total_recommended_amount || 0)} Cr (100%)</span>
+              <span style={{ fontWeight: 700 }}>{formatCrores(kpis.total_recommended_amount || 0)} (100%)</span>
             </div>
             <div style={{ height: "10px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "5px", overflow: "hidden" }}>
               <div style={{ height: "100%", width: "100%", backgroundColor: "#2563eb" }} />
@@ -106,7 +106,7 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px" }}>
               <span style={{ fontWeight: 600 }}>Administrative Sanctions Issued</span>
-              <span style={{ fontWeight: 700, color: "#10b981" }}>₹ {formatCrores(kpis.total_sanction_amount || 0)} Cr ({kpis.sanction_rate || 72.6}%)</span>
+              <span style={{ fontWeight: 700, color: "#10b981" }}>{formatCrores(kpis.total_sanction_amount || 0)} ({kpis.sanction_rate || 72.6}%)</span>
             </div>
             <div style={{ height: "10px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "5px", overflow: "hidden" }}>
               <div style={{ height: "100%", width: `${kpis.sanction_rate || 72.6}%`, backgroundColor: "#10b981" }} />
@@ -116,7 +116,7 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px" }}>
               <span style={{ fontWeight: 600 }}>Actual Treasury Disbursements</span>
-              <span style={{ fontWeight: 700, color: "#0ea5e9" }}>₹ {formatCrores(kpis.total_actual_amount || 0)} Cr ({kpis.utilization_pct || 39.7}%)</span>
+              <span style={{ fontWeight: 700, color: "#0ea5e9" }}>{formatCrores(kpis.total_actual_amount || 0)} ({kpis.utilization_pct || 39.7}%)</span>
             </div>
             <div style={{ height: "10px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "5px", overflow: "hidden" }}>
               <div style={{ height: "100%", width: `${Math.round(((kpis.total_actual_amount || 0) / (kpis.total_recommended_amount || 1)) * 100)}%`, backgroundColor: "#0ea5e9" }} />

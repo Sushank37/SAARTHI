@@ -23,7 +23,7 @@ export default function FinancialTimelineTab({ analytics }) {
             <span className="mospi-kpi-title">Total Recommended</span>
             <IndianRupee size={16} className="text-blue-500" />
           </div>
-          <div className="mospi-kpi-value">₹ {formatCrores(kpis.total_recommended_amount || 0)} Cr</div>
+          <div className="mospi-kpi-value">{formatCrores(kpis.total_recommended_amount || 0)}</div>
           <div className="mospi-kpi-sub">100% of MP recommendations</div>
         </div>
 
@@ -32,7 +32,7 @@ export default function FinancialTimelineTab({ analytics }) {
             <span className="mospi-kpi-title">Total Sanctioned</span>
             <IndianRupee size={16} className="text-emerald-500" />
           </div>
-          <div className="mospi-kpi-value">₹ {formatCrores(kpis.total_sanction_amount || 0)} Cr</div>
+          <div className="mospi-kpi-value">{formatCrores(kpis.total_sanction_amount || 0)}</div>
           <div className="mospi-kpi-sub">{kpis.sanction_rate || 72.6}% Sanction Conversion Rate</div>
         </div>
 
@@ -41,7 +41,7 @@ export default function FinancialTimelineTab({ analytics }) {
             <span className="mospi-kpi-title">Total Disbursed</span>
             <IndianRupee size={16} className="text-sky-500" />
           </div>
-          <div className="mospi-kpi-value">₹ {formatCrores(kpis.total_actual_amount || 0)} Cr</div>
+          <div className="mospi-kpi-value">{formatCrores(kpis.total_actual_amount || 0)}</div>
           <div className="mospi-kpi-sub">{kpis.utilization_pct || 39.7}% Utilization of Sanctioned</div>
         </div>
 
@@ -50,7 +50,7 @@ export default function FinancialTimelineTab({ analytics }) {
             <span className="mospi-kpi-title">Sanction Gap</span>
             <AlertCircle size={16} className="text-amber-500" />
           </div>
-          <div className="mospi-kpi-value">₹ {formatCrores(kpis.sanction_gap || 0)} Cr</div>
+          <div className="mospi-kpi-value">{formatCrores(kpis.sanction_gap || 0)}</div>
           <div className="mospi-kpi-sub">Pending Collectorate sanction</div>
         </div>
       </div>

@@ -257,9 +257,9 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
             <span className="kpi-title">Total Sanctioned Value</span>
             <IndianRupee size={14} color="#0d9488" />
           </div>
-          <div className="kpi-value">₹ {formatCrores(kpis.total_sanction_amount || 0)} Cr</div>
+          <div className="kpi-value">{formatCrores(kpis.total_sanction_amount || 0)}</div>
           <div className="kpi-sub">
-            Disbursed: ₹ {formatCrores(kpis.total_actual_amount || 0)} Cr ({kpis.utilization_pct || 0}%)
+            Disbursed: {formatCrores(kpis.total_actual_amount || 0)} ({kpis.utilization_pct || 0}%)
           </div>
         </div>
 

@@ -198,7 +198,7 @@ export default function MPDashboard(props) {
       if (section === "delayed-works") {
         params.set("requires_review", "true");
       } else if (section === "risk-alerts") {
-        params.set("risk_level", "HIGH");
+        params.set("tab", "ai-alerts");
       }
 
       if (debouncedSearch.trim()) {
@@ -247,9 +247,15 @@ export default function MPDashboard(props) {
   const flaggedWorks = analytics?.flagged_works || [];
   const topCategories = analytics?.top_categories || [];
 
-  const recAmount = Number(financials.recommended_amount || 0);
-  const sancAmount = Number(financials.sanction_amount || 0);
-  const actAmount = Number(financials.actual_amount || 0);
+  const recAmount = Number(
+    financials.recommended_amount ?? financials.total_recommended_amount ?? 0
+  );
+  const sancAmount = Number(
+    financials.sanction_amount ?? financials.total_sanction_amount ?? 0
+  );
+  const actAmount = Number(
+    financials.actual_amount ?? financials.total_actual_amount ?? 0
+  );
   const pendingApprovalAmount = Math.max(0, recAmount - sancAmount);
 
   // Annual MP Quota (Fixed ₹5.00 Crore per Financial Year)
@@ -264,9 +270,13 @@ export default function MPDashboard(props) {
   const ongoingCount = physicalInspectionCount + partiallyCompletedCount;
 
   // Percentage calculations in simple terms
-  const approvalPercent = recAmount > 0 ? Math.min(100, Math.round((sancAmount / recAmount) * 100)) : 0;
-  const waitingPercent = Math.max(0, 100 - approvalPercent);
-  const spentPercent = sancAmount > 0 ? Math.min(100, Math.round((actAmount / sancAmount) * 100)) : 0;
+  const approvalPercent = recAmount > 0
+    ? Math.min(100, Math.round((sancAmount / recAmount) * 100))
+    : (financials.sanction_rate_percent ? Math.round(financials.sanction_rate_percent) : 0);
+  const waitingPercent = approvalPercent > 0 ? Math.max(0, 100 - approvalPercent) : (recAmount > 0 ? 100 : 0);
+  const spentPercent = sancAmount > 0
+    ? Math.min(100, Math.round((actAmount / sancAmount) * 100))
+    : (financials.expenditure_rate_percent ? Math.round(financials.expenditure_rate_percent) : 0);
 
   // Real Chart Data: Fund Lifecycle Comparison (Bar Chart)
   const fundFlowBarData = useMemo(() => {
@@ -778,7 +788,7 @@ export default function MPDashboard(props) {
                 <span className="kpi-title">Delayed Approvals</span>
                 <Clock size={16} className="text-amber-600" />
               </div>
-              <div className="kpi-value">{riskSummary.delayed_sanctions || 287}</div>
+              <div className="kpi-value">{riskSummary.delayed_sanctions ?? 0}</div>
               <div className="kpi-sub">Works taking longer than normal to approve</div>
             </div>
             <div className="gov-mp-kpi-card kpi-blue">
@@ -794,7 +804,7 @@ export default function MPDashboard(props) {
                 <span className="kpi-title">Delayed Over 3 Months</span>
                 <AlertCircle size={16} className="text-indigo-600" />
               </div>
-              <div className="kpi-value">{Math.round((riskSummary.delayed_sanctions || 287) * 0.5)}</div>
+              <div className="kpi-value">{Math.round((riskSummary.delayed_sanctions ?? 0) * 0.5)}</div>
               <div className="kpi-sub">Needs direct follow-up with Collector</div>
             </div>
             <div className="gov-mp-kpi-card kpi-teal">
@@ -826,7 +836,7 @@ export default function MPDashboard(props) {
                 <span className="kpi-title">High Risk Warnings</span>
                 <AlertTriangle size={16} className="text-amber-600" />
               </div>
-              <div className="kpi-value">{riskSummary.high_duplicate_risk || 0}</div>
+              <div className="kpi-value">{riskSummary.high_duplicate_risk ?? 0}</div>
               <div className="kpi-sub">Major duplicate or cost concerns</div>
             </div>
             <div className="gov-mp-kpi-card kpi-indigo">
@@ -834,7 +844,7 @@ export default function MPDashboard(props) {
                 <span className="kpi-title">Possible Duplicates</span>
                 <Layers size={16} className="text-indigo-600" />
               </div>
-              <div className="kpi-value">{riskSummary.medium_duplicate_risk || 6}</div>
+              <div className="kpi-value">{riskSummary.medium_duplicate_risk ?? 0}</div>
               <div className="kpi-sub">Works that look similar to existing ones</div>
             </div>
             <div className="gov-mp-kpi-card kpi-blue">
@@ -842,7 +852,7 @@ export default function MPDashboard(props) {
                 <span className="kpi-title">Cost Questions</span>
                 <TrendingUp size={16} className="text-sky-600" />
               </div>
-              <div className="kpi-value">{riskSummary.cost_variance_cases || 22}</div>
+              <div className="kpi-value">{riskSummary.cost_variance_cases ?? 0}</div>
               <div className="kpi-sub">Cost estimates higher than normal</div>
             </div>
             <div className="gov-mp-kpi-card kpi-teal">
@@ -850,7 +860,9 @@ export default function MPDashboard(props) {
                 <span className="kpi-title">Clean Works</span>
                 <CheckCircle2 size={16} className="text-emerald-600" />
               </div>
-              <div className="kpi-value">98%</div>
+              <div className="kpi-value">
+                {totalWorks > 0 ? Math.max(0, Math.round(((totalWorks - (flaggedWorks?.length || 0)) / totalWorks) * 100)) : 100}%
+              </div>
               <div className="kpi-sub">Works completely clear of any issue</div>
             </div>
           </div>
