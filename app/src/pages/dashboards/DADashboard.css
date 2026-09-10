@@ -557,8 +557,8 @@
 .da-panel-card {
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 16px 18px;
+  border-radius: 8px;
+  padding: 12px 14px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
@@ -568,11 +568,11 @@
   align-items: center;
   margin-bottom: 14px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .da-panel-title {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 700;
   color: #0f172a;
   text-transform: uppercase;
@@ -733,8 +733,8 @@
 .da-priority-card {
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 16px 18px;
+  border-radius: 8px;
+  padding: 12px 14px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
@@ -744,13 +744,13 @@
   align-items: center;
   margin-bottom: 12px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #f1f5f9;
   flex-wrap: wrap;
   gap: 8px;
 }
 
 .da-priority-title-area h2 {
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 800;
   color: #0f172a;
   margin: 0 0 2px 0;
