@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useOutletContext } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, useOutletContext } from "react-router-dom";
 import {
   Search,
   ChevronDown,
@@ -93,6 +93,9 @@ const FundTooltip = ({ active, payload }) => {
             {data.desc}
           </div>
         )}
+        <div style={{ color: "#0284c7", fontSize: "10.5px", fontWeight: 700, marginTop: "4px" }}>
+          Click to view works →
+        </div>
       </div>
     );
   }
@@ -101,6 +104,8 @@ const FundTooltip = ({ active, payload }) => {
 
 export default function MPDashboard(props) {
   const { section = "entitlement" } = useParams();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const outletCtx = useOutletContext() || {};
   const onSelectWork = props.onSelectWork || outletCtx.onSelectWork;
 
@@ -120,9 +125,49 @@ export default function MPDashboard(props) {
   const [worksPage, setWorksPage] = useState(1);
   const [worksLimit] = useState(10);
   const [worksLoading, setWorksLoading] = useState(false);
-  const [stageFilter, setStageFilter] = useState("All");
+  const [stageFilter, setStageFilter] = useState(() => searchParams.get("stage") || "All");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Sync stage filter when URL search params change
+  useEffect(() => {
+    const s = searchParams.get("stage");
+    if (s) {
+      setStageFilter(s);
+      setWorksPage(1);
+    }
+  }, [searchParams]);
+
+  // Graph and card click redirection helper
+  const handleGraphRedirect = (target) => {
+    if (target === "financial") {
+      navigate("/mp/financial-view");
+    } else if (target === "delayed") {
+      navigate("/mp/delayed-works");
+    } else if (target === "risk") {
+      navigate("/mp/risk-alerts");
+    } else if (target === "progress") {
+      navigate("/mp/work-progress");
+    } else {
+      setStageFilter(target);
+      setWorksPage(1);
+      navigate(`/mp/my-works?stage=${encodeURIComponent(target)}`);
+    }
+  };
+
+  const handleFundBarClick = (entry) => {
+    if (!entry) return;
+    const name = entry.name || (entry.activePayload && entry.activePayload[0]?.payload?.name);
+    if (name === "In Review" || name === "Waiting") {
+      handleGraphRedirect("Pending Sanction");
+    } else if (name === "Approved") {
+      handleGraphRedirect("Sanction");
+    } else if (name === "Paid Out") {
+      handleGraphRedirect("financial");
+    } else if (name === "Recommended") {
+      handleGraphRedirect("All");
+    }
+  };
 
   // Load master list of MPs
   useEffect(() => {
@@ -440,40 +485,60 @@ export default function MPDashboard(props) {
         <div className="gov-mp-section-wrap">
           {/* 4 Simple, Clear KPI Cards */}
           <div className="gov-mp-kpi-grid">
-            <div className="gov-mp-kpi-card kpi-blue">
+            <div
+              className="gov-mp-kpi-card kpi-blue"
+              style={{ cursor: "pointer" }}
+              onClick={() => handleGraphRedirect("financial")}
+              title="Click to view financial allocation details"
+            >
               <div className="kpi-header">
                 <span className="kpi-title">Annual MP Quota</span>
                 <IndianRupee size={16} className="text-sky-600" />
               </div>
               <div className="kpi-value">₹ 5.00 Cr</div>
-              <div className="kpi-sub">Total fund allocated per year</div>
+              <div className="kpi-sub">Total fund allocated per year →</div>
             </div>
 
-            <div className="gov-mp-kpi-card kpi-indigo">
+            <div
+              className="gov-mp-kpi-card kpi-indigo"
+              style={{ cursor: "pointer" }}
+              onClick={() => handleGraphRedirect("All")}
+              title="Click to view all recommended works"
+            >
               <div className="kpi-header">
                 <span className="kpi-title">Total Recommended</span>
                 <FileText size={16} className="text-indigo-600" />
               </div>
               <div className="kpi-value">{formatCrores(recAmount)}</div>
-              <div className="kpi-sub">{formatNumber(totalWorks)} works recommended by you</div>
+              <div className="kpi-sub">{formatNumber(totalWorks)} works recommended by you →</div>
             </div>
 
-            <div className="gov-mp-kpi-card kpi-teal">
+            <div
+              className="gov-mp-kpi-card kpi-teal"
+              style={{ cursor: "pointer" }}
+              onClick={() => handleGraphRedirect("Sanction")}
+              title="Click to view Approved works"
+            >
               <div className="kpi-header">
                 <span className="kpi-title">Approved by Collector</span>
                 <CheckCircle2 size={16} className="text-teal-600" />
               </div>
               <div className="kpi-value">{formatCrores(sancAmount)}</div>
-              <div className="kpi-sub">{approvalPercent}% of recommended money approved</div>
+              <div className="kpi-sub">{approvalPercent}% of recommended money approved →</div>
             </div>
 
-            <div className="gov-mp-kpi-card kpi-amber">
+            <div
+              className="gov-mp-kpi-card kpi-amber"
+              style={{ cursor: "pointer" }}
+              onClick={() => handleGraphRedirect("financial")}
+              title="Click to view quota remaining"
+            >
               <div className="kpi-header">
                 <span className="kpi-title">Available to Recommend</span>
                 <ShieldCheck size={16} className="text-amber-600" />
               </div>
               <div className="kpi-value">{formatCrores(remainingQuota)}</div>
-              <div className="kpi-sub">Fund left in this year's quota</div>
+              <div className="kpi-sub">Fund left in this year's quota →</div>
             </div>
           </div>
 
@@ -499,22 +564,35 @@ export default function MPDashboard(props) {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
                   <div>
                     <div style={{ fontSize: "12.5px", fontWeight: 700, color: "#0f172a" }}>Fund Lifecycle Comparison</div>
-                    <div style={{ fontSize: "11px", color: "#64748b" }}>Recommended vs Approved vs Paid (in ₹ Crores)</div>
+                    <div style={{ fontSize: "11px", color: "#64748b" }}>Recommended vs Approved vs Paid (in ₹ Crores) · Click bar to view</div>
                   </div>
                   <span style={{ fontSize: "10.5px", fontWeight: 700, color: "#0284c7", background: "#e0f2fe", padding: "2px 7px", borderRadius: "4px" }}>
-                    ₹ Crores
+                    Interactive Chart
                   </span>
                 </div>
                 <div style={{ width: "100%", height: 230 }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={fundFlowBarData} margin={{ top: 10, right: 10, left: -15, bottom: 5 }}>
+                    <BarChart
+                      data={fundFlowBarData}
+                      margin={{ top: 10, right: 10, left: -15, bottom: 5 }}
+                      onClick={(e) => {
+                        if (e && e.activePayload && e.activePayload[0]) {
+                          handleFundBarClick(e.activePayload[0].payload);
+                        }
+                      }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                       <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#475569" }} />
                       <YAxis tick={{ fontSize: 11, fill: "#475569" }} tickFormatter={(val) => `₹${val}`} />
                       <Tooltip content={FundTooltip} />
-                      <Bar dataKey="amountCr" radius={[4, 4, 0, 0]}>
+                      <Bar dataKey="amountCr" radius={[4, 4, 0, 0]} cursor="pointer">
                         {fundFlowBarData.map((entry, index) => (
-                          <Cell key={`cell-bar-${index}`} fill={entry.fill} />
+                          <Cell
+                            key={`cell-bar-${index}`}
+                            fill={entry.fill}
+                            cursor="pointer"
+                            onClick={() => handleFundBarClick(entry)}
+                          />
                         ))}
                       </Bar>
                     </BarChart>
@@ -527,7 +605,7 @@ export default function MPDashboard(props) {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
                   <div>
                     <div style={{ fontSize: "12.5px", fontWeight: 700, color: "#0f172a" }}>Approval Status Share</div>
-                    <div style={{ fontSize: "11px", color: "#64748b" }}>Cleared vs Pending Scrutiny</div>
+                    <div style={{ fontSize: "11px", color: "#64748b" }}>Cleared vs Pending Scrutiny · Click to view</div>
                   </div>
                   <span style={{ fontSize: "10.5px", fontWeight: 700, color: "#047857", background: "#d1fae5", padding: "2px 7px", borderRadius: "4px" }}>
                     {approvalPercent}% Approved
@@ -544,9 +622,28 @@ export default function MPDashboard(props) {
                         outerRadius={75}
                         paddingAngle={3}
                         dataKey="value"
+                        cursor="pointer"
+                        onClick={(entry) => {
+                          if (entry && entry.name && (entry.name.includes("Wait") || entry.name.includes("Review"))) {
+                            handleGraphRedirect("Pending Sanction");
+                          } else {
+                            handleGraphRedirect("Sanction");
+                          }
+                        }}
                       >
                         {approvalDonutData.map((entry, index) => (
-                          <Cell key={`pie-cell-${index}`} fill={entry.color} />
+                          <Cell
+                            key={`pie-cell-${index}`}
+                            fill={entry.color}
+                            cursor="pointer"
+                            onClick={() => {
+                              if (entry.name && (entry.name.includes("Wait") || entry.name.includes("Review"))) {
+                                handleGraphRedirect("Pending Sanction");
+                              } else {
+                                handleGraphRedirect("Sanction");
+                              }
+                            }}
+                          />
                         ))}
                       </Pie>
                       <Tooltip content={FundTooltip} />
@@ -571,13 +668,21 @@ export default function MPDashboard(props) {
                   </div>
                 </div>
                 <div style={{ display: "flex", justifyContent: "center", gap: "14px", fontSize: "11px", paddingTop: "6px", borderTop: "1px solid #e2e8f0" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: "5px", cursor: "pointer", padding: "2px 6px", borderRadius: "4px" }}
+                    onClick={() => handleGraphRedirect("Sanction")}
+                    title="Click to view Approved works"
+                  >
                     <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#10b981", display: "inline-block" }} />
-                    <span style={{ color: "#334155", fontWeight: 600 }}>Approved: {approvalPercent}%</span>
+                    <span style={{ color: "#334155", fontWeight: 600 }}>Approved: {approvalPercent}% →</span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: "5px", cursor: "pointer", padding: "2px 6px", borderRadius: "4px" }}
+                    onClick={() => handleGraphRedirect("Pending Sanction")}
+                    title="Click to view works Waiting for Approval"
+                  >
                     <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#f59e0b", display: "inline-block" }} />
-                    <span style={{ color: "#334155", fontWeight: 600 }}>Waiting: {waitingPercent}%</span>
+                    <span style={{ color: "#334155", fontWeight: 600 }}>Waiting: {waitingPercent}% →</span>
                   </div>
                 </div>
               </div>
@@ -586,7 +691,30 @@ export default function MPDashboard(props) {
             {/* 3 Clean, Polished Status Cards with Direct Inline Styles */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
               {/* Card 1: Approved */}
-              <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderLeft: "4px solid #10b981", borderRadius: "8px", padding: "12px 14px", display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div
+                onClick={() => handleGraphRedirect("Sanction")}
+                style={{
+                  background: "#f0fdf4",
+                  border: "1px solid #bbf7d0",
+                  borderLeft: "4px solid #10b981",
+                  borderRadius: "8px",
+                  padding: "12px 14px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 6px 14px rgba(16, 185, 129, 0.15)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "none";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+                title="Click to view Approved works in My Works"
+              >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontSize: "12px", fontWeight: 700, color: "#166534" }}>1. Approved by Collector</span>
                   <span style={{ fontSize: "11px", fontWeight: 700, color: "#15803d", background: "#dcfce7", padding: "1px 7px", borderRadius: "4px" }}>{approvalPercent}%</span>
@@ -595,13 +723,37 @@ export default function MPDashboard(props) {
                 <div style={{ width: "100%", height: "4px", background: "#dcfce7", borderRadius: "2px", overflow: "hidden" }}>
                   <div style={{ width: `${approvalPercent}%`, height: "100%", background: "#10b981" }} />
                 </div>
-                <div style={{ fontSize: "11px", color: "#15803d", lineHeight: 1.35 }}>
-                  Money cleared by the District Collector and ready for work to begin.
+                <div style={{ fontSize: "11px", color: "#15803d", lineHeight: 1.35, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span>Money cleared by Collector.</span>
+                  <span style={{ fontWeight: 700 }}>View Works →</span>
                 </div>
               </div>
 
               {/* Card 2: Waiting for Approval */}
-              <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderLeft: "4px solid #f59e0b", borderRadius: "8px", padding: "12px 14px", display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div
+                onClick={() => handleGraphRedirect("Pending Sanction")}
+                style={{
+                  background: "#fffbeb",
+                  border: "1px solid #fde68a",
+                  borderLeft: "4px solid #f59e0b",
+                  borderRadius: "8px",
+                  padding: "12px 14px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 6px 14px rgba(245, 158, 11, 0.15)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "none";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+                title="Click to view works Waiting for Approval in My Works"
+              >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontSize: "12px", fontWeight: 700, color: "#92400e" }}>2. Waiting for Approval</span>
                   <span style={{ fontSize: "11px", fontWeight: 700, color: "#b45309", background: "#fef3c7", padding: "1px 7px", borderRadius: "4px" }}>{waitingPercent}%</span>
@@ -610,13 +762,37 @@ export default function MPDashboard(props) {
                 <div style={{ width: "100%", height: "4px", background: "#fef3c7", borderRadius: "2px", overflow: "hidden" }}>
                   <div style={{ width: `${waitingPercent}%`, height: "100%", background: "#f59e0b" }} />
                 </div>
-                <div style={{ fontSize: "11px", color: "#92400e", lineHeight: 1.35 }}>
-                  Works recommended by you, currently under scrutiny at the Collectorate.
+                <div style={{ fontSize: "11px", color: "#92400e", lineHeight: 1.35, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span>Works awaiting approval.</span>
+                  <span style={{ fontWeight: 700 }}>View Works →</span>
                 </div>
               </div>
 
               {/* Card 3: Paid Out */}
-              <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderLeft: "4px solid #0284c7", borderRadius: "8px", padding: "12px 14px", display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div
+                onClick={() => handleGraphRedirect("financial")}
+                style={{
+                  background: "#f0f9ff",
+                  border: "1px solid #bae6fd",
+                  borderLeft: "4px solid #0284c7",
+                  borderRadius: "8px",
+                  padding: "12px 14px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 6px 14px rgba(2, 132, 199, 0.15)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "none";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+                title="Click to view Financial Overview"
+              >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontSize: "12px", fontWeight: 700, color: "#075985" }}>3. Paid Out to Contractors</span>
                   <span style={{ fontSize: "11px", fontWeight: 700, color: "#0369a1", background: "#e0f2fe", padding: "1px 7px", borderRadius: "4px" }}>{spentPercent}%</span>
@@ -625,8 +801,9 @@ export default function MPDashboard(props) {
                 <div style={{ width: "100%", height: "4px", background: "#e0f2fe", borderRadius: "2px", overflow: "hidden" }}>
                   <div style={{ width: `${spentPercent}%`, height: "100%", background: "#0284c7" }} />
                 </div>
-                <div style={{ fontSize: "11px", color: "#075985", lineHeight: 1.35 }}>
-                  Amount disbursed to implementing agencies after physical inspection.
+                <div style={{ fontSize: "11px", color: "#075985", lineHeight: 1.35, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span>Disbursed after verification.</span>
+                  <span style={{ fontWeight: 700 }}>Financial View →</span>
                 </div>
               </div>
             </div>
@@ -649,32 +826,64 @@ export default function MPDashboard(props) {
             </p>
 
             <div className="lifecycle-stepper">
-              <div className="lifecycle-step">
+              <div
+                className={`lifecycle-step ${stageFilter === "All" ? "active" : ""}`}
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  setStageFilter("All");
+                  setWorksPage(1);
+                }}
+                title="Click to view All Recommended Works"
+              >
                 <div className="step-bar step-recommended" />
                 <div className="step-count">{formatNumber(totalWorks)}</div>
                 <div className="step-name">1. Recommended</div>
-                <div className="step-sub">Submitted by you</div>
+                <div className="step-sub">Submitted by you · View all →</div>
               </div>
               <div className="lifecycle-arrow">→</div>
-              <div className="lifecycle-step">
+              <div
+                className={`lifecycle-step ${stageFilter === "Sanction" ? "active" : ""}`}
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  setStageFilter("Sanction");
+                  setWorksPage(1);
+                }}
+                title="Click to view Approved Works"
+              >
                 <div className="step-bar step-sanctioned" />
                 <div className="step-count">{formatNumber(totalWorks - pendingSanctionCount)}</div>
                 <div className="step-name">2. Approved</div>
-                <div className="step-sub">{approvalPercent}% cleared by Collector</div>
+                <div className="step-sub">{approvalPercent}% cleared by Collector →</div>
               </div>
               <div className="lifecycle-arrow">→</div>
-              <div className="lifecycle-step">
+              <div
+                className={`lifecycle-step ${stageFilter === "Physical Inspection" ? "active" : ""}`}
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  setStageFilter("Physical Inspection");
+                  setWorksPage(1);
+                }}
+                title="Click to view Works Under Construction"
+              >
                 <div className="step-bar step-ongoing" />
                 <div className="step-count">{formatNumber(ongoingCount)}</div>
                 <div className="step-name">3. Under Construction</div>
-                <div className="step-sub">Work happening on ground</div>
+                <div className="step-sub">Work happening on ground →</div>
               </div>
               <div className="lifecycle-arrow">→</div>
-              <div className="lifecycle-step">
+              <div
+                className={`lifecycle-step ${stageFilter === "Work Completed" ? "active" : ""}`}
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  setStageFilter("Work Completed");
+                  setWorksPage(1);
+                }}
+                title="Click to view Finished Assets"
+              >
                 <div className="step-bar step-completed" />
                 <div className="step-count">{formatNumber(completedWorksCount)}</div>
                 <div className="step-name">4. Finished Assets</div>
-                <div className="step-sub">Handed over to community</div>
+                <div className="step-sub">Handed over to community →</div>
               </div>
             </div>
           </div>
@@ -694,37 +903,69 @@ export default function MPDashboard(props) {
       {section === "work-progress" && (
         <div className="gov-mp-section-wrap">
           <div className="gov-mp-kpi-grid">
-            <div className="gov-mp-kpi-card kpi-teal">
+            <div
+              className="gov-mp-kpi-card kpi-teal"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                setStageFilter("Work Completed");
+                setWorksPage(1);
+              }}
+              title="Click to view Finished Works"
+            >
               <div className="kpi-header">
                 <span className="kpi-title">Finished Works</span>
                 <CheckCircle2 size={16} className="text-emerald-600" />
               </div>
               <div className="kpi-value">{completedWorksCount}</div>
-              <div className="kpi-sub">100% completed & handed over</div>
+              <div className="kpi-sub">100% completed & handed over →</div>
             </div>
-            <div className="gov-mp-kpi-card kpi-blue">
+            <div
+              className="gov-mp-kpi-card kpi-blue"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                setStageFilter("Physical Inspection");
+                setWorksPage(1);
+              }}
+              title="Click to view Works Under Construction"
+            >
               <div className="kpi-header">
                 <span className="kpi-title">Work in Progress</span>
                 <Activity size={16} className="text-blue-600" />
               </div>
               <div className="kpi-value">{ongoingCount}</div>
-              <div className="kpi-sub">Being built and inspected right now</div>
+              <div className="kpi-sub">Being built and inspected right now →</div>
             </div>
-            <div className="gov-mp-kpi-card kpi-indigo">
+            <div
+              className="gov-mp-kpi-card kpi-indigo"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                setStageFilter("Sanction");
+                setWorksPage(1);
+              }}
+              title="Click to view Approved Works"
+            >
               <div className="kpi-header">
                 <span className="kpi-title">Approved, Ready to Start</span>
                 <FileText size={16} className="text-indigo-600" />
               </div>
               <div className="kpi-value">{sanctionWorksCount}</div>
-              <div className="kpi-sub">Approved by District Collector</div>
+              <div className="kpi-sub">Approved by District Collector →</div>
             </div>
-            <div className="gov-mp-kpi-card kpi-amber">
+            <div
+              className="gov-mp-kpi-card kpi-amber"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                setStageFilter("Pending Sanction");
+                setWorksPage(1);
+              }}
+              title="Click to view Works Waiting for Approval"
+            >
               <div className="kpi-header">
                 <span className="kpi-title">Waiting for Approval</span>
                 <Clock size={16} className="text-amber-600" />
               </div>
               <div className="kpi-value">{pendingSanctionCount}</div>
-              <div className="kpi-sub">Currently with the District Collector</div>
+              <div className="kpi-sub">Currently with the District Collector →</div>
             </div>
           </div>
 
@@ -736,7 +977,7 @@ export default function MPDashboard(props) {
                 <span>Lifecycle Progress Breakdown</span>
               </div>
               <span style={{ fontSize: "11px", fontWeight: 600, color: "#047857", background: "#ecfdf5", border: "1px solid #a7f3d0", padding: "2px 8px", borderRadius: "9999px" }}>
-                {formatNumber(totalWorks)} Total Works
+                {formatNumber(totalWorks)} Total Works · Click bar to filter
               </span>
             </div>
             <p className="card-section-desc">
@@ -744,14 +985,38 @@ export default function MPDashboard(props) {
             </p>
             <div style={{ width: "100%", height: 210, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "12px 14px", marginTop: "10px" }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={workStageBarData} margin={{ top: 10, right: 10, left: -15, bottom: 5 }}>
+                <BarChart
+                  data={workStageBarData}
+                  margin={{ top: 10, right: 10, left: -15, bottom: 5 }}
+                  onClick={(e) => {
+                    if (e && e.activePayload && e.activePayload[0]) {
+                      const name = e.activePayload[0].payload.name;
+                      if (name === "Finished") setStageFilter("Work Completed");
+                      else if (name === "In Progress") setStageFilter("Physical Inspection");
+                      else if (name === "Approved") setStageFilter("Sanction");
+                      else if (name === "Waiting") setStageFilter("Pending Sanction");
+                      setWorksPage(1);
+                    }
+                  }}
+                >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#475569" }} />
                   <YAxis tick={{ fontSize: 11, fill: "#475569" }} />
                   <Tooltip content={FundTooltip} />
-                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]} cursor="pointer">
                     {workStageBarData.map((entry, idx) => (
-                      <Cell key={`stage-bar-${idx}`} fill={entry.fill} />
+                      <Cell
+                        key={`stage-bar-${idx}`}
+                        fill={entry.fill}
+                        cursor="pointer"
+                        onClick={() => {
+                          if (entry.name === "Finished") setStageFilter("Work Completed");
+                          else if (entry.name === "In Progress") setStageFilter("Physical Inspection");
+                          else if (entry.name === "Approved") setStageFilter("Sanction");
+                          else if (entry.name === "Waiting") setStageFilter("Pending Sanction");
+                          setWorksPage(1);
+                        }}
+                      />
                     ))}
                   </Bar>
                 </BarChart>
