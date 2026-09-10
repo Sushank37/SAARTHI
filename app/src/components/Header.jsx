@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Search, ExternalLink, LogOut, Bell, ShieldAlert } from "lucide-react";
 import { useAuth } from "../context/useAuth";
+import { ROLE_IDS } from "../data/roles";
 import LanguageSelector from "./LanguageSelector";
 import EarlyWarningCenter from "./EarlyWarningCenter";
 import { API_BASE } from "../constants";
@@ -21,12 +22,28 @@ export default function Header({
   onSelectWork,
 }) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const location = useLocation();
+  const { logout, role: authRole, roleConfig: authRoleConfig } = useAuth() || {};
   const [searchQuery, setSearchQuery] = useState("");
   const [showAlertCenter, setShowAlertCenter] = useState(false);
   const [alertTotal, setAlertTotal] = useState(62918);
 
+  // Early alerts are strictly restricted to MP, DA, and MoSPI only
+  const isEarlyAlertAuthorized = useMemo(() => {
+    const activeId = roleConfig?.id || authRoleConfig?.id || authRole;
+    if (activeId) {
+      return (
+        activeId === ROLE_IDS.MP ||
+        activeId === ROLE_IDS.DISTRICT_AUTHORITY ||
+        activeId === ROLE_IDS.MOSPI
+      );
+    }
+    const path = location?.pathname || "";
+    return path.startsWith("/mp") || path.startsWith("/da") || path.startsWith("/mospi");
+  }, [roleConfig?.id, authRoleConfig?.id, authRole, location?.pathname]);
+
   useEffect(() => {
+    if (!isEarlyAlertAuthorized) return;
     let isMounted = true;
     const loadAlertCount = async () => {
       try {
@@ -45,7 +62,7 @@ export default function Header({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isEarlyAlertAuthorized]);
 
   const handleLogout = () => {
     if (onLogout) {
@@ -154,20 +171,22 @@ export default function Header({
 
 
 
-          {/* Authorities Early Warning Alert Trigger Button */}
-          <button
-            type="button"
-            className="header-early-alert-btn"
-            onClick={() => setShowAlertCenter(true)}
-            title="Early Warning Surveillance: Unusual Patterns, Delays, Cost Overruns, Duplicates, and Fund Misuse"
-          >
-            <span className="header-early-alert-pulse" />
-            <Bell size={14} className="header-early-alert-icon" />
-            <span>Early Alerts</span>
-            <span className="header-early-alert-badge">
-              {alertTotal ? (alertTotal > 1000 ? `${(alertTotal / 1000).toFixed(1)}k` : alertTotal) : "..."}
-            </span>
-          </button>
+          {/* Authorities Early Warning Alert Trigger Button (MP, DA, MoSPI ONLY) */}
+          {isEarlyAlertAuthorized && (
+            <button
+              type="button"
+              className="header-early-alert-btn"
+              onClick={() => setShowAlertCenter(true)}
+              title="Early Warning Surveillance: Unusual Patterns, Delays, Cost Overruns, Duplicates, and Fund Misuse"
+            >
+              <span className="header-early-alert-pulse" />
+              <Bell size={14} className="header-early-alert-icon" />
+              <span>Early Alerts</span>
+              <span className="header-early-alert-badge">
+                {alertTotal ? (alertTotal > 1000 ? `${(alertTotal / 1000).toFixed(1)}k` : alertTotal) : "..."}
+              </span>
+            </button>
+          )}
 
           <div
             className={`live-status-tag ${
@@ -236,12 +255,14 @@ export default function Header({
       {/* Tricolor line */}
       <div className="compact-tricolor-line" />
 
-      {/* Authorities Early Warning Alert Center */}
-      <EarlyWarningCenter
-        isOpen={showAlertCenter}
-        onClose={() => setShowAlertCenter(false)}
-        onSelectWork={onSelectWork}
-      />
+      {/* Authorities Early Warning Alert Center (MP, DA, MoSPI ONLY) */}
+      {isEarlyAlertAuthorized && (
+        <EarlyWarningCenter
+          isOpen={showAlertCenter}
+          onClose={() => setShowAlertCenter(false)}
+          onSelectWork={onSelectWork}
+        />
+      )}
     </header>
   );
 }

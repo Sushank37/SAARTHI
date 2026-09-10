@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
+import { ROLE_IDS } from "../data/roles";
 import {
   AlertTriangle,
   AlertOctagon,
@@ -81,6 +84,25 @@ export default function EarlyWarningCenter({
   onSelectWork,
   initialCategory = "all",
 }) {
+  const location = useLocation();
+  const { role: authRole, roleConfig } = useAuth() || {};
+
+  // Early warning surveillance is strictly restricted to MP, DA, and MoSPI only
+  const isAuthorized = useMemo(() => {
+    const activeId = roleConfig?.id || authRole;
+    if (activeId) {
+      return (
+        activeId === ROLE_IDS.MP ||
+        activeId === ROLE_IDS.DISTRICT_AUTHORITY ||
+        activeId === ROLE_IDS.MOSPI
+      );
+    }
+    const path = location?.pathname || "";
+    return path.startsWith("/mp") || path.startsWith("/da") || path.startsWith("/mospi");
+  }, [roleConfig?.id, authRole, location?.pathname]);
+
+  if (!isOpen || !isAuthorized) return null;
+
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [severityFilter, setSeverityFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
