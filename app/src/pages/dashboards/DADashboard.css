@@ -89,8 +89,12 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #0369a1;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 2px 7px;
+  border-radius: 4px;
   margin-bottom: 2px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 5px;
 }
@@ -451,8 +455,6 @@
   font-weight: 800;
   color: #0f172a;
   letter-spacing: -0.02em;
-  line-height: 1;
-  margin: 2px 0 0;
 }
 
 .da-metric-subtext {
