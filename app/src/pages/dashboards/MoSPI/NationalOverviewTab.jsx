@@ -106,28 +106,28 @@ export default function NationalOverviewTab({ analytics, loading }) {
             <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #f1f5f9" }}>
               <span style={{ fontSize: "12.5px", color: "#64748b" }}>Total Recommended Amount</span>
               <strong style={{ fontSize: "13px", color: "#0f172a" }}>
-                ₹ {formatCrores(kpis.total_recommended_amount || 0)} Cr
+                {formatCrores(kpis.total_recommended_amount || 0)}
               </strong>
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #f1f5f9" }}>
               <span style={{ fontSize: "12.5px", color: "#64748b" }}>Total Sanctioned Value</span>
               <strong style={{ fontSize: "13px", color: "#059669" }}>
-                ₹ {formatCrores(kpis.total_sanction_amount || 0)} Cr
+                {formatCrores(kpis.total_sanction_amount || 0)}
               </strong>
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #f1f5f9" }}>
               <span style={{ fontSize: "12.5px", color: "#64748b" }}>Actual Expenditure Disbursed</span>
               <strong style={{ fontSize: "13px", color: "#0284c7" }}>
-                ₹ {formatCrores(kpis.total_actual_amount || 0)} Cr
+                {formatCrores(kpis.total_actual_amount || 0)}
               </strong>
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0" }}>
               <span style={{ fontSize: "12.5px", color: "#64748b" }}>Pending Sanction Gap</span>
               <strong style={{ fontSize: "13px", color: "#d97706" }}>
-                ₹ {formatCrores(kpis.sanction_gap || 0)} Cr
+                {formatCrores(kpis.sanction_gap || 0)}
               </strong>
             </div>
           </div>

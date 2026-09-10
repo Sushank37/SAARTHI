@@ -63,6 +63,7 @@ export default function SharedLayout() {
         totalWorks={summary?.total_works}
         roleConfig={roleConfig}
         onLogout={handleLogout}
+        onSelectWork={setSelectedWork}
       />
 
       {/* Main Two-Column Layout (Sidebar + Content) */}

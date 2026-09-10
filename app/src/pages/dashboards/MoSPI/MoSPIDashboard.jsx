@@ -261,9 +261,9 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
               <IndianRupee size={14} />
             </div>
           </div>
-          <div className="mospi-kpi-value">₹ {formatCrores(kpis.total_sanction_amount || 0)} Cr</div>
+          <div className="mospi-kpi-value">{formatCrores(kpis.total_sanction_amount || 0)}</div>
           <div className="mospi-kpi-sub">
-            <span>Disbursed: ₹ {formatCrores(kpis.total_actual_amount || 0)} Cr ({kpis.utilization_pct || 39.7}%)</span>
+            <span>Disbursed: {formatCrores(kpis.total_actual_amount || 0)} ({kpis.utilization_pct || 39.7}%)</span>
           </div>
         </div>
 

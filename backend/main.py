@@ -173,6 +173,16 @@ df = df.replace(
     pd.NA
 )
 
+# Precomputed lowercase columns for instant text searches
+if "IDA_NAME" in df.columns:
+    df["_IDA_NAME_LOWER"] = df["IDA_NAME"].fillna("").astype(str).str.lower()
+if "STATE_NAME" in df.columns:
+    df["_STATE_NAME_LOWER"] = df["STATE_NAME"].fillna("").astype(str).str.lower()
+if "MP_NAME" in df.columns:
+    df["_MP_NAME_LOWER"] = df["MP_NAME"].fillna("").astype(str).str.lower()
+if "CONSTITUENCY" in df.columns:
+    df["_CONSTITUENCY_LOWER"] = df["CONSTITUENCY"].fillna("").astype(str).str.lower()
+
 print("Dataset loaded successfully.")
 print("=" * 70)
 print()
@@ -316,12 +326,14 @@ def pagination(data, page, limit):
     end = start + limit
 
     page_data = data.iloc[start:end]
+    pages = math.ceil(total / limit) if total else 0
 
     return {
         "page": page,
         "limit": limit,
         "total": total,
-        "pages": math.ceil(total / limit) if total else 0,
+        "pages": pages,
+        "total_pages": pages,
         "data": dataframe_to_records(page_data)
     }
 
@@ -1139,11 +1151,23 @@ def get_works(
         elif t in ["risk", "risk-cases"]:
             if column_exists("RISK_LEVEL"):
                 if sub == "high":
-                    data = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper() == "HIGH"]
+                    risk_filtered = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper() == "HIGH"]
+                    if not risk_filtered.empty:
+                        data = risk_filtered
+                    elif column_exists("REQUIRES_REVIEW"):
+                        data = data[boolean_series(data["REQUIRES_REVIEW"])]
+                    else:
+                        data = risk_filtered
                 elif sub == "medium":
                     data = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper() == "MEDIUM"]
                 else:
-                    data = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper().isin(["HIGH", "MEDIUM"])]
+                    risk_filtered = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper().isin(["HIGH", "MEDIUM"])]
+                    if not risk_filtered.empty:
+                        data = risk_filtered
+                    elif column_exists("REQUIRES_REVIEW"):
+                        data = data[boolean_series(data["REQUIRES_REVIEW"])]
+            if column_exists("RISK_SCORE") and not data.empty:
+                data = data.sort_values("RISK_SCORE", ascending=False)
 
         elif t == "duplicates":
             if column_exists("DUPLICATE_RISK"):
@@ -2311,7 +2335,8 @@ def states():
 
     return {
         "count": len(state_list),
-        "states": state_list
+        "states": state_list,
+        "data": [{"STATE_NAME": s, "state": s} for s in state_list]
     }
 
 
@@ -2574,15 +2599,26 @@ def list_idas(
     if q:
         data = data[text_contains(data["IDA_NAME"], q.strip())]
 
-    counts = data["IDA_NAME"].fillna("").astype(str).str.strip().value_counts()
+    if data.empty:
+        return {"count": 0, "idas": [], "data": []}
+
+    cleaned_idas = data["IDA_NAME"].fillna("").astype(str).str.strip()
+    valid_mask = (cleaned_idas != "") & (cleaned_idas != "nan")
+    if not valid_mask.any():
+        return {"count": 0, "idas": [], "data": []}
+
+    filtered_data = data[valid_mask].copy()
+    filtered_data["_IDA_CLEAN"] = cleaned_idas[valid_mask]
+
+    counts = filtered_data["_IDA_CLEAN"].value_counts()
+    first_rows = filtered_data.drop_duplicates(subset=["_IDA_CLEAN"]).set_index("_IDA_CLEAN")
+
     ida_items = []
     for name, cnt in counts.items():
-        if not name or name == "nan":
-            continue
-        sub = data[data["IDA_NAME"] == name]
+        row = first_rows.loc[name]
         district = name.split("(")[0].strip() if "(" in name else name
-        st = str(sub["STATE_NAME"].dropna().iloc[0]) if "STATE_NAME" in sub.columns and not sub["STATE_NAME"].dropna().empty else ""
-        constituency = str(sub["CONSTITUENCY"].dropna().iloc[0]) if "CONSTITUENCY" in sub.columns and not sub["CONSTITUENCY"].dropna().empty else ""
+        st = str(row["STATE_NAME"]) if "STATE_NAME" in row and pd.notna(row["STATE_NAME"]) else ""
+        constituency = str(row["CONSTITUENCY"]) if "CONSTITUENCY" in row and pd.notna(row["CONSTITUENCY"]) else ""
         ida_items.append({
             "ida_name": name,
             "district_name": district,
@@ -3550,6 +3586,251 @@ def mospi_national_analytics():
     if _mospi_analytics_cache is None:
         _mospi_analytics_cache = compute_mospi_national_analytics()
     return _mospi_analytics_cache
+
+
+# ============================================================
+# EARLY WARNING & ANOMALY SURVEILLANCE ALERTS
+# ============================================================
+
+_early_alerts_cache = None
+
+def compute_early_alerts():
+    # 1. Unusual Patterns
+    mask_unusual = pd.Series(False, index=df.index)
+    if column_exists("SUSPICION_LEVEL"):
+        mask_unusual |= (df["SUSPICION_LEVEL"].fillna("").astype(str).str.upper() == "HIGH")
+    if column_exists("TOTAL_LIFECYCLE_DAYS"):
+        mask_unusual |= (df["TOTAL_LIFECYCLE_DAYS"] > 500)
+    if column_exists("COMPLETION_VS_PEER"):
+        mask_unusual |= (df["COMPLETION_VS_PEER"] > 2.5)
+
+    # 2. Delays (Section 3.12 statutory limit)
+    mask_delays = pd.Series(False, index=df.index)
+    if column_exists("SANCTION_DELAY_DAYS"):
+        mask_delays |= (df["SANCTION_DELAY_DAYS"] > 45)
+
+    # 3. Cost Overruns & Escalations
+    mask_cost = pd.Series(False, index=df.index)
+    if column_exists("COST_VS_PEER"):
+        mask_cost |= (df["COST_VS_PEER"] > 2.0)
+    if column_exists("COST_VARIANCE"):
+        mask_cost |= (df["COST_VARIANCE"] > 0)
+
+    # 4. Duplicate Works
+    mask_duplicates = pd.Series(False, index=df.index)
+    if column_exists("CLUSTER_ID"):
+        mask_duplicates |= df["CLUSTER_ID"].notna()
+
+    # 5. Potential Misuse of Funds
+    mask_misuse = pd.Series(False, index=df.index)
+    if column_exists("REQUIRES_REVIEW"):
+        mask_misuse |= boolean_series(df["REQUIRES_REVIEW"])
+    if column_exists("RISK_LEVEL"):
+        mask_misuse |= (df["RISK_LEVEL"].fillna("").astype(str).str.upper() == "HIGH")
+    if column_exists("ACTUAL_AMOUNT") and column_exists("EVIDENCE_SCORE"):
+        mask_misuse |= ((df["ACTUAL_AMOUNT"] > 1000000) & (df["EVIDENCE_SCORE"] < 40))
+
+    summary = {
+        "unusual_patterns": {
+            "key": "unusual_patterns",
+            "title": "Unusual Patterns & Anomalies",
+            "count": int(mask_unusual.sum()),
+            "severity": "HIGH",
+            "badge_color": "rose",
+            "description": "Erratic lifecycle timelines, synthetic durations, and algorithmic anomaly scores >0.6",
+            "recommendation": "Requisition IA physical verification and audit lifecycle milestone logs."
+        },
+        "delays": {
+            "key": "delays",
+            "title": "Sanction & Execution Delays",
+            "count": int(mask_delays.sum()),
+            "severity": "HIGH",
+            "badge_color": "amber",
+            "description": "Works exceeding statutory 45-day SLA (Section 3.12) or execution timeline past 365 days",
+            "recommendation": "Issue Section 3.12 statutory explanation notice to designated District Authority."
+        },
+        "cost_overruns": {
+            "key": "cost_overruns",
+            "title": "Cost Overruns & Peer Escalations",
+            "count": int(mask_cost.sum()),
+            "severity": "CRITICAL",
+            "badge_color": "purple",
+            "description": "Actual expenditure or estimate exceeding peer median project cost by >2.0x",
+            "recommendation": "Withhold next installment disbursement pending engineering rate re-scrutiny."
+        },
+        "duplicate_works": {
+            "key": "duplicate_works",
+            "title": "Duplicate Works & Clusters",
+            "count": int(mask_duplicates.sum()),
+            "severity": "CRITICAL",
+            "badge_color": "indigo",
+            "description": "Multi-district and inter-constituency duplicate cluster proposals with high text/location match",
+            "recommendation": "Cross-reference site GPS coordinates and withhold duplicate sanction release."
+        },
+        "fund_misuse": {
+            "key": "fund_misuse",
+            "title": "Potential Misuse of Funds",
+            "count": int(mask_misuse.sum()),
+            "severity": "CRITICAL",
+            "badge_color": "red",
+            "description": "Large disbursements lacking ground photo evidence, high financial risk score, or audit review flags",
+            "recommendation": "Refer to District Collectorate Vigilance Desk and mandate CAG special audit."
+        }
+    }
+
+    total_active_alerts = int((mask_unusual | mask_delays | mask_cost | mask_duplicates | mask_misuse).sum())
+
+    return {
+        "total_alerts": total_active_alerts,
+        "summary": summary,
+        "masks": {
+            "unusual_patterns": mask_unusual,
+            "delays": mask_delays,
+            "cost_overruns": mask_cost,
+            "duplicate_works": mask_duplicates,
+            "fund_misuse": mask_misuse
+        }
+    }
+
+
+@app.get("/api/alerts/early-warning")
+def get_early_warning_alerts(
+    category: str = "all",
+    severity: str | None = None,
+    q: str | None = None,
+    state: str | None = None,
+    limit: int = 30,
+    page: int = 1
+):
+    global _early_alerts_cache
+    if _early_alerts_cache is None:
+        _early_alerts_cache = compute_early_alerts()
+
+    summary = _early_alerts_cache["summary"]
+    masks = _early_alerts_cache["masks"]
+
+    if category == "unusual_patterns":
+        sub_mask = masks["unusual_patterns"].copy()
+    elif category == "delays":
+        sub_mask = masks["delays"].copy()
+    elif category == "cost_overruns":
+        sub_mask = masks["cost_overruns"].copy()
+    elif category == "duplicate_works":
+        sub_mask = masks["duplicate_works"].copy()
+    elif category == "fund_misuse":
+        sub_mask = masks["fund_misuse"].copy()
+    else:
+        # Combined alerts with priority ordering: fund_misuse, duplicate_works, cost_overruns, unusual_patterns, delays
+        sub_mask = masks["fund_misuse"] | masks["duplicate_works"] | masks["cost_overruns"] | masks["unusual_patterns"] | masks["delays"]
+
+    filtered_df = df[sub_mask]
+
+    # Keyword search
+    if q and q.strip():
+        search_term = q.strip().lower()
+        text_matches = pd.Series(False, index=filtered_df.index)
+        for c in ["WORK_DESCRIPTION", "CONSTITUENCY", "MP_NAME", "IDA_NAME", "WORK_CATEGORY"]:
+            if column_exists(c):
+                text_matches |= filtered_df[c].fillna("").astype(str).str.lower().str.contains(search_term, na=False)
+        if column_exists("WORK_ID"):
+            text_matches |= filtered_df["WORK_ID"].fillna("").astype(str).str.contains(search_term, na=False)
+        if column_exists("WORK_RECOMMENDATION_DTL_ID"):
+            text_matches |= filtered_df["WORK_RECOMMENDATION_DTL_ID"].fillna("").astype(str).str.contains(search_term, na=False)
+        filtered_df = filtered_df[text_matches]
+
+    if state and state.strip() and state.lower() != "all":
+        filtered_df = filtered_df[filtered_df["STATE_NAME"].fillna("").astype(str).str.lower() == state.strip().lower()]
+
+    total_matched = len(filtered_df)
+    total_pages = max(1, math.ceil(total_matched / limit))
+    offset = (page - 1) * limit
+    page_df = filtered_df.iloc[offset:offset + limit]
+
+    records = dataframe_to_records(page_df)
+    enriched_alerts = []
+    for r in records:
+        sanc = float(r.get("SANCTION_AMOUNT") or 0)
+        act = float(r.get("ACTUAL_AMOUNT") or 0)
+        delay = float(r.get("SANCTION_DELAY_DAYS") or 0)
+        cost_peer = float(r.get("COST_VS_PEER") or 1)
+        sim = float(r.get("AVG_TEXT_SIMILARITY") or 0)
+        if sim <= 1:
+            sim = sim * 100
+        cluster_id = r.get("CLUSTER_ID")
+        ev_score = float(r.get("EVIDENCE_SCORE") or 0)
+        risk_lvl = str(r.get("RISK_LEVEL") or "LOW").upper()
+        rev_reason = str(r.get("REVIEW_REASON") or r.get("RISK_REASON") or "")
+
+        # Category-specific enrichment or priority chain when category == 'all'
+        if category == "delays" or (category == "all" and delay > 45 and not (r.get("REQUIRES_REVIEW") or risk_lvl == "HIGH" or cluster_id is not None or cost_peer > 2.0)):
+            cat = "delays"
+            title = f"Sanction Delay Breach: {int(delay)} Days"
+            reason = f"Pending sanction for {int(delay)} days (+{max(0, int(delay - 45))}d beyond 45-day Section 3.12 statutory limit)"
+            sev = "CRITICAL" if delay > 90 else "HIGH"
+            metric = f"+{int(delay)}d Delay"
+            sec = "compliance-45d"
+        elif category == "cost_overruns" or (category == "all" and cost_peer > 1.8 and not (r.get("REQUIRES_REVIEW") or risk_lvl == "HIGH" or cluster_id is not None)):
+            cat = "cost_overruns"
+            title = f"Peer Cost Escalation ({cost_peer:.1f}x Peer Median)"
+            reason = f"Sanctioned at ₹ {sanc/1e5:.1f} Lakh, which is {cost_peer:.1f} times higher than peer district median"
+            sev = "CRITICAL" if cost_peer > 3.0 else "HIGH"
+            metric = f"{cost_peer:.1f}x Peer Cost"
+            sec = "financials"
+        elif category == "duplicate_works" or (category == "all" and cluster_id is not None and not (isinstance(cluster_id, float) and math.isnan(cluster_id)) and not (r.get("REQUIRES_REVIEW") or risk_lvl == "HIGH")):
+            cat = "duplicate_works"
+            try:
+                cid_str = str(int(float(cluster_id)))
+            except Exception:
+                cid_str = str(cluster_id)
+            title = f"Duplicate Cluster #{cid_str} Proposal"
+            reason = f"Cross-district proposal matched with {sim:.1f}% text similarity in cluster"
+            sev = "CRITICAL" if sim > 80 else "HIGH"
+            metric = f"{sim:.1f}% Similarity"
+            sec = "duplicates"
+        elif category == "unusual_patterns" or (category == "all" and str(r.get("SUSPICION_LEVEL") or "").upper() == "HIGH" and not (r.get("REQUIRES_REVIEW") or risk_lvl == "HIGH")):
+            cat = "unusual_patterns"
+            lifecycle = float(r.get("TOTAL_LIFECYCLE_DAYS") or 0)
+            comp_peer = float(r.get("COMPLETION_VS_PEER") or 1)
+            title = "Unusual Lifecycle Progression / Peer Outlier"
+            reason = f"Lifecycle duration ({int(lifecycle)} days, {comp_peer:.1f}x peer median) exhibits anomalous timeline progression."
+            sev = "HIGH"
+            metric = f"{comp_peer:.1f}x Duration"
+            sec = "overview"
+        elif category == "fund_misuse" or r.get("REQUIRES_REVIEW") or risk_lvl == "HIGH" or (act > 1000000 and ev_score < 40):
+            cat = "fund_misuse"
+            title = "Potential Fund Misuse & Compliance Risk"
+            reason = rev_reason or f"Disbursed ₹ {act/1e5:.1f} Lakh with substandard evidence score ({ev_score:.0f}/100)"
+            sev = "CRITICAL"
+            metric = f"Risk Score: {float(r.get('RISK_SCORE') or 0):.1f}"
+            sec = "risk"
+        else:
+            cat = "unusual_patterns"
+            title = "Algorithmic Anomaly / Synthetic Lifecycle Pattern"
+            reason = "Lifecycle timeline or progression deviates significantly from national distribution"
+            sev = "HIGH"
+            metric = "Anomaly Score > 0.6"
+            sec = "overview"
+
+        r["alert_category"] = cat
+        r["alert_title"] = title
+        r["alert_reason"] = reason
+        r["severity"] = sev
+        r["metric_value"] = metric
+        r["audit_section"] = sec
+        enriched_alerts.append(r)
+
+    # Optional severity filter
+    if severity and severity.upper() in ["CRITICAL", "HIGH", "MEDIUM"]:
+        enriched_alerts = [a for a in enriched_alerts if a.get("severity") == severity.upper()]
+
+    return {
+        "total": total_matched,
+        "page": page,
+        "pages": total_pages,
+        "limit": limit,
+        "summary": summary,
+        "alerts": enriched_alerts
+    }
 
 
 # ============================================================

@@ -1333,7 +1333,7 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
                     <div className="d-kpi">
                       <span className="d-kpi-label">Quota Entitlement Impact</span>
                       <strong className="d-kpi-val" style={{ color: "#059669" }}>
-                        ₹ {formatCrores(recAmount || sancAmount)} Cr debited
+                        {formatCrores(recAmount || sancAmount)} debited
                       </strong>
                     </div>
                     <div className="d-kpi">

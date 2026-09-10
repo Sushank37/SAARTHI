@@ -11,16 +11,22 @@ import {
 } from "lucide-react";
 import { API_BASE, formatNumber } from "../../../constants";
 
-const DELAY_BUCKET_TABS = [
-  { id: "all", label: "All Sanctioned Works", count: 77617 },
-  { id: "under-45", label: "≤ 45 Days (Compliant)", count: 22856, status: "success" },
-  { id: "46-90", label: "46 – 90 Days", count: 20580, status: "neutral" },
-  { id: "91-180", label: "91 – 180 Days", count: 21357, status: "warning" },
-  { id: "over-180", label: "> 180 Days (Severe)", count: 12824, status: "danger" },
-];
-
 export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
   const delayInfo = analytics?.delay_buckets || {};
+  const u45 = delayInfo.under_45 ?? 22856;
+  const d46_90 = delayInfo.from_46_to_90 ?? 20580;
+  const d91_180 = delayInfo.from_91_to_180 ?? 21357;
+  const o180 = delayInfo.over_180 ?? 12824;
+  const totalSanctioned = u45 + d46_90 + d91_180 + o180;
+
+  const delayBucketTabs = [
+    { id: "all", label: "All Sanctioned Works", count: totalSanctioned },
+    { id: "under-45", label: "≤ 45 Days (Compliant)", count: u45, status: "success" },
+    { id: "46-90", label: "46 – 90 Days", count: d46_90, status: "neutral" },
+    { id: "91-180", label: "91 – 180 Days", count: d91_180, status: "warning" },
+    { id: "over-180", label: "> 180 Days (Severe)", count: o180, status: "danger" },
+  ];
+
   const [activeBucket, setActiveBucket] = useState("all");
   const [works, setWorks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +46,7 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
           if (isMounted) {
             setWorks(d.data || []);
             setTotalCount(d.total || 0);
-            setTotalPages(d.total_pages || 1);
+            setTotalPages(d.total_pages || d.pages || 1);
           }
         }
       } catch (err) {
@@ -161,7 +167,7 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
 
         {/* Bucket Subtabs */}
         <div className="mospi-subtab-bar" style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
-          {DELAY_BUCKET_TABS.map((tab) => {
+          {delayBucketTabs.map((tab) => {
             const isActive = activeBucket === tab.id;
             return (
               <button
