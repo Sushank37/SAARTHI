@@ -60,6 +60,14 @@ export default function CitizenDashboard({ summary, onSelectWork }) {
     handleTabChange("complaints");
   };
 
+  const citizenProfile = React.useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("saarthi_citizen_profile") || "null");
+    } catch {
+      return null;
+    }
+  }, []);
+
   return (
     <div className="gov-mp-shell citizen-portal-container">
       {/* 1. Official Header Card */}
@@ -68,15 +76,19 @@ export default function CitizenDashboard({ summary, onSelectWork }) {
           <div className="gov-mp-title-unit">
             <div className="gov-mp-sub-row">
               <span className="gov-parliament-badge">
-                PUBLIC PORTAL
+                {citizenProfile?.id ? `CITIZEN ID: ${citizenProfile.id}` : "PUBLIC PORTAL"}
               </span>
               <span className="gov-constituency-tag">
                 <MapPin size={11} style={{ marginRight: "3px" }} />
-                Nizamabad, Telangana
+                {citizenProfile?.district
+                  ? `${citizenProfile.district}, ${citizenProfile.state || "India"}`
+                  : "Nizamabad, Telangana"}
               </span>
             </div>
             <h1 className="gov-mp-page-title">
-              Jan Saarthi · Public Transparency & Social Audit
+              {citizenProfile?.fullName
+                ? `Saarthi · Welcome, ${citizenProfile.fullName}`
+                : "Saarthi · Public Transparency & Social Audit"}
             </h1>
             <p className="gov-mp-page-subtitle">
               Direct citizen portal for MPLADS developmental works: explore public community assets, verify ground completion against digital records, and participate in social audit.
