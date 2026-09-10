@@ -37,6 +37,8 @@ import {
   exportToCSV,
 } from "../../constants";
 import WorkDetailDrawer from "../../components/WorkDetailDrawer";
+import { getRequests, getRequestCounts } from "../../services/workflowService";
+import RequestTable from "../../components/workflow/RequestTable";
 import "./DADashboard.css";
 
 // 11 Specific District Authority Navigation Modules
@@ -109,6 +111,29 @@ export default function DADashboard({ summary, onSelectWork }) {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeKpiFilter, setActiveKpiFilter] = useState(null);
   const [localSelectedWork, setLocalSelectedWork] = useState(null);
+
+  // Incoming cross-role workflow requests
+  const [incomingRequests, setIncomingRequests] = useState([]);
+  const [incomingRequestsLoading, setIncomingRequestsLoading] = useState(false);
+  const [requestCounts, setRequestCounts] = useState(null);
+
+  const fetchIncomingRequests = async () => {
+    setIncomingRequestsLoading(true);
+    try {
+      const data = await getRequests({ targetRole: "DISTRICT_AUTHORITY" });
+      setIncomingRequests(data.requests || []);
+      const counts = await getRequestCounts("DISTRICT_AUTHORITY");
+      setRequestCounts(counts);
+    } catch (err) {
+      console.error("Failed to load incoming requests:", err);
+    } finally {
+      setIncomingRequestsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchIncomingRequests();
+  }, [selectedIDA]);
 
   // Map active module tab to dossier audit section
   const getAuditSectionForTab = (tab) => {
@@ -1806,11 +1831,37 @@ export default function DADashboard({ summary, onSelectWork }) {
                 <div className="da-intel-stat-item">
                   <span className="da-intel-stat-label">Actionable Alerts</span>
                   <div className="da-intel-stat-val text-red-700">
-                    {formatNumber(kpis.attention_required || 0)}
+                    {formatNumber((kpis.attention_required || 0) + (incomingRequests.filter(r => r.status === "SUBMITTED" || r.status === "UNDER_REVIEW").length))}
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Centralized Cross-Role Incoming Workflow Requests */}
+          <div style={{ marginBottom: "20px" }}>
+            <RequestTable
+              title="District Authority Incoming Requests & Petitions Queue"
+              subtitle="Real-time intake of Citizen grievances, IA payment claims/MB records, and MP inquiries routed to this Collectorate"
+              requests={incomingRequests}
+              loading={incomingRequestsLoading}
+              currentRole="DISTRICT_AUTHORITY"
+              onRefresh={fetchIncomingRequests}
+              onOpenWork={async (workId) => {
+                try {
+                  const res = await fetch(`${API_BASE}/api/works/${workId}`);
+                  if (res.ok) {
+                    const wData = await res.json();
+                    handleSelectWork(wData, "actions");
+                  } else {
+                    alert(`Work #${workId} could not be loaded from registry.`);
+                  }
+                } catch (e) {
+                  console.error(e);
+                }
+              }}
+              onStatusUpdated={() => fetchIncomingRequests()}
+            />
           </div>
 
           {priorityCases.length > 0 && (

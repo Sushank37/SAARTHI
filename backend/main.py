@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Query
+from typing import Optional, List, Dict, Any
+from fastapi import FastAPI, HTTPException, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import pandas as pd
@@ -185,6 +186,19 @@ if "CONSTITUENCY" in df.columns:
 
 print("Dataset loaded successfully.")
 print("=" * 70)
+print()
+
+# ============================================================
+# UNIFIED WORKFLOW ENGINE
+# ============================================================
+
+try:
+    from backend.workflow_engine import WorkflowEngine, REQUEST_TYPES, STATUS_LIFECYCLE
+except ImportError:
+    from workflow_engine import WorkflowEngine, REQUEST_TYPES, STATUS_LIFECYCLE
+
+workflow_engine = WorkflowEngine(df)
+print("[WorkflowEngine] Initialized with master dataset.")
 print()
 
 
@@ -1460,46 +1474,32 @@ def get_works_geo(
 
 @app.get("/api/works/{work_id}")
 def get_work(work_id: str):
+    clean_id = str(work_id).strip()
 
-    # Recommendation detail ID
-    if column_exists(
-        "WORK_RECOMMENDATION_DTL_ID"
-    ):
+    # 1. Prioritize numeric float match on WORK_ID
+    try:
+        val_num = float(clean_id)
+        if column_exists("WORK_ID"):
+            matches = df[df["WORK_ID"] == val_num]
+            if not matches.empty:
+                return row_to_dict(matches.iloc[0])
+        if column_exists("WORK_RECOMMENDATION_DTL_ID"):
+            matches = df[df["WORK_RECOMMENDATION_DTL_ID"] == val_num]
+            if not matches.empty:
+                return row_to_dict(matches.iloc[0])
+    except ValueError:
+        pass
 
-        matches = df[
-            df[
-                "WORK_RECOMMENDATION_DTL_ID"
-            ]
-            .astype(str)
-            .eq(
-                str(work_id)
-            )
-        ]
-
-        if not matches.empty:
-
-            return row_to_dict(
-                matches.iloc[0]
-            )
-
-
-    # WORK_ID
+    # 2. Exact string match fallback
     if column_exists("WORK_ID"):
-
-        matches = df[
-            df["WORK_ID"]
-            .astype(str)
-            .eq(
-                str(work_id)
-            )
-        ]
-
+        matches = df[df["WORK_ID"].astype(str).str.strip().eq(clean_id)]
         if not matches.empty:
+            return row_to_dict(matches.iloc[0])
 
-            return row_to_dict(
-                matches.iloc[0]
-            )
-
+    if column_exists("WORK_RECOMMENDATION_DTL_ID"):
+        matches = df[df["WORK_RECOMMENDATION_DTL_ID"].astype(str).str.strip().eq(clean_id)]
+        if not matches.empty:
+            return row_to_dict(matches.iloc[0])
 
     raise HTTPException(
         status_code=404,
@@ -4394,107 +4394,140 @@ def validate_proposal(
 
 
 # ============================================================
-# PUBLIC / CITIZEN TRANSPARENCY & GRIEVANCE APIS
+# UNIFIED CROSS-ROLE WORKFLOW REQUEST APIS
 # ============================================================
 
-GRIEVANCES_FILE = BASE_DIR / "backend" / "citizen_grievances.json"
+@app.post("/api/requests")
+def create_request(payload: dict = Body(...)):
+    """Create a persistent cross-role workflow request."""
+    try:
+        work_id = payload.get("work_id")
+        if not work_id:
+            raise HTTPException(status_code=422, detail="work_id is required")
+        
+        raised_by_role = payload.get("raised_by_role")
+        if not raised_by_role:
+            raise HTTPException(status_code=422, detail="raised_by_role is required")
+            
+        request_type = payload.get("request_type")
+        if not request_type:
+            raise HTTPException(status_code=422, detail="request_type is required")
+            
+        title = payload.get("title") or "Workflow Request"
+        description = payload.get("description") or ""
+        priority = payload.get("priority") or "MEDIUM"
+        raised_by_identity = payload.get("raised_by_identity")
+        related_data = payload.get("related_data") or {}
 
-DEFAULT_GRIEVANCES = [
-    {
-        "complaint_id": "CIT-2026-001283",
-        "work_id": "W-2026-10291",
-        "work_title": "Construction of Community Hall at Ibrahimpatnam",
-        "issue_type": "Work is incomplete",
-        "description": "Pillars were constructed 8 months ago, but roof slab and plastering remain halted. No workers seen on site for past 3 months.",
-        "location": "Ibrahimpatnam, Nizamabad",
-        "constituency": "Nizamabad",
-        "state": "Telangana",
-        "citizen_name": "Ramesh Goud",
-        "citizen_phone": "+91 98490 XXXXX",
-        "status": "Under Review",
-        "created_at": "2026-08-14T10:30:00Z",
-        "updated_at": "2026-08-28T14:15:00Z",
-        "distance_m": 42,
-        "photo_url": "https://images.unsplash.com/photo-1590402494682-cd3fb53b1f70?w=600&auto=format&fit=crop&q=80",
-        "timeline": [
-            {"status": "Submitted", "timestamp": "2026-08-14 10:30", "note": "Grievance lodged via eSAKSHI Citizen Mobile Portal."},
-            {"status": "Received", "timestamp": "2026-08-15 09:00", "note": "Acknowledged by Central Public Grievance Intake Cell."},
-            {"status": "Under Review", "timestamp": "2026-08-28 14:15", "note": "Referred to District Collectorate (Nizamabad) & Executive Engineer PR for site inspection."}
-        ]
-    },
-    {
-        "complaint_id": "CIT-2026-000921",
-        "work_id": "W-2026-10442",
-        "work_title": "Installation of 25 High Mast Solar LED Lights",
-        "issue_type": "Poor quality / Substandard material",
-        "description": "5 solar lights installed near village junction are non-functional since rainy season began. Batteries not charging properly.",
-        "location": "Armoor Mandal, Nizamabad",
-        "constituency": "Nizamabad",
-        "state": "Telangana",
-        "citizen_name": "S. Kavitha",
-        "citizen_phone": "+91 94401 XXXXX",
-        "status": "Resolved",
-        "created_at": "2026-07-10T11:00:00Z",
-        "updated_at": "2026-08-02T16:45:00Z",
-        "distance_m": 18,
-        "photo_url": "https://images.unsplash.com/photo-1509391365360-2e959784a276?w=600&auto=format&fit=crop&q=80",
-        "timeline": [
-            {"status": "Submitted", "timestamp": "2026-07-10 11:00", "note": "Complaint filed with geo-tagged photograph."},
-            {"status": "Received", "timestamp": "2026-07-11 10:20", "note": "Logged into District Redressal System."},
-            {"status": "Under Review", "timestamp": "2026-07-15 14:00", "note": "Site visit scheduled by nodal assistant engineer."},
-            {"status": "Assigned", "timestamp": "2026-07-18 16:30", "note": "Vendor REDCO issued warranty replacement notice."},
-            {"status": "Action Taken", "timestamp": "2026-07-29 11:30", "note": "Batteries replaced and luminaires restored to working condition."},
-            {"status": "Resolved", "timestamp": "2026-08-02 16:45", "note": "Grievance resolved with verification by Gram Panchayat."}
-        ]
-    },
-    {
-        "complaint_id": "CIT-2026-000415",
-        "work_id": "W-2026-10885",
-        "work_title": "CC Road from Main Road to SC Colony",
-        "issue_type": "Work has not started",
-        "description": "Sanction was accorded over 14 months ago as per digital board, but no civil ground work has started yet.",
-        "location": "Bheemgal, Nizamabad",
-        "constituency": "Nizamabad",
-        "state": "Telangana",
-        "citizen_name": "M. Srinivas",
-        "citizen_phone": "+91 97012 XXXXX",
-        "status": "Assigned",
-        "created_at": "2026-08-01T09:15:00Z",
-        "updated_at": "2026-08-20T12:00:00Z",
-        "distance_m": 55,
-        "photo_url": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=80",
-        "timeline": [
-            {"status": "Submitted", "timestamp": "2026-08-01 09:15", "note": "Report submitted via public web terminal."},
-            {"status": "Received", "timestamp": "2026-08-02 11:45", "note": "Routed to District Planning Cell."},
-            {"status": "Under Review", "timestamp": "2026-08-08 15:10", "note": "Tender allocation delay verified by Assistant Collector."},
-            {"status": "Assigned", "timestamp": "2026-08-20 12:00", "note": "Issued directive to Panchayat Raj Division for immediate re-tendering."}
-        ]
+        req = workflow_engine.create_request(
+            work_id=work_id,
+            raised_by_role=raised_by_role,
+            request_type=request_type,
+            title=title,
+            description=description,
+            priority=priority,
+            raised_by_identity=raised_by_identity,
+            related_data=related_data
+        )
+        return {
+            "success": True,
+            "request_id": req["request_id"],
+            "message": f"Request registered under {req['request_id']} and routed to {req['target_department']}.",
+            "request": req
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except PermissionError as pe:
+        raise HTTPException(status_code=403, detail=str(pe))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create request: {str(e)}")
+
+
+@app.get("/api/requests")
+def list_requests(
+    role: Optional[str] = Query(None),
+    target_role: Optional[str] = Query(None),
+    raised_by_role: Optional[str] = Query(None),
+    work_id: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    request_type: Optional[str] = Query(None),
+    ida_name: Optional[str] = Query(None),
+    q: Optional[str] = Query(None)
+):
+    """Query workflow requests with role filtering."""
+    results = workflow_engine.query_requests(
+        role=role,
+        target_role=target_role,
+        raised_by_role=raised_by_role,
+        work_id=work_id,
+        status=status,
+        request_type=request_type,
+        ida_name=ida_name,
+        search_query=q
+    )
+    return {
+        "total": len(results),
+        "requests": results
     }
-]
 
-def load_grievances():
-    if not GRIEVANCES_FILE.exists():
-        try:
-            with open(GRIEVANCES_FILE, "w", encoding="utf-8") as f:
-                json.dump(DEFAULT_GRIEVANCES, f, indent=2)
-            return list(DEFAULT_GRIEVANCES)
-        except Exception as e:
-            print("Error initializing grievances file:", e)
-            return list(DEFAULT_GRIEVANCES)
+
+@app.get("/api/requests/counts")
+def get_request_counts(
+    role: Optional[str] = Query(None),
+    ida_name: Optional[str] = Query(None)
+):
+    """Live counts of pending/active workflow requests (no fake fallback numbers!)."""
+    return workflow_engine.get_counts(role=role, ida_name=ida_name)
+
+
+@app.get("/api/requests/{request_id}")
+def get_request_details(request_id: str):
+    """Retrieve full request dossier with timeline audit."""
+    req = workflow_engine.get_request_by_id(request_id)
+    if not req:
+        raise HTTPException(status_code=404, detail=f"Request '{request_id}' not found.")
+    return req
+
+
+@app.patch("/api/requests/{request_id}")
+def update_request_status(request_id: str, payload: dict = Body(...)):
+    """Update status of a workflow request with audit trail."""
     try:
-        with open(GRIEVANCES_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception as e:
-        print("Error reading grievances file:", e)
-        return list(DEFAULT_GRIEVANCES)
+        actor_role = payload.get("role") or payload.get("actor_role")
+        if not actor_role:
+            raise HTTPException(status_code=422, detail="'role' is required to verify permissions.")
+            
+        new_status = payload.get("status") or payload.get("new_status")
+        if not new_status:
+            raise HTTPException(status_code=422, detail="'status' is required.")
+            
+        note = payload.get("note")
+        actor_identity = payload.get("actor_identity")
 
-def save_grievances(grievances_list):
-    try:
-        with open(GRIEVANCES_FILE, "w", encoding="utf-8") as f:
-            json.dump(grievances_list, f, indent=2)
+        updated = workflow_engine.update_request_status(
+            request_id=request_id,
+            actor_role=actor_role,
+            new_status=new_status,
+            note=note,
+            actor_identity=actor_identity
+        )
+        return {
+            "success": True,
+            "request_id": request_id,
+            "message": f"Status updated to {updated['status']}.",
+            "request": updated
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except PermissionError as pe:
+        raise HTTPException(status_code=403, detail=str(pe))
     except Exception as e:
-        print("Error saving grievances file:", e)
+        raise HTTPException(status_code=500, detail=f"Failed to update request: {str(e)}")
 
+
+# ============================================================
+# PUBLIC / CITIZEN TRANSPARENCY & GRIEVANCE APIS (COMPATIBILITY)
+# ============================================================
 
 @app.get("/api/public/grievances")
 def get_public_grievances(
@@ -4502,87 +4535,126 @@ def get_public_grievances(
     work_id: str = Query(None),
     status: str = Query(None)
 ):
-    """List public grievances with optional filters."""
-    grievances = load_grievances()
-    filtered = grievances
-
-    if constituency:
-        c_lower = constituency.strip().lower()
-        filtered = [g for g in filtered if c_lower in str(g.get("constituency", "")).lower()]
-
-    if work_id:
-        w_lower = work_id.strip().lower()
-        filtered = [g for g in filtered if w_lower in str(g.get("work_id", "")).lower()]
-
-    if status:
-        s_lower = status.strip().lower()
-        filtered = [g for g in filtered if s_lower == str(g.get("status", "")).lower()]
+    """List public grievances from unified workflow engine."""
+    all_reqs = workflow_engine.query_requests(
+        raised_by_role="CITIZEN",
+        work_id=work_id,
+        status=status
+    )
+    grievances = []
+    for r in all_reqs:
+        if r.get("request_type") not in ("GRIEVANCE", "PUBLIC_VERIFICATION"):
+            continue
+        rel = r.get("related_data") or {}
+        g_item = {
+            "complaint_id": r["request_id"],
+            "request_id": r["request_id"],
+            "work_id": r["work_id"],
+            "work_title": r["work_title"],
+            "issue_type": rel.get("issue_type") or r.get("title") or "General Grievance",
+            "description": r["description"],
+            "location": f"{r.get('constituency', '')}, {r.get('state_name', '')}".strip(", "),
+            "constituency": r.get("constituency", ""),
+            "state": r.get("state_name", ""),
+            "citizen_name": r.get("raised_by_identity", "Citizen"),
+            "citizen_phone": rel.get("citizen_phone", ""),
+            "status": r.get("status", "SUBMITTED").title(),
+            "created_at": r["created_at"],
+            "updated_at": r["updated_at"],
+            "distance_m": rel.get("distance_m", 25),
+            "photo_url": rel.get("photo_url") or "",
+            "timeline": r.get("timeline", [])
+        }
+        if constituency and constituency.strip().lower() not in g_item["constituency"].lower():
+            continue
+        grievances.append(g_item)
 
     return {
-        "total": len(filtered),
-        "grievances": filtered
+        "total": len(grievances),
+        "grievances": grievances
     }
 
 
 @app.get("/api/public/grievances/{complaint_id}")
 def get_public_grievance_by_id(complaint_id: str):
-    """Get single grievance details and tracking history."""
-    grievances = load_grievances()
-    cid_upper = complaint_id.strip().upper()
-    for g in grievances:
-        if g.get("complaint_id", "").upper() == cid_upper:
-            return g
-    raise HTTPException(status_code=404, detail="Complaint ID not found")
+    """Get single grievance details from unified workflow engine."""
+    r = workflow_engine.get_request_by_id(complaint_id)
+    if not r:
+        raise HTTPException(status_code=404, detail="Complaint ID not found")
+    rel = r.get("related_data") or {}
+    return {
+        "complaint_id": r["request_id"],
+        "request_id": r["request_id"],
+        "work_id": r["work_id"],
+        "work_title": r["work_title"],
+        "issue_type": rel.get("issue_type") or r.get("title") or "General Grievance",
+        "description": r["description"],
+        "location": f"{r.get('constituency', '')}, {r.get('state_name', '')}".strip(", "),
+        "constituency": r.get("constituency", ""),
+        "state": r.get("state_name", ""),
+        "citizen_name": r.get("raised_by_identity", "Citizen"),
+        "citizen_phone": rel.get("citizen_phone", ""),
+        "status": r.get("status", "SUBMITTED").title(),
+        "created_at": r["created_at"],
+        "updated_at": r["updated_at"],
+        "distance_m": rel.get("distance_m", 25),
+        "photo_url": rel.get("photo_url") or "",
+        "timeline": r.get("timeline", [])
+    }
 
 
 @app.post("/api/public/grievances")
-def create_public_grievance(payload: dict):
-    """Submit a new citizen grievance / issue report."""
-    import random
-    from datetime import datetime
+def create_public_grievance(payload: dict = Body(...)):
+    """Submit a new citizen grievance using unified workflow engine."""
+    work_id = payload.get("work_id")
+    if not work_id:
+        raise HTTPException(status_code=422, detail="work_id is required.")
+        
+    issue_type = payload.get("issue_type") or "Work is incomplete"
+    description = payload.get("description", "").strip()
+    if not description:
+        raise HTTPException(status_code=422, detail="description is required.")
 
-    grievances = load_grievances()
-    
-    # Generate CIT-2026-XXXXXX
-    complaint_id = f"CIT-2026-{random.randint(100000, 999999)}"
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
-    iso_now = datetime.now().isoformat()
-
-    new_grievance = {
-        "complaint_id": complaint_id,
-        "work_id": payload.get("work_id", "GENERAL-MPLADS"),
-        "work_title": payload.get("work_title", "MPLADS Community Infrastructure"),
-        "issue_type": payload.get("issue_type", "Other"),
-        "description": payload.get("description", "").strip(),
-        "location": payload.get("location", "").strip() or "Constituency Site",
-        "constituency": payload.get("constituency", "Nizamabad").strip(),
-        "state": payload.get("state", "Telangana").strip(),
-        "citizen_name": payload.get("citizen_name", "Anonymous Citizen").strip(),
+    citizen_name = payload.get("citizen_name", "Concerned Citizen").strip()
+    photo_url = payload.get("photo_url")
+    rel_data = {
+        "issue_type": issue_type,
         "citizen_phone": payload.get("citizen_phone", "").strip(),
-        "status": "Submitted",
-        "created_at": iso_now,
-        "updated_at": iso_now,
-        "distance_m": payload.get("distance_m", random.randint(15, 85)),
-        "photo_url": payload.get("photo_url") or "https://images.unsplash.com/photo-1590402494682-cd3fb53b1f70?w=600&auto=format&fit=crop&q=80",
-        "timeline": [
-            {
+        "photo_url": photo_url,
+        "distance_m": payload.get("distance_m", 25)
+    }
+
+    try:
+        req = workflow_engine.create_request(
+            work_id=work_id,
+            raised_by_role="CITIZEN",
+            request_type="GRIEVANCE",
+            title=f"Public Grievance: {issue_type}",
+            description=description,
+            priority="HIGH" if "substandard" in issue_type.lower() or "defect" in issue_type.lower() else "MEDIUM",
+            raised_by_identity=citizen_name,
+            related_data=rel_data
+        )
+
+        return {
+            "success": True,
+            "complaint_id": req["request_id"],
+            "request_id": req["request_id"],
+            "message": f"Grievance successfully registered under Tracking Code {req['request_id']}",
+            "grievance": {
+                "complaint_id": req["request_id"],
+                "work_id": req["work_id"],
+                "work_title": req["work_title"],
+                "issue_type": issue_type,
+                "description": description,
                 "status": "Submitted",
-                "timestamp": now_str,
-                "note": "Grievance received and registered on eSAKSHI Citizen Public Portal."
+                "timeline": req["timeline"]
             }
-        ]
-    }
-
-    # Prepend new grievance so it appears first
-    grievances.insert(0, new_grievance)
-    save_grievances(grievances)
-
-    return {
-        "success": True,
-        "complaint_id": complaint_id,
-        "message": f"Grievance successfully submitted under Tracking Code {complaint_id}",
-        "grievance": new_grievance
-    }
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Grievance registration failed: {str(e)}")
 
 
 @app.get("/api/public/constituency/{constituency_name}")

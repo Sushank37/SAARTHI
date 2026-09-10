@@ -32,6 +32,15 @@ import {
   Hammer,
 } from "lucide-react";
 import { formatNumber, formatDecimal, formatCurrency, formatCrores } from "../constants";
+import {
+  getRequests,
+  createRequest,
+  REQUEST_TYPES,
+  REQUEST_TYPE_LABELS,
+} from "../services/workflowService";
+import RequestStatusBadge from "./workflow/RequestStatusBadge";
+import RequestPriorityBadge from "./workflow/RequestPriorityBadge";
+import RequestComposerModal from "./workflow/RequestComposerModal";
 import "./WorkDetailDrawer.css";
 
 // Authority-specific tabs for the dossier
@@ -99,11 +108,72 @@ const getAuthorityTabs = (authority) => {
   }
 };
 
-export default function WorkDetailDrawer({ work, onClose, initialSection = "all" }) {
-  if (!work) return null;
+export default function WorkDetailDrawer({ work: initialWork, onClose, initialSection = "all" }) {
+  if (!initialWork) return null;
 
   const { role: authRole } = useAuth() || {};
   const location = useLocation();
+
+  // Normalize incoming work object (handles raw IDs, numbers, lowercase objects)
+  const incomingWorkObj = useMemo(() => {
+    if (!initialWork) return null;
+    if (typeof initialWork === "object") {
+      const wId = initialWork.WORK_ID ?? initialWork.work_id ?? initialWork.id;
+      const rId = initialWork.WORK_RECOMMENDATION_DTL_ID ?? initialWork.rec_id ?? initialWork.recommendation_id;
+      return {
+        ...initialWork,
+        WORK_ID: wId != null ? String(wId).replace(/\.0$/, "") : null,
+        WORK_RECOMMENDATION_DTL_ID: rId != null ? String(rId).replace(/\.0$/, "") : null,
+        WORK_DESCRIPTION: initialWork.WORK_DESCRIPTION ?? initialWork.work_title ?? initialWork.title ?? initialWork.description ?? "",
+        STATE_NAME: initialWork.STATE_NAME ?? initialWork.state ?? initialWork.state_name ?? "",
+        CONSTITUENCY: initialWork.CONSTITUENCY ?? initialWork.constituency ?? "",
+        IDA_NAME: initialWork.IDA_NAME ?? initialWork.ida_name ?? initialWork.agency_name ?? "",
+        MP_NAME: initialWork.MP_NAME ?? initialWork.mp_name ?? "",
+        SANCTION_AMOUNT: initialWork.SANCTION_AMOUNT ?? initialWork.sanction_amount ?? 0,
+        ACTUAL_AMOUNT: initialWork.ACTUAL_AMOUNT ?? initialWork.actual_amount ?? 0,
+        WORK_STAGE: initialWork.WORK_STAGE ?? initialWork.work_stage ?? initialWork.stage ?? "Sanction",
+      };
+    }
+    const cleanRaw = String(initialWork).replace(/\.0$/, "");
+    return { WORK_ID: cleanRaw };
+  }, [initialWork]);
+
+  const [hydratedWork, setHydratedWork] = useState(incomingWorkObj);
+
+  useEffect(() => {
+    setHydratedWork(incomingWorkObj);
+  }, [incomingWorkObj]);
+
+  const work = hydratedWork || incomingWorkObj || {};
+
+  // Clean IDs
+  const workId = work.WORK_ID != null ? String(work.WORK_ID).replace(/\.0$/, "") : null;
+  const recId = work.WORK_RECOMMENDATION_DTL_ID != null ? String(work.WORK_RECOMMENDATION_DTL_ID).replace(/\.0$/, "") : null;
+  const primaryId = workId ? `Work #${workId}` : `Proposal #${recId || "—"}`;
+  const canonicalWorkId = workId || recId;
+  const clusterId = (work.CLUSTER_ID != null ? String(Math.round(Number(work.CLUSTER_ID))) : null)
+    || (work.cluster_id != null ? String(work.cluster_id) : null);
+  const clusterSize = work.CLUSTER_SIZE != null ? Math.round(Number(work.CLUSTER_SIZE)) : (clusterId ? 2 : null);
+  const pairCount = work.PAIR_COUNT != null ? Math.round(Number(work.PAIR_COUNT)) : null;
+
+  // Auto-hydrate if missing detailed work fields
+  useEffect(() => {
+    if (!canonicalWorkId) return;
+    const isBare = !work.WORK_DESCRIPTION || work.WORK_DESCRIPTION.length < 5 || !work.STATE_NAME;
+    if (isBare) {
+      fetch(`${API_BASE}/api/works/${encodeURIComponent(canonicalWorkId)}`)
+        .then((res) => {
+          if (res.ok) return res.json();
+          throw new Error("HTTP error " + res.status);
+        })
+        .then((data) => {
+          if (data && !data.error) {
+            setHydratedWork((prev) => ({ ...(prev || {}), ...data }));
+          }
+        })
+        .catch((err) => console.warn("Failed to auto-hydrate work dossier:", err));
+    }
+  }, [canonicalWorkId]);
 
   // Determine active authority persona
   const activeAuthority = useMemo(() => {
@@ -158,13 +228,55 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
     }
   }, [initialSection, work]);
 
-  // Clean IDs
-  const workId = work.WORK_ID != null ? String(Math.round(Number(work.WORK_ID))) : null;
-  const recId = work.WORK_RECOMMENDATION_DTL_ID != null ? String(Math.round(Number(work.WORK_RECOMMENDATION_DTL_ID))) : null;
-  const primaryId = workId ? `Work #${workId}` : `Proposal #${recId || "—"}`;
-  const clusterId = work.CLUSTER_ID != null ? String(Math.round(Number(work.CLUSTER_ID))) : null;
-  const clusterSize = work.CLUSTER_SIZE != null ? Math.round(Number(work.CLUSTER_SIZE)) : (clusterId ? 2 : null);
-  const pairCount = work.PAIR_COUNT != null ? Math.round(Number(work.PAIR_COUNT)) : null;
+  // Persistent cross-role workflow requests attached to this work
+  const [workRequests, setWorkRequests] = useState([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [composerDefaultType, setComposerDefaultType] = useState("GRIEVANCE");
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionFeedback, setActionFeedback] = useState("");
+
+  const loadWorkRequests = async () => {
+    if (!canonicalWorkId) return;
+    setRequestsLoading(true);
+    try {
+      const data = await getRequests({ workId: canonicalWorkId });
+      setWorkRequests(data.requests || []);
+    } catch (err) {
+      console.error("Failed to load requests for work:", err);
+    } finally {
+      setRequestsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadWorkRequests();
+  }, [canonicalWorkId]);
+
+  const handleExecuteWorkflowAction = async (type, defaultTitle, defaultDesc, defaultPriority = "MEDIUM") => {
+    if (!canonicalWorkId) return;
+    setActionLoading(true);
+    setActionFeedback("Submitting request to server...");
+    try {
+      const res = await createRequest({
+        work_id: canonicalWorkId,
+        raised_by_role: activeAuthority,
+        request_type: type,
+        title: defaultTitle,
+        description: defaultDesc,
+        priority: defaultPriority,
+      });
+      setActionFeedback(`Request registered (${res.request_id}) and routed to ${res.request?.target_department} ✓`);
+      await loadWorkRequests();
+      setTimeout(() => setActionFeedback(""), 4000);
+    } catch (err) {
+      console.error("Action error:", err);
+      setActionFeedback(`Action failed: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
 
   // Audit Status Indicators
   const riskLevel = String(work.RISK_LEVEL || "LOW").toUpperCase();
@@ -1175,6 +1287,106 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
           {/* SECTION: AUTHORITY DIRECTIVES & PRIORITY CLEARANCE */}
           {shouldShow("actions") && (
             <section className="dossier-section" id="dossier-sec-actions">
+              {/* Feedback Banner */}
+              {actionFeedback && (
+                <div
+                  style={{
+                    background: actionFeedback.includes("failed") ? "#fef2f2" : "#f0fdf4",
+                    border: `1px solid ${actionFeedback.includes("failed") ? "#fca5a5" : "#86efac"}`,
+                    color: actionFeedback.includes("failed") ? "#991b1b" : "#166534",
+                    padding: "10px 14px",
+                    borderRadius: "6px",
+                    fontSize: "12.5px",
+                    fontWeight: 600,
+                    marginBottom: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+                  {actionLoading ? <Clock size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
+                  <span>{actionFeedback}</span>
+                </div>
+              )}
+
+              {/* Active Workflow Requests on this Work */}
+              <div
+                style={{
+                  background: "#ffffff",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: "6px",
+                  padding: "14px 16px",
+                  marginBottom: "14px",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <FileText size={16} color="#005A9C" />
+                    <strong style={{ fontSize: "13.5px", color: "#0f172a" }}>
+                      Active Cross-Role Workflow Requests ({workRequests.length})
+                    </strong>
+                  </div>
+                  <button
+                    type="button"
+                    className="workflow-btn workflow-btn-primary workflow-btn-sm"
+                    onClick={() => {
+                      setComposerDefaultType(activeAuthority === "CITIZEN" ? "GRIEVANCE" : activeAuthority === "IMPLEMENTING_AGENCY" ? "PAYMENT_REQUEST" : activeAuthority === "MP" ? "CONSTITUENCY_INQUIRY" : "ADMINISTRATIVE_NOTICE");
+                      setComposerOpen(true);
+                    }}
+                  >
+                    <span>+ Raise Formal Request</span>
+                  </button>
+                </div>
+
+                {requestsLoading ? (
+                  <div style={{ fontSize: "12px", color: "#64748b", padding: "8px 0" }}>
+                    Loading workflow records...
+                  </div>
+                ) : workRequests.length === 0 ? (
+                  <div style={{ fontSize: "12px", color: "#64748b", padding: "6px 0" }}>
+                    No active workflow requests or disputes logged for Work #{canonicalWorkId}.
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
+                    {workRequests.map((req) => (
+                      <div
+                        key={req.request_id}
+                        style={{
+                          background: "#f8fafc",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "4px",
+                          padding: "8px 12px",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                          gap: "8px",
+                        }}
+                      >
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            <strong style={{ fontSize: "12px", fontFamily: "monospace", color: "#005A9C" }}>
+                              {req.request_id}
+                            </strong>
+                            <span style={{ fontSize: "12px", fontWeight: 700, color: "#1e293b" }}>
+                              {req.title || req.request_type_label}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                            Raised by <strong>{req.raised_by_role}</strong> ➔ Target: <strong>{req.target_department}</strong> · {req.created_at ? req.created_at.slice(0, 10) : ""}
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <RequestPriorityBadge priority={req.priority} />
+                          <RequestStatusBadge status={req.status} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* A. MoSPI Central Directives */}
               {activeAuthority === "MOSPI" && (
                 <div className="authority-directive-box mospi-directive-theme">
@@ -1214,29 +1426,32 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
                   <div className="action-box-buttons">
                     <button
                       type="button"
-                      className={`collector-btn ${mospiDirectiveIssued ? "btn-verified" : "btn-primary"}`}
-                      onClick={() => setMospiDirectiveIssued(!mospiDirectiveIssued)}
+                      className="collector-btn btn-primary"
+                      disabled={actionLoading}
+                      onClick={() => handleExecuteWorkflowAction("OVERSIGHT_DIRECTIVE", "MoSPI Central Compliance Directive", "Ministry of Statistics & Programme Implementation issued national compliance directive to District Nodal Authority.", "CRITICAL")}
                     >
                       <CheckCircle2 size={14} />
-                      <span>{mospiDirectiveIssued ? "Central Directive Served to State (Active) ✓" : "Issue Central MoSPI Compliance Directive to State"}</span>
+                      <span>Issue Central MoSPI Compliance Directive to State</span>
                     </button>
 
                     <button
                       type="button"
-                      className={`collector-btn ${snaTrancheWithheld ? "btn-notice-issued" : "btn-warning"}`}
-                      onClick={() => setSnaTrancheWithheld(!snaTrancheWithheld)}
+                      className="collector-btn btn-warning"
+                      disabled={actionLoading}
+                      onClick={() => handleExecuteWorkflowAction("OVERSIGHT_DIRECTIVE", "MoSPI SNA Tranche Withheld", "Central SNA disbursement tranche withheld pending field verification.", "HIGH")}
                     >
                       <AlertOctagon size={14} />
-                      <span>{snaTrancheWithheld ? "SNA Tranche Frozen (Click to Release)" : "Withhold State Nodal Account (SNA) Tranche"}</span>
+                      <span>Withhold State Nodal Account (SNA) Tranche</span>
                     </button>
 
                     <button
                       type="button"
-                      className={`collector-btn ${cagAuditOrdered ? "btn-verified" : "btn-outline"}`}
-                      onClick={() => setCagAuditOrdered(!cagAuditOrdered)}
+                      className="collector-btn btn-outline"
+                      disabled={actionLoading}
+                      onClick={() => handleExecuteWorkflowAction("OVERSIGHT_DIRECTIVE", "Special CAG / CVC Audit Requisition", "Requisitioned special CAG / CVC audit for inter-state duplicate cluster scrutiny.", "CRITICAL")}
                     >
                       <ShieldAlert size={14} />
-                      <span>{cagAuditOrdered ? "CAG / CVC Audit Requisition Active ✓" : "Requisition Special CAG / CVC Audit"}</span>
+                      <span>Requisition Special CAG / CVC Audit</span>
                     </button>
                   </div>
                 </div>
@@ -1260,19 +1475,19 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
                     <div className="d-kpi">
                       <span className="d-kpi-label">MB Ledger Entry</span>
                       <strong className="d-kpi-val" style={{ color: "#059669" }}>
-                        {mbSubmitted ? "MB RECORDED & SUBMITTED ✓" : `MB-2026-${workId || recId || "PENDING"}`}
+                        {`MB-2026-${canonicalWorkId || "PENDING"}`}
                       </strong>
                     </div>
                     <div className="d-kpi">
                       <span className="d-kpi-label">Stage Geo-Photos</span>
-                      <strong className="d-kpi-val" style={{ color: geoEvidenceUploaded ? "#059669" : "#b45309" }}>
-                        {geoEvidenceUploaded ? "GEO-STAMP VERIFIED (100%)" : "UPLOAD MANDATORY"}
+                      <strong className="d-kpi-val" style={{ color: "#059669" }}>
+                        GEO-STAMP VERIFIED (100%)
                       </strong>
                     </div>
                     <div className="d-kpi">
                       <span className="d-kpi-label">Time Extension (EOT)</span>
                       <strong className="d-kpi-val">
-                        {eotFiled ? "EOT CLAIM FILED WITH DA" : "STANDARD TIMELINE"}
+                        STANDARD TIMELINE
                       </strong>
                     </div>
                   </div>
@@ -1280,29 +1495,35 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
                   <div className="action-box-buttons">
                     <button
                       type="button"
-                      className={`collector-btn ${mbSubmitted ? "btn-verified" : "btn-primary"}`}
-                      onClick={() => setMbSubmitted(!mbSubmitted)}
+                      className="collector-btn btn-primary"
+                      disabled={actionLoading}
+                      onClick={() => handleExecuteWorkflowAction("MEASUREMENT_BOOK_SUBMISSION", "MB Entry & Running Bill Claim", `IA recorded Measurement Book (MB-2026-${canonicalWorkId}) measurements and submitted running bill for District Authority clearance.`, "MEDIUM")}
                     >
                       <FileCheck size={14} />
-                      <span>{mbSubmitted ? "MB Entry & Bill Submitted to DA ✓" : "Record Measurement Book (MB) Entry & Submit Bill"}</span>
+                      <span>Record Measurement Book (MB) Entry & Submit Bill</span>
                     </button>
 
                     <button
                       type="button"
-                      className={`collector-btn ${geoEvidenceUploaded ? "btn-verified" : "btn-warning"}`}
-                      onClick={() => setGeoEvidenceUploaded(!geoEvidenceUploaded)}
+                      className="collector-btn btn-warning"
+                      disabled={actionLoading}
+                      onClick={() => handleExecuteWorkflowAction("MEASUREMENT_BOOK_SUBMISSION", "Milestone Geo-Photo Logged", "Verified milestone geo-tagged photograph logged with tamper-proof timestamp.", "LOW")}
                     >
                       <Camera size={14} />
-                      <span>{geoEvidenceUploaded ? "Milestone Geo-Photo Logged ✓" : "Upload Verified Milestone Geo-Photo"}</span>
+                      <span>Upload Verified Milestone Geo-Photo</span>
                     </button>
 
                     <button
                       type="button"
-                      className={`collector-btn ${eotFiled ? "btn-notice-issued" : "btn-outline"}`}
-                      onClick={() => setEotFiled(!eotFiled)}
+                      className="collector-btn btn-outline"
+                      disabled={actionLoading}
+                      onClick={() => {
+                        setComposerDefaultType("TIME_EXTENSION");
+                        setComposerOpen(true);
+                      }}
                     >
                       <Clock size={14} />
-                      <span>{eotFiled ? "Extension Request Active (Under DA Review)" : "Apply for Formal Time Extension (EOT)"}</span>
+                      <span>Apply for Formal Time Extension (EOT)</span>
                     </button>
                   </div>
                 </div>
@@ -1337,9 +1558,9 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
                       </strong>
                     </div>
                     <div className="d-kpi">
-                      <span className="d-kpi-label">Sansad Notice Status</span>
-                      <strong className="d-kpi-val" style={{ color: sansadNoticeIssued ? "#b91c1c" : "#64748b" }}>
-                        {sansadNoticeIssued ? "PARLIAMENTARY NOTICE SERVED ✓" : "STANDARD MONITORING"}
+                      <span className="d-kpi-label">Sansad Oversight</span>
+                      <strong className="d-kpi-val" style={{ color: "#005A9C" }}>
+                        CONSTITUENCY PRIORITY
                       </strong>
                     </div>
                   </div>
@@ -1347,29 +1568,32 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
                   <div className="action-box-buttons">
                     <button
                       type="button"
-                      className={`collector-btn ${sansadNoticeIssued ? "btn-notice-issued" : "btn-primary"}`}
-                      onClick={() => setSansadNoticeIssued(!sansadNoticeIssued)}
+                      className="collector-btn btn-primary"
+                      disabled={actionLoading}
+                      onClick={() => handleExecuteWorkflowAction("CONSTITUENCY_INQUIRY", "Parliamentary Expedited Inquiry", "Hon'ble MP issued parliamentary priority inquiry to District Collectorate regarding execution status.", "HIGH")}
                     >
                       <Bell size={14} />
-                      <span>{sansadNoticeIssued ? "Expedited Inquiry Served to Collector ✓" : "Issue Parliamentary Expedited Inquiry to Collector"}</span>
+                      <span>Issue Parliamentary Expedited Inquiry to Collector</span>
                     </button>
 
                     <button
                       type="button"
-                      className={`collector-btn ${inaugurationApproved ? "btn-verified" : "btn-warning"}`}
-                      onClick={() => setInaugurationApproved(!inaugurationApproved)}
+                      className="collector-btn btn-warning"
+                      disabled={actionLoading}
+                      onClick={() => handleExecuteWorkflowAction("CONSTITUENCY_INQUIRY", "Asset Endorsement for Public Dedication", "Hon'ble MP formally endorsed completed community asset for public dedication and plaque inscription.", "LOW")}
                     >
                       <CheckCircle2 size={14} />
-                      <span>{inaugurationApproved ? "Asset Endorsed for Dedication ✓" : "Endorse for Public Dedication & Plaque Inscription"}</span>
+                      <span>Endorse for Public Dedication & Plaque Inscription</span>
                     </button>
 
                     <button
                       type="button"
-                      className={`collector-btn ${inspectionScheduled ? "btn-verified" : "btn-outline"}`}
-                      onClick={() => setInspectionScheduled(!inspectionScheduled)}
+                      className="collector-btn btn-outline"
+                      disabled={actionLoading}
+                      onClick={() => handleExecuteWorkflowAction("CONSTITUENCY_INQUIRY", "On-Site Constituency Inspection Scheduled", "Hon'ble MP scheduled on-site constituency inspection visit with District Collectorate.", "MEDIUM")}
                     >
                       <Calendar size={14} />
-                      <span>{inspectionScheduled ? "MP Ground Inspection Scheduled 📍" : "Schedule On-Site Constituency Inspection"}</span>
+                      <span>Schedule On-Site Constituency Inspection</span>
                     </button>
                   </div>
                 </div>
@@ -1423,26 +1647,31 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
                   <div className="action-box-buttons">
                     <button
                       type="button"
-                      className={`collector-btn ${citizenAuditVerified ? "btn-verified" : "btn-primary"}`}
-                      onClick={() => setCitizenAuditVerified(!citizenAuditVerified)}
+                      className="collector-btn btn-primary"
+                      disabled={actionLoading}
+                      onClick={() => handleExecuteWorkflowAction("PUBLIC_VERIFICATION", "Citizen Social Audit Asset Verification", `Citizen verified community asset as delivered and usable with a satisfaction rating of ${citizenRating}/5 stars.`, "LOW")}
                     >
                       <CheckCircle2 size={14} />
-                      <span>{citizenAuditVerified ? "Citizen Verification Submitted ✓" : "Verify Community Asset as Delivered & Usable"}</span>
+                      <span>Verify Community Asset as Delivered & Usable</span>
                     </button>
 
                     <button
                       type="button"
-                      className={`collector-btn ${grievanceReported ? "btn-notice-issued" : "btn-warning"}`}
-                      onClick={() => setGrievanceReported(!grievanceReported)}
+                      className="collector-btn btn-warning"
+                      disabled={actionLoading}
+                      onClick={() => {
+                        setComposerDefaultType("GRIEVANCE");
+                        setComposerOpen(true);
+                      }}
                     >
                       <AlertTriangle size={14} />
-                      <span>{grievanceReported ? "Grievance Dispatched to DM Office ✓" : "Report On-Ground Defect / Incomplete Work"}</span>
+                      <span>Report On-Ground Defect / Incomplete Work</span>
                     </button>
 
                     <button
                       type="button"
                       className="collector-btn btn-outline"
-                      onClick={() => alert(`e-RTI Application template generated for Work #${workId || recId}. You can file this directly with Nodal District Authority.`)}
+                      onClick={() => alert(`e-RTI Application template generated for Work #${canonicalWorkId}. You can file this directly with Nodal District Authority.`)}
                     >
                       <ExternalLink size={14} />
                       <span>File e-RTI Public Information Request</span>
@@ -1459,11 +1688,7 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
                       <span className="sec-num-badge">11</span>
                       <span>District Collectorate Priority Action & Official Clearance</span>
                     </h3>
-                    {verifiedLocally ? (
-                      <span className="status-pill risk-low">CLEARED ✓</span>
-                    ) : (
-                      <span className="status-pill review-pill">ACTION PENDING</span>
-                    )}
+                    <span className="status-pill risk-low">ACTIVE COLLECTORATE</span>
                   </div>
                   <div className="action-box-title">
                     <ShieldAlert size={15} color="#b45309" />
@@ -1477,29 +1702,32 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
                   <div className="action-box-buttons">
                     <button
                       type="button"
-                      className={`collector-btn ${verifiedLocally ? "btn-verified" : "btn-primary"}`}
-                      onClick={() => setVerifiedLocally(!verifiedLocally)}
+                      className="collector-btn btn-primary"
+                      disabled={actionLoading}
+                      onClick={() => handleExecuteWorkflowAction("ADMINISTRATIVE_NOTICE", "Collectorate Feasibility Clearance", "District Collectorate verified feasibility and cleared administrative scrutiny under MPLADS Guidelines.", "LOW")}
                     >
                       <CheckCircle2 size={14} />
-                      <span>{verifiedLocally ? "Collectorate Verified (Click to Undo)" : "Mark Collectorate Feasibility Clearance"}</span>
+                      <span>Mark Collectorate Feasibility Clearance</span>
                     </button>
 
                     <button
                       type="button"
-                      className={`collector-btn ${noticeIssued ? "btn-notice-issued" : "btn-warning"}`}
-                      onClick={() => setNoticeIssued(!noticeIssued)}
+                      className="collector-btn btn-warning"
+                      disabled={actionLoading}
+                      onClick={() => handleExecuteWorkflowAction("ADMINISTRATIVE_NOTICE", "7-Day Explanation Notice to Agency", "District Collectorate issued statutory 7-day explanation notice to implementing agency for execution delay.", "HIGH")}
                     >
                       <AlertOctagon size={14} />
-                      <span>{noticeIssued ? "Notice Issued to IA (Active) ✓" : "Issue 7-Day Explanation Notice to Agency"}</span>
+                      <span>Issue 7-Day Explanation Notice to Agency</span>
                     </button>
 
                     <button
                       type="button"
-                      className={`collector-btn ${fundsFrozen ? "btn-notice-issued" : "btn-outline"}`}
-                      onClick={() => setFundsFrozen(!fundsFrozen)}
+                      className="collector-btn btn-outline"
+                      disabled={actionLoading}
+                      onClick={() => handleExecuteWorkflowAction("ADMINISTRATIVE_ESCALATION", "National Administrative Escalation to MoSPI", "District Collectorate escalated high-risk non-compliance / default to MoSPI Central Surveillance.", "CRITICAL")}
                     >
                       <ShieldAlert size={14} />
-                      <span>{fundsFrozen ? "Disbursement Frozen ⛔" : "Freeze Next Installment Release"}</span>
+                      <span>Escalate to MoSPI Central Surveillance</span>
                     </button>
                   </div>
                 </div>
@@ -1583,6 +1811,21 @@ export default function WorkDetailDrawer({ work, onClose, initialSection = "all"
             </Link>
           </div>
         </div>
+
+        {composerOpen && (
+          <RequestComposerModal
+            work={work}
+            currentRole={activeAuthority}
+            defaultType={composerDefaultType}
+            onClose={() => setComposerOpen(false)}
+            onRequestCreated={(newReq) => {
+              setComposerOpen(false);
+              setActionFeedback(`Request ${newReq.request_id} created successfully ✓`);
+              loadWorkRequests();
+              setTimeout(() => setActionFeedback(""), 4000);
+            }}
+          />
+        )}
       </aside>
     </div>
   );

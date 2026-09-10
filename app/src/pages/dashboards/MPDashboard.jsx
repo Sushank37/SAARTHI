@@ -42,6 +42,8 @@ import {
 } from "../../constants";
 import "./MPDashboard.css";
 import ConstituencyMap from "../../components/ConstituencyMap";
+import { getRequests } from "../../services/workflowService";
+import RequestTable from "../../components/workflow/RequestTable";
 
 // Helper: Calculate stage-based milestone progress in simple words
 const getMilestoneProgress = (stage) => {
@@ -123,6 +125,26 @@ export default function MPDashboard(props) {
   const [stageFilter, setStageFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Hon'ble MP Parliamentary Inquiries state
+  const [mpInquiries, setMpInquiries] = useState([]);
+  const [inquiriesLoading, setInquiriesLoading] = useState(false);
+
+  const fetchMpInquiries = async () => {
+    setInquiriesLoading(true);
+    try {
+      const data = await getRequests({ raisedByRole: "MP" });
+      setMpInquiries(data.requests || []);
+    } catch (err) {
+      console.error("Failed to load MP inquiries:", err);
+    } finally {
+      setInquiriesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMpInquiries();
+  }, [selectedMP]);
 
   // Load master list of MPs
   useEffect(() => {
@@ -815,6 +837,30 @@ export default function MPDashboard(props) {
               <div className="kpi-value">Follow-Up</div>
               <div className="kpi-sub">Review in next District Meeting</div>
             </div>
+          </div>
+
+          {/* Centralized Parliamentary Inquiries Queue */}
+          <div style={{ marginBottom: "20px" }}>
+            <RequestTable
+              title="Parliamentary Priority Inquiries Dispatched to Collectorate"
+              subtitle="Formal inquiries and expedited review requests issued by Hon'ble MP to District Collector"
+              requests={mpInquiries}
+              loading={inquiriesLoading}
+              currentRole="MP"
+              onRefresh={fetchMpInquiries}
+              onOpenWork={async (workId) => {
+                try {
+                  const res = await fetch(`${API_BASE}/api/works/${workId}`);
+                  if (res.ok) {
+                    const wData = await res.json();
+                    if (onSelectWork) onSelectWork(wData, "actions");
+                  }
+                } catch (e) {
+                  console.error(e);
+                }
+              }}
+              onStatusUpdated={() => fetchMpInquiries()}
+            />
           </div>
 
           {renderWorksTable({

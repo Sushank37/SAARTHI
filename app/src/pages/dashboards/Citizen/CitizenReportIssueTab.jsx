@@ -28,6 +28,7 @@ export default function CitizenReportIssueTab({
 
   const [submitting, setSubmitting] = useState(false);
   const [submittedGrievance, setSubmittedGrievance] = useState(null);
+  const [submitError, setSubmitError] = useState("");
   const [copied, setCopied] = useState(false);
 
   const issueCategories = [
@@ -47,19 +48,26 @@ export default function CitizenReportIssueTab({
       return;
     }
 
+    const cleanWorkId = workId.trim();
+    if (!cleanWorkId) {
+      setSubmitError("Please enter a valid Work ID from the registry.");
+      return;
+    }
+
     setSubmitting(true);
+    setSubmitError("");
+
     try {
       const payload = {
-        work_id: workId.trim() || "W-2026-GENERAL",
+        work_id: cleanWorkId,
         work_title: workTitle.trim() || "MPLADS Public Work",
         issue_type: issueType,
         description: description.trim(),
-        location: location.trim() || "Constituency Site",
+        location: location.trim(),
         constituency: constituency.trim(),
-        state: "Telangana",
         citizen_name: citizenName.trim() || "Concerned Citizen",
         citizen_phone: citizenPhone.trim(),
-        photo_url: photoUrl || "https://images.unsplash.com/photo-1590402494682-cd3fb53b1f70?w=600&auto=format&fit=crop&q=80",
+        photo_url: photoUrl || "",
       };
 
       const res = await fetch(`${API_BASE}/api/public/grievances`, {
@@ -68,26 +76,15 @@ export default function CitizenReportIssueTab({
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server error (HTTP ${res.status})`);
+      }
       const data = await res.json();
       setSubmittedGrievance(data.grievance);
     } catch (err) {
       console.error("Grievance submission error:", err);
-      // Fallback local creation for resilient demonstration
-      const randomCode = `CIT-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-      setSubmittedGrievance({
-        complaint_id: randomCode,
-        work_id: workId || "W-2026-10291",
-        work_title: workTitle || "Construction of Community Hall",
-        issue_type: issueType,
-        description: description,
-        location: location,
-        constituency: constituency,
-        status: "Submitted",
-        timeline: [
-          { status: "Submitted", timestamp: new Date().toISOString().replace("T", " ").slice(0, 16), note: "Grievance registered." }
-        ]
-      });
+      setSubmitError(err.message || "Request could not be submitted. Please verify the Work ID and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -201,6 +198,25 @@ export default function CitizenReportIssueTab({
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="gov-mp-card" style={{ gap: "16px" }}>
+        {submitError && (
+          <div
+            style={{
+              background: "#fef2f2",
+              border: "1px solid #f87171",
+              color: "#991b1b",
+              padding: "10px 14px",
+              borderRadius: "4px",
+              fontSize: "12.5px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <AlertCircle size={16} />
+            <span>{submitError}</span>
+          </div>
+        )}
+
         {/* Step 1: Work Identity */}
         <div>
           <div className="card-section-title" style={{ fontSize: "12.5px", marginBottom: "8px" }}>
@@ -208,14 +224,14 @@ export default function CitizenReportIssueTab({
           </div>
           <div className="citizen-form-grid">
             <div className="citizen-input-group">
-              <label className="citizen-input-label">Work ID (if known from site board or map)</label>
+              <label className="citizen-input-label">Work ID (from official board, map, or registry)</label>
               <input
                 type="text"
                 className="citizen-input"
                 style={{ height: "32px", fontSize: "12px", borderRadius: "4px" }}
                 value={workId}
                 onChange={(e) => setWorkId(e.target.value)}
-                placeholder="e.g. W-2026-10291"
+                placeholder="e.g. 172106"
               />
             </div>
 

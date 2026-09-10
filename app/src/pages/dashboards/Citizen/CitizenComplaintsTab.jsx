@@ -70,11 +70,10 @@ export default function CitizenComplaintsTab({ initialComplaintId }) {
   };
 
   const getStepIndex = (status) => {
-    const sLower = (status || "").toLowerCase();
+    const sLower = (status || "").toLowerCase().replace(/_/g, " ");
     if (sLower === "resolved") return 5;
     if (sLower === "action taken") return 4;
-    if (sLower === "assigned") return 3;
-    if (sLower === "under review") return 2;
+    if (sLower === "assigned" || sLower === "under review") return 2;
     if (sLower === "received") return 1;
     return 0; // Submitted
   };

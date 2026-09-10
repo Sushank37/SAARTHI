@@ -39,6 +39,8 @@ import {
   exportToCSV,
 } from "../../constants";
 import WorkDetailDrawer from "../../components/WorkDetailDrawer";
+import { getRequests } from "../../services/workflowService";
+import RequestTable from "../../components/workflow/RequestTable";
 import "./IADashboard.css";
 
 // 10 Standard Implementing Agency Sections requested by user
@@ -144,8 +146,27 @@ export default function IADashboard({ summary, onSelectWork }) {
   const [selectedRisk, setSelectedRisk] = useState("All");
   const [filterFlaggedOnly, setFilterFlaggedOnly] = useState(false);
   const [workSearchQuery, setWorkSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [localSelectedWork, setLocalSelectedWork] = useState(null);
+
+  // Implementing Agency persistent workflow requests (Payments, EOTs, MBs)
+  const [iaRequests, setIaRequests] = useState([]);
+  const [iaRequestsLoading, setIaRequestsLoading] = useState(false);
+
+  const fetchIARequests = async () => {
+    setIaRequestsLoading(true);
+    try {
+      const data = await getRequests({ raisedByRole: "IMPLEMENTING_AGENCY" });
+      setIaRequests(data.requests || []);
+    } catch (err) {
+      console.error("Failed to load IA requests:", err);
+    } finally {
+      setIaRequestsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchIARequests();
+  }, [selectedIDA]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -1132,6 +1153,30 @@ export default function IADashboard({ summary, onSelectWork }) {
                 <span>Export Payments</span>
               </button>
             </div>
+          </div>
+
+          {/* Real-time IA Workflow Requests Queue */}
+          <div style={{ padding: "0 16px 16px 16px" }}>
+            <RequestTable
+              title="Official Claims & Payment Requests Sent to District Authority"
+              subtitle="Live status of running contractor bills, Measurement Book (MB) submissions, and EOT extension applications"
+              requests={iaRequests}
+              loading={iaRequestsLoading}
+              currentRole="IMPLEMENTING_AGENCY"
+              onRefresh={fetchIARequests}
+              onOpenWork={async (workId) => {
+                try {
+                  const res = await fetch(`${API_BASE}/api/works/${workId}`);
+                  if (res.ok) {
+                    const wData = await res.json();
+                    handleSelectWork(wData, "financials");
+                  }
+                } catch (e) {
+                  console.error(e);
+                }
+              }}
+              onStatusUpdated={() => fetchIARequests()}
+            />
           </div>
 
           <div className="ia-table-responsive">
@@ -2137,7 +2182,7 @@ export default function IADashboard({ summary, onSelectWork }) {
       )}
 
       {/* Fallback Drawer Container if not handled at App root */}
-      {localSelectedWork && (
+      {!onSelectWork && localSelectedWork && (
         <WorkDetailDrawer
           work={localSelectedWork}
           onClose={() => setLocalSelectedWork(null)}

@@ -1,0 +1,114 @@
+[
+  {
+    "request_id": "REQ-2026-0001",
+    "work_id": "172106",
+    "work_title": "Construction of Compound Wall to Pragathi Mandala Samakya Building at Konaimakula (V), Geesugonda (M), Warangal Dist.",
+    "work_stage": "Work Completed",
+    "state_name": "Telangana",
+    "constituency": "WARANGEL(SC)",
+    "ida_name": "WARANGAL(District Collector Warangal_IDA)",
+    "sanction_amount": 1000000,
+    "request_type": "GRIEVANCE",
+    "request_type_label": "Public Grievance / Defect Report",
+    "title": "Boundary Wall Plastering Defect & Ground Settling",
+    "description": "Compound wall north perimeter shows settling cracks near drainage outlet. Verification requested before final handover.",
+    "priority": "HIGH",
+    "status": "UNDER_REVIEW",
+    "raised_by_role": "CITIZEN",
+    "raised_by_identity": "Concerned Citizen (Konaimakula Village)",
+    "target_role": "DISTRICT_AUTHORITY",
+    "target_department": "District Collectorate (WARANGAL(District Collector Warangal_IDA))",
+    "created_at": "2026-08-20T10:15:00Z",
+    "updated_at": "2026-08-22T14:30:00Z",
+    "related_data": {
+      "distance_m": 35,
+      "issue_type": "Poor quality / Substandard material"
+    },
+    "timeline": [
+      {
+        "status": "SUBMITTED",
+        "timestamp": "2026-08-20 10:15",
+        "role": "CITIZEN",
+        "actor": "Concerned Citizen (Konaimakula Village)",
+        "note": "Public grievance lodged on eSAKSHI Citizen Portal."
+      },
+      {
+        "status": "UNDER_REVIEW",
+        "timestamp": "2026-08-22 14:30",
+        "role": "DISTRICT_AUTHORITY",
+        "actor": "District Collectorate (Warangal)",
+        "note": "Referred to Executive Engineer PR for field verification."
+      }
+    ]
+  },
+  {
+    "request_id": "REQ-2026-0002",
+    "work_id": "135906",
+    "work_title": "vinay yadav ke makan ke pass",
+    "work_stage": "Sanction",
+    "state_name": "Uttar Pradesh",
+    "constituency": "JAUNPUR",
+    "ida_name": "JAUNPUR(DISTRICT MAGISTRATE JAUNPUR_IDA)",
+    "sanction_amount": 50000,
+    "request_type": "PAYMENT_REQUEST",
+    "request_type_label": "Payment / Running Bill Claim",
+    "title": "Running Bill Disbursement Claim - Stage 1",
+    "description": "Earthwork and initial leveling verified in Measurement Book MB-2026-135906. Running bill claim of ₹25,000 submitted for District Collector clearance.",
+    "priority": "MEDIUM",
+    "status": "SUBMITTED",
+    "raised_by_role": "IMPLEMENTING_AGENCY",
+    "raised_by_identity": "JAUNPUR(DISTRICT MAGISTRATE JAUNPUR_IDA)",
+    "target_role": "DISTRICT_AUTHORITY",
+    "target_department": "District Collectorate (JAUNPUR(DISTRICT MAGISTRATE JAUNPUR_IDA))",
+    "created_at": "2026-08-25T11:30:00Z",
+    "updated_at": "2026-08-25T11:30:00Z",
+    "related_data": {
+      "mb_number": "MB-2026-135906",
+      "claimed_amount": 25000
+    },
+    "timeline": [
+      {
+        "status": "SUBMITTED",
+        "timestamp": "2026-08-25 11:30",
+        "role": "IMPLEMENTING_AGENCY",
+        "actor": "JAUNPUR(DISTRICT MAGISTRATE JAUNPUR_IDA)",
+        "note": "Running bill submitted with MB measurement logs."
+      }
+    ]
+  },
+  {
+    "request_id": "REQ-2026-0003",
+    "work_id": "135922",
+    "work_title": "brijesh yadav",
+    "work_stage": "Sanction",
+    "state_name": "Uttar Pradesh",
+    "constituency": "JAUNPUR",
+    "ida_name": "JAUNPUR(DISTRICT MAGISTRATE JAUNPUR_IDA)",
+    "sanction_amount": 50000,
+    "request_type": "ADMINISTRATIVE_ESCALATION",
+    "request_type_label": "National Administrative Escalation",
+    "title": "Contractor Allocation Delay - High Deviation Scrutiny",
+    "description": "Work remains pending execution after statutory 45-day clearance window. Escalated to MoSPI Central Surveillance for national audit logging.",
+    "priority": "HIGH",
+    "status": "SUBMITTED",
+    "raised_by_role": "DISTRICT_AUTHORITY",
+    "raised_by_identity": "District Collectorate (Jaunpur)",
+    "target_role": "MOSPI",
+    "target_department": "MoSPI Central Nodal Monitoring Cell",
+    "created_at": "2026-08-28T09:45:00Z",
+    "updated_at": "2026-08-28T09:45:00Z",
+    "related_data": {
+      "delay_days": 65,
+      "notice_reference": "DM/JNP/MPLADS/2026/891"
+    },
+    "timeline": [
+      {
+        "status": "SUBMITTED",
+        "timestamp": "2026-08-28 09:45",
+        "role": "DISTRICT_AUTHORITY",
+        "actor": "District Collectorate (Jaunpur)",
+        "note": "Administrative escalation dispatched to MoSPI Central."
+      }
+    ]
+  }
+]
