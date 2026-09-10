@@ -46,6 +46,19 @@ export default function SharedLayout() {
     navigate("/login");
   };
 
+  const handleSelectWork = (work, section = null) => {
+    if (!work) {
+      setSelectedWork(null);
+      return;
+    }
+    const initialSection = section || (typeof work === "object" ? work.__initialSection : null) || "all";
+    if (typeof work === "object") {
+      setSelectedWork({ ...work, __initialSection: initialSection });
+    } else {
+      setSelectedWork({ WORK_ID: String(work).replace(/\.0$/, ""), __initialSection: initialSection });
+    }
+  };
+
   return (
     <div
       className="gov-app-shell theme-official"
@@ -63,6 +76,7 @@ export default function SharedLayout() {
         totalWorks={summary?.total_works}
         roleConfig={roleConfig}
         onLogout={handleLogout}
+        onSelectWork={handleSelectWork}
       />
 
       {/* Main Two-Column Layout (Sidebar + Content) */}
@@ -76,8 +90,8 @@ export default function SharedLayout() {
               summary,
               house,
               selectedWork,
-              setSelectedWork,
-              onSelectWork: setSelectedWork,
+              setSelectedWork: handleSelectWork,
+              onSelectWork: handleSelectWork,
             }}
           />
 

@@ -275,7 +275,11 @@ export default function WorkExplorer({ onSelectWork }) {
                   const riskLvl = String(item.RISK_LEVEL || "LOW").toUpperCase();
                   const dupLvl = String(item.DUPLICATE_RISK || "NONE").toUpperCase();
                   return (
-                    <tr key={idx}>
+                    <tr
+                      key={idx}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => onSelectWork && onSelectWork(item)}
+                    >
                       <td>{srNo}</td>
                       <td>
                         <strong style={{ fontFamily: "monospace", color: "#005A9C", fontSize: "12px" }}>

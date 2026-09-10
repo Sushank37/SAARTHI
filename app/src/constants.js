@@ -1,4 +1,4 @@
-export const API_BASE = "http://127.0.0.1:8000";
+export const API_BASE = typeof window !== "undefined" ? "" : "http://127.0.0.1:8000";
 
 export function formatNumber(value) {
   const number = Number(value);
@@ -24,8 +24,10 @@ export function formatCurrency(value) {
 
 export function formatCrores(amountInRupees) {
   const number = Number(amountInRupees);
-  if (Number.isNaN(number)) return "—";
-  const crores = number / 10000000;
+  if (Number.isNaN(number) || number === null || number === undefined) return "—";
+  if (number === 0) return "₹ 0.00 Cr";
+  // Guard: if value is already in Crores (e.g. < 10,000 and non-zero), do not divide by 10^7 again
+  const crores = Math.abs(number) < 10000 ? number : number / 10000000;
   return `₹ ${crores.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

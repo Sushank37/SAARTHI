@@ -6,14 +6,37 @@ import {
   ChevronRight,
   ClipboardCheck,
   AlertTriangle,
+  AlertOctagon,
   FileCheck,
 } from "lucide-react";
 import { API_BASE, formatNumber, formatCrores, exportToCSV } from "../../../constants";
+import { getRequests } from "../../../services/workflowService";
+import RequestTable from "../../../components/workflow/RequestTable";
 
 export default function PriorityCasesTab({ onSelectWork }) {
   const [cases, setCases] = useState([]);
   const [totalCases, setTotalCases] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // MoSPI National Escalations state
+  const [nationalEscalations, setNationalEscalations] = useState([]);
+  const [escalationsLoading, setEscalationsLoading] = useState(false);
+
+  const fetchEscalations = async () => {
+    setEscalationsLoading(true);
+    try {
+      const data = await getRequests({ targetRole: "MOSPI" });
+      setNationalEscalations(data.requests || []);
+    } catch (err) {
+      console.error("Failed to load national escalations:", err);
+    } finally {
+      setEscalationsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEscalations();
+  }, []);
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
   const [search, setSearch] = useState("");
@@ -71,6 +94,32 @@ export default function PriorityCasesTab({ onSelectWork }) {
 
   return (
     <div className="mospi-panel">
+      {/* Centralized National Administrative Escalations Queue */}
+      <div style={{ marginBottom: "20px" }}>
+        <RequestTable
+          title="MoSPI Central National Escalations Queue"
+          subtitle="Direct escalation referrals and inter-state disputes transmitted by District Collectors to Central Nodal Ministry"
+          requests={nationalEscalations}
+          loading={escalationsLoading}
+          currentRole="MOSPI"
+          onRefresh={fetchEscalations}
+          onOpenWork={async (workId) => {
+            try {
+              const res = await fetch(`${API_BASE}/api/works/${workId}`);
+              if (res.ok) {
+                const wData = await res.json();
+                if (onSelectWork) onSelectWork(wData, "actions");
+              } else {
+                alert(`Work #${workId} could not be retrieved from registry.`);
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+          onStatusUpdated={() => fetchEscalations()}
+        />
+      </div>
+
       <div className="mospi-card">
         {/* Table Toolbar */}
         <div className="mospi-table-toolbar">

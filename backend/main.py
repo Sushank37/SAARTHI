@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Query
+from typing import Optional, List, Dict, Any
+from fastapi import FastAPI, HTTPException, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import pandas as pd
@@ -173,8 +174,31 @@ df = df.replace(
     pd.NA
 )
 
+# Precomputed lowercase columns for instant text searches
+if "IDA_NAME" in df.columns:
+    df["_IDA_NAME_LOWER"] = df["IDA_NAME"].fillna("").astype(str).str.lower()
+if "STATE_NAME" in df.columns:
+    df["_STATE_NAME_LOWER"] = df["STATE_NAME"].fillna("").astype(str).str.lower()
+if "MP_NAME" in df.columns:
+    df["_MP_NAME_LOWER"] = df["MP_NAME"].fillna("").astype(str).str.lower()
+if "CONSTITUENCY" in df.columns:
+    df["_CONSTITUENCY_LOWER"] = df["CONSTITUENCY"].fillna("").astype(str).str.lower()
+
 print("Dataset loaded successfully.")
 print("=" * 70)
+print()
+
+# ============================================================
+# UNIFIED WORKFLOW ENGINE
+# ============================================================
+
+try:
+    from backend.workflow_engine import WorkflowEngine, REQUEST_TYPES, STATUS_LIFECYCLE
+except ImportError:
+    from workflow_engine import WorkflowEngine, REQUEST_TYPES, STATUS_LIFECYCLE
+
+workflow_engine = WorkflowEngine(df)
+print("[WorkflowEngine] Initialized with master dataset.")
 print()
 
 
@@ -322,12 +346,14 @@ def pagination(data, page, limit):
 
     page_data = data.iloc[start:end]
     records = dataframe_to_records(page_data)
+    pages = math.ceil(total / limit) if total else 0
 
     return {
         "page": page,
         "limit": limit,
         "total": total,
-        "pages": math.ceil(total / limit) if total else 0,
+        "pages": pages,
+        "total_pages": pages,
         "data": records,
         "works": records
     }
@@ -1182,11 +1208,23 @@ def get_works(
         elif t in ["risk", "risk-cases"]:
             if column_exists("RISK_LEVEL"):
                 if sub == "high":
-                    data = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper() == "HIGH"]
+                    risk_filtered = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper() == "HIGH"]
+                    if not risk_filtered.empty:
+                        data = risk_filtered
+                    elif column_exists("REQUIRES_REVIEW"):
+                        data = data[boolean_series(data["REQUIRES_REVIEW"])]
+                    else:
+                        data = risk_filtered
                 elif sub == "medium":
                     data = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper() == "MEDIUM"]
                 else:
-                    data = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper().isin(["HIGH", "MEDIUM"])]
+                    risk_filtered = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper().isin(["HIGH", "MEDIUM"])]
+                    if not risk_filtered.empty:
+                        data = risk_filtered
+                    elif column_exists("REQUIRES_REVIEW"):
+                        data = data[boolean_series(data["REQUIRES_REVIEW"])]
+            if column_exists("RISK_SCORE") and not data.empty:
+                data = data.sort_values("RISK_SCORE", ascending=False)
 
         elif t == "duplicates":
             if column_exists("DUPLICATE_RISK"):
@@ -1469,46 +1507,32 @@ def get_works_geo(
 
 @app.get("/api/works/{work_id}")
 def get_work(work_id: str):
+    clean_id = str(work_id).strip()
 
-    # Recommendation detail ID
-    if column_exists(
-        "WORK_RECOMMENDATION_DTL_ID"
-    ):
+    # 1. Prioritize numeric float match on WORK_ID
+    try:
+        val_num = float(clean_id)
+        if column_exists("WORK_ID"):
+            matches = df[df["WORK_ID"] == val_num]
+            if not matches.empty:
+                return row_to_dict(matches.iloc[0])
+        if column_exists("WORK_RECOMMENDATION_DTL_ID"):
+            matches = df[df["WORK_RECOMMENDATION_DTL_ID"] == val_num]
+            if not matches.empty:
+                return row_to_dict(matches.iloc[0])
+    except ValueError:
+        pass
 
-        matches = df[
-            df[
-                "WORK_RECOMMENDATION_DTL_ID"
-            ]
-            .astype(str)
-            .eq(
-                str(work_id)
-            )
-        ]
-
-        if not matches.empty:
-
-            return row_to_dict(
-                matches.iloc[0]
-            )
-
-
-    # WORK_ID
+    # 2. Exact string match fallback
     if column_exists("WORK_ID"):
-
-        matches = df[
-            df["WORK_ID"]
-            .astype(str)
-            .eq(
-                str(work_id)
-            )
-        ]
-
+        matches = df[df["WORK_ID"].astype(str).str.strip().eq(clean_id)]
         if not matches.empty:
+            return row_to_dict(matches.iloc[0])
 
-            return row_to_dict(
-                matches.iloc[0]
-            )
-
+    if column_exists("WORK_RECOMMENDATION_DTL_ID"):
+        matches = df[df["WORK_RECOMMENDATION_DTL_ID"].astype(str).str.strip().eq(clean_id)]
+        if not matches.empty:
+            return row_to_dict(matches.iloc[0])
 
     raise HTTPException(
         status_code=404,
@@ -2372,7 +2396,8 @@ def states():
 
     return {
         "count": len(state_list),
-        "states": state_list
+        "states": state_list,
+        "data": [{"STATE_NAME": s, "state": s} for s in state_list]
     }
 
 
@@ -2635,15 +2660,26 @@ def list_idas(
     if q:
         data = data[text_contains(data["IDA_NAME"], q.strip())]
 
-    counts = data["IDA_NAME"].fillna("").astype(str).str.strip().value_counts()
+    if data.empty:
+        return {"count": 0, "idas": [], "data": []}
+
+    cleaned_idas = data["IDA_NAME"].fillna("").astype(str).str.strip()
+    valid_mask = (cleaned_idas != "") & (cleaned_idas != "nan")
+    if not valid_mask.any():
+        return {"count": 0, "idas": [], "data": []}
+
+    filtered_data = data[valid_mask].copy()
+    filtered_data["_IDA_CLEAN"] = cleaned_idas[valid_mask]
+
+    counts = filtered_data["_IDA_CLEAN"].value_counts()
+    first_rows = filtered_data.drop_duplicates(subset=["_IDA_CLEAN"]).set_index("_IDA_CLEAN")
+
     ida_items = []
     for name, cnt in counts.items():
-        if not name or name == "nan":
-            continue
-        sub = data[data["IDA_NAME"] == name]
+        row = first_rows.loc[name]
         district = name.split("(")[0].strip() if "(" in name else name
-        st = str(sub["STATE_NAME"].dropna().iloc[0]) if "STATE_NAME" in sub.columns and not sub["STATE_NAME"].dropna().empty else ""
-        constituency = str(sub["CONSTITUENCY"].dropna().iloc[0]) if "CONSTITUENCY" in sub.columns and not sub["CONSTITUENCY"].dropna().empty else ""
+        st = str(row["STATE_NAME"]) if "STATE_NAME" in row and pd.notna(row["STATE_NAME"]) else ""
+        constituency = str(row["CONSTITUENCY"]) if "CONSTITUENCY" in row and pd.notna(row["CONSTITUENCY"]) else ""
         ida_items.append({
             "ida_name": name,
             "district_name": district,
@@ -3614,6 +3650,251 @@ def mospi_national_analytics():
 
 
 # ============================================================
+# EARLY WARNING & ANOMALY SURVEILLANCE ALERTS
+# ============================================================
+
+_early_alerts_cache = None
+
+def compute_early_alerts():
+    # 1. Unusual Patterns
+    mask_unusual = pd.Series(False, index=df.index)
+    if column_exists("SUSPICION_LEVEL"):
+        mask_unusual |= (df["SUSPICION_LEVEL"].fillna("").astype(str).str.upper() == "HIGH")
+    if column_exists("TOTAL_LIFECYCLE_DAYS"):
+        mask_unusual |= (df["TOTAL_LIFECYCLE_DAYS"] > 500)
+    if column_exists("COMPLETION_VS_PEER"):
+        mask_unusual |= (df["COMPLETION_VS_PEER"] > 2.5)
+
+    # 2. Delays (Section 3.12 statutory limit)
+    mask_delays = pd.Series(False, index=df.index)
+    if column_exists("SANCTION_DELAY_DAYS"):
+        mask_delays |= (df["SANCTION_DELAY_DAYS"] > 45)
+
+    # 3. Cost Overruns & Escalations
+    mask_cost = pd.Series(False, index=df.index)
+    if column_exists("COST_VS_PEER"):
+        mask_cost |= (df["COST_VS_PEER"] > 2.0)
+    if column_exists("COST_VARIANCE"):
+        mask_cost |= (df["COST_VARIANCE"] > 0)
+
+    # 4. Duplicate Works
+    mask_duplicates = pd.Series(False, index=df.index)
+    if column_exists("CLUSTER_ID"):
+        mask_duplicates |= df["CLUSTER_ID"].notna()
+
+    # 5. Potential Misuse of Funds
+    mask_misuse = pd.Series(False, index=df.index)
+    if column_exists("REQUIRES_REVIEW"):
+        mask_misuse |= boolean_series(df["REQUIRES_REVIEW"])
+    if column_exists("RISK_LEVEL"):
+        mask_misuse |= (df["RISK_LEVEL"].fillna("").astype(str).str.upper() == "HIGH")
+    if column_exists("ACTUAL_AMOUNT") and column_exists("EVIDENCE_SCORE"):
+        mask_misuse |= ((df["ACTUAL_AMOUNT"] > 1000000) & (df["EVIDENCE_SCORE"] < 40))
+
+    summary = {
+        "unusual_patterns": {
+            "key": "unusual_patterns",
+            "title": "Unusual Patterns & Anomalies",
+            "count": int(mask_unusual.sum()),
+            "severity": "HIGH",
+            "badge_color": "rose",
+            "description": "Erratic lifecycle timelines, synthetic durations, and algorithmic anomaly scores >0.6",
+            "recommendation": "Requisition IA physical verification and audit lifecycle milestone logs."
+        },
+        "delays": {
+            "key": "delays",
+            "title": "Sanction & Execution Delays",
+            "count": int(mask_delays.sum()),
+            "severity": "HIGH",
+            "badge_color": "amber",
+            "description": "Works exceeding statutory 45-day SLA (Section 3.12) or execution timeline past 365 days",
+            "recommendation": "Issue Section 3.12 statutory explanation notice to designated District Authority."
+        },
+        "cost_overruns": {
+            "key": "cost_overruns",
+            "title": "Cost Overruns & Peer Escalations",
+            "count": int(mask_cost.sum()),
+            "severity": "CRITICAL",
+            "badge_color": "purple",
+            "description": "Actual expenditure or estimate exceeding peer median project cost by >2.0x",
+            "recommendation": "Withhold next installment disbursement pending engineering rate re-scrutiny."
+        },
+        "duplicate_works": {
+            "key": "duplicate_works",
+            "title": "Duplicate Works & Clusters",
+            "count": int(mask_duplicates.sum()),
+            "severity": "CRITICAL",
+            "badge_color": "indigo",
+            "description": "Multi-district and inter-constituency duplicate cluster proposals with high text/location match",
+            "recommendation": "Cross-reference site GPS coordinates and withhold duplicate sanction release."
+        },
+        "fund_misuse": {
+            "key": "fund_misuse",
+            "title": "Potential Misuse of Funds",
+            "count": int(mask_misuse.sum()),
+            "severity": "CRITICAL",
+            "badge_color": "red",
+            "description": "Large disbursements lacking ground photo evidence, high financial risk score, or audit review flags",
+            "recommendation": "Refer to District Collectorate Vigilance Desk and mandate CAG special audit."
+        }
+    }
+
+    total_active_alerts = int((mask_unusual | mask_delays | mask_cost | mask_duplicates | mask_misuse).sum())
+
+    return {
+        "total_alerts": total_active_alerts,
+        "summary": summary,
+        "masks": {
+            "unusual_patterns": mask_unusual,
+            "delays": mask_delays,
+            "cost_overruns": mask_cost,
+            "duplicate_works": mask_duplicates,
+            "fund_misuse": mask_misuse
+        }
+    }
+
+
+@app.get("/api/alerts/early-warning")
+def get_early_warning_alerts(
+    category: str = "all",
+    severity: str | None = None,
+    q: str | None = None,
+    state: str | None = None,
+    limit: int = 30,
+    page: int = 1
+):
+    global _early_alerts_cache
+    if _early_alerts_cache is None:
+        _early_alerts_cache = compute_early_alerts()
+
+    summary = _early_alerts_cache["summary"]
+    masks = _early_alerts_cache["masks"]
+
+    if category == "unusual_patterns":
+        sub_mask = masks["unusual_patterns"].copy()
+    elif category == "delays":
+        sub_mask = masks["delays"].copy()
+    elif category == "cost_overruns":
+        sub_mask = masks["cost_overruns"].copy()
+    elif category == "duplicate_works":
+        sub_mask = masks["duplicate_works"].copy()
+    elif category == "fund_misuse":
+        sub_mask = masks["fund_misuse"].copy()
+    else:
+        # Combined alerts with priority ordering: fund_misuse, duplicate_works, cost_overruns, unusual_patterns, delays
+        sub_mask = masks["fund_misuse"] | masks["duplicate_works"] | masks["cost_overruns"] | masks["unusual_patterns"] | masks["delays"]
+
+    filtered_df = df[sub_mask]
+
+    # Keyword search
+    if q and q.strip():
+        search_term = q.strip().lower()
+        text_matches = pd.Series(False, index=filtered_df.index)
+        for c in ["WORK_DESCRIPTION", "CONSTITUENCY", "MP_NAME", "IDA_NAME", "WORK_CATEGORY"]:
+            if column_exists(c):
+                text_matches |= filtered_df[c].fillna("").astype(str).str.lower().str.contains(search_term, na=False)
+        if column_exists("WORK_ID"):
+            text_matches |= filtered_df["WORK_ID"].fillna("").astype(str).str.contains(search_term, na=False)
+        if column_exists("WORK_RECOMMENDATION_DTL_ID"):
+            text_matches |= filtered_df["WORK_RECOMMENDATION_DTL_ID"].fillna("").astype(str).str.contains(search_term, na=False)
+        filtered_df = filtered_df[text_matches]
+
+    if state and state.strip() and state.lower() != "all":
+        filtered_df = filtered_df[filtered_df["STATE_NAME"].fillna("").astype(str).str.lower() == state.strip().lower()]
+
+    total_matched = len(filtered_df)
+    total_pages = max(1, math.ceil(total_matched / limit))
+    offset = (page - 1) * limit
+    page_df = filtered_df.iloc[offset:offset + limit]
+
+    records = dataframe_to_records(page_df)
+    enriched_alerts = []
+    for r in records:
+        sanc = float(r.get("SANCTION_AMOUNT") or 0)
+        act = float(r.get("ACTUAL_AMOUNT") or 0)
+        delay = float(r.get("SANCTION_DELAY_DAYS") or 0)
+        cost_peer = float(r.get("COST_VS_PEER") or 1)
+        sim = float(r.get("AVG_TEXT_SIMILARITY") or 0)
+        if sim <= 1:
+            sim = sim * 100
+        cluster_id = r.get("CLUSTER_ID")
+        ev_score = float(r.get("EVIDENCE_SCORE") or 0)
+        risk_lvl = str(r.get("RISK_LEVEL") or "LOW").upper()
+        rev_reason = str(r.get("REVIEW_REASON") or r.get("RISK_REASON") or "")
+
+        # Category-specific enrichment or priority chain when category == 'all'
+        if category == "delays" or (category == "all" and delay > 45 and not (r.get("REQUIRES_REVIEW") or risk_lvl == "HIGH" or cluster_id is not None or cost_peer > 2.0)):
+            cat = "delays"
+            title = f"Sanction Delay Breach: {int(delay)} Days"
+            reason = f"Pending sanction for {int(delay)} days (+{max(0, int(delay - 45))}d beyond 45-day Section 3.12 statutory limit)"
+            sev = "CRITICAL" if delay > 90 else "HIGH"
+            metric = f"+{int(delay)}d Delay"
+            sec = "compliance-45d"
+        elif category == "cost_overruns" or (category == "all" and cost_peer > 1.8 and not (r.get("REQUIRES_REVIEW") or risk_lvl == "HIGH" or cluster_id is not None)):
+            cat = "cost_overruns"
+            title = f"Peer Cost Escalation ({cost_peer:.1f}x Peer Median)"
+            reason = f"Sanctioned at ₹ {sanc/1e5:.1f} Lakh, which is {cost_peer:.1f} times higher than peer district median"
+            sev = "CRITICAL" if cost_peer > 3.0 else "HIGH"
+            metric = f"{cost_peer:.1f}x Peer Cost"
+            sec = "financials"
+        elif category == "duplicate_works" or (category == "all" and cluster_id is not None and not (isinstance(cluster_id, float) and math.isnan(cluster_id)) and not (r.get("REQUIRES_REVIEW") or risk_lvl == "HIGH")):
+            cat = "duplicate_works"
+            try:
+                cid_str = str(int(float(cluster_id)))
+            except Exception:
+                cid_str = str(cluster_id)
+            title = f"Duplicate Cluster #{cid_str} Proposal"
+            reason = f"Cross-district proposal matched with {sim:.1f}% text similarity in cluster"
+            sev = "CRITICAL" if sim > 80 else "HIGH"
+            metric = f"{sim:.1f}% Similarity"
+            sec = "duplicates"
+        elif category == "unusual_patterns" or (category == "all" and str(r.get("SUSPICION_LEVEL") or "").upper() == "HIGH" and not (r.get("REQUIRES_REVIEW") or risk_lvl == "HIGH")):
+            cat = "unusual_patterns"
+            lifecycle = float(r.get("TOTAL_LIFECYCLE_DAYS") or 0)
+            comp_peer = float(r.get("COMPLETION_VS_PEER") or 1)
+            title = "Unusual Lifecycle Progression / Peer Outlier"
+            reason = f"Lifecycle duration ({int(lifecycle)} days, {comp_peer:.1f}x peer median) exhibits anomalous timeline progression."
+            sev = "HIGH"
+            metric = f"{comp_peer:.1f}x Duration"
+            sec = "overview"
+        elif category == "fund_misuse" or r.get("REQUIRES_REVIEW") or risk_lvl == "HIGH" or (act > 1000000 and ev_score < 40):
+            cat = "fund_misuse"
+            title = "Potential Fund Misuse & Compliance Risk"
+            reason = rev_reason or f"Disbursed ₹ {act/1e5:.1f} Lakh with substandard evidence score ({ev_score:.0f}/100)"
+            sev = "CRITICAL"
+            metric = f"Risk Score: {float(r.get('RISK_SCORE') or 0):.1f}"
+            sec = "risk"
+        else:
+            cat = "unusual_patterns"
+            title = "Algorithmic Anomaly / Synthetic Lifecycle Pattern"
+            reason = "Lifecycle timeline or progression deviates significantly from national distribution"
+            sev = "HIGH"
+            metric = "Anomaly Score > 0.6"
+            sec = "overview"
+
+        r["alert_category"] = cat
+        r["alert_title"] = title
+        r["alert_reason"] = reason
+        r["severity"] = sev
+        r["metric_value"] = metric
+        r["audit_section"] = sec
+        enriched_alerts.append(r)
+
+    # Optional severity filter
+    if severity and severity.upper() in ["CRITICAL", "HIGH", "MEDIUM"]:
+        enriched_alerts = [a for a in enriched_alerts if a.get("severity") == severity.upper()]
+
+    return {
+        "total": total_matched,
+        "page": page,
+        "pages": total_pages,
+        "limit": limit,
+        "summary": summary,
+        "alerts": enriched_alerts
+    }
+
+
+# ============================================================
 # CATEGORY ANALYTICS
 # ============================================================
 
@@ -4146,107 +4427,140 @@ def validate_proposal(
 
 
 # ============================================================
-# PUBLIC / CITIZEN TRANSPARENCY & GRIEVANCE APIS
+# UNIFIED CROSS-ROLE WORKFLOW REQUEST APIS
 # ============================================================
 
-GRIEVANCES_FILE = BASE_DIR / "backend" / "citizen_grievances.json"
+@app.post("/api/requests")
+def create_request(payload: dict = Body(...)):
+    """Create a persistent cross-role workflow request."""
+    try:
+        work_id = payload.get("work_id")
+        if not work_id:
+            raise HTTPException(status_code=422, detail="work_id is required")
+        
+        raised_by_role = payload.get("raised_by_role")
+        if not raised_by_role:
+            raise HTTPException(status_code=422, detail="raised_by_role is required")
+            
+        request_type = payload.get("request_type")
+        if not request_type:
+            raise HTTPException(status_code=422, detail="request_type is required")
+            
+        title = payload.get("title") or "Workflow Request"
+        description = payload.get("description") or ""
+        priority = payload.get("priority") or "MEDIUM"
+        raised_by_identity = payload.get("raised_by_identity")
+        related_data = payload.get("related_data") or {}
 
-DEFAULT_GRIEVANCES = [
-    {
-        "complaint_id": "CIT-2026-001283",
-        "work_id": "W-2026-10291",
-        "work_title": "Construction of Community Hall at Ibrahimpatnam",
-        "issue_type": "Work is incomplete",
-        "description": "Pillars were constructed 8 months ago, but roof slab and plastering remain halted. No workers seen on site for past 3 months.",
-        "location": "Ibrahimpatnam, Nizamabad",
-        "constituency": "Nizamabad",
-        "state": "Telangana",
-        "citizen_name": "Ramesh Goud",
-        "citizen_phone": "+91 98490 XXXXX",
-        "status": "Under Review",
-        "created_at": "2026-08-14T10:30:00Z",
-        "updated_at": "2026-08-28T14:15:00Z",
-        "distance_m": 42,
-        "photo_url": "https://images.unsplash.com/photo-1590402494682-cd3fb53b1f70?w=600&auto=format&fit=crop&q=80",
-        "timeline": [
-            {"status": "Submitted", "timestamp": "2026-08-14 10:30", "note": "Grievance lodged via eSAKSHI Citizen Mobile Portal."},
-            {"status": "Received", "timestamp": "2026-08-15 09:00", "note": "Acknowledged by Central Public Grievance Intake Cell."},
-            {"status": "Under Review", "timestamp": "2026-08-28 14:15", "note": "Referred to District Collectorate (Nizamabad) & Executive Engineer PR for site inspection."}
-        ]
-    },
-    {
-        "complaint_id": "CIT-2026-000921",
-        "work_id": "W-2026-10442",
-        "work_title": "Installation of 25 High Mast Solar LED Lights",
-        "issue_type": "Poor quality / Substandard material",
-        "description": "5 solar lights installed near village junction are non-functional since rainy season began. Batteries not charging properly.",
-        "location": "Armoor Mandal, Nizamabad",
-        "constituency": "Nizamabad",
-        "state": "Telangana",
-        "citizen_name": "S. Kavitha",
-        "citizen_phone": "+91 94401 XXXXX",
-        "status": "Resolved",
-        "created_at": "2026-07-10T11:00:00Z",
-        "updated_at": "2026-08-02T16:45:00Z",
-        "distance_m": 18,
-        "photo_url": "https://images.unsplash.com/photo-1509391365360-2e959784a276?w=600&auto=format&fit=crop&q=80",
-        "timeline": [
-            {"status": "Submitted", "timestamp": "2026-07-10 11:00", "note": "Complaint filed with geo-tagged photograph."},
-            {"status": "Received", "timestamp": "2026-07-11 10:20", "note": "Logged into District Redressal System."},
-            {"status": "Under Review", "timestamp": "2026-07-15 14:00", "note": "Site visit scheduled by nodal assistant engineer."},
-            {"status": "Assigned", "timestamp": "2026-07-18 16:30", "note": "Vendor REDCO issued warranty replacement notice."},
-            {"status": "Action Taken", "timestamp": "2026-07-29 11:30", "note": "Batteries replaced and luminaires restored to working condition."},
-            {"status": "Resolved", "timestamp": "2026-08-02 16:45", "note": "Grievance resolved with verification by Gram Panchayat."}
-        ]
-    },
-    {
-        "complaint_id": "CIT-2026-000415",
-        "work_id": "W-2026-10885",
-        "work_title": "CC Road from Main Road to SC Colony",
-        "issue_type": "Work has not started",
-        "description": "Sanction was accorded over 14 months ago as per digital board, but no civil ground work has started yet.",
-        "location": "Bheemgal, Nizamabad",
-        "constituency": "Nizamabad",
-        "state": "Telangana",
-        "citizen_name": "M. Srinivas",
-        "citizen_phone": "+91 97012 XXXXX",
-        "status": "Assigned",
-        "created_at": "2026-08-01T09:15:00Z",
-        "updated_at": "2026-08-20T12:00:00Z",
-        "distance_m": 55,
-        "photo_url": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=80",
-        "timeline": [
-            {"status": "Submitted", "timestamp": "2026-08-01 09:15", "note": "Report submitted via public web terminal."},
-            {"status": "Received", "timestamp": "2026-08-02 11:45", "note": "Routed to District Planning Cell."},
-            {"status": "Under Review", "timestamp": "2026-08-08 15:10", "note": "Tender allocation delay verified by Assistant Collector."},
-            {"status": "Assigned", "timestamp": "2026-08-20 12:00", "note": "Issued directive to Panchayat Raj Division for immediate re-tendering."}
-        ]
+        req = workflow_engine.create_request(
+            work_id=work_id,
+            raised_by_role=raised_by_role,
+            request_type=request_type,
+            title=title,
+            description=description,
+            priority=priority,
+            raised_by_identity=raised_by_identity,
+            related_data=related_data
+        )
+        return {
+            "success": True,
+            "request_id": req["request_id"],
+            "message": f"Request registered under {req['request_id']} and routed to {req['target_department']}.",
+            "request": req
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except PermissionError as pe:
+        raise HTTPException(status_code=403, detail=str(pe))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create request: {str(e)}")
+
+
+@app.get("/api/requests")
+def list_requests(
+    role: Optional[str] = Query(None),
+    target_role: Optional[str] = Query(None),
+    raised_by_role: Optional[str] = Query(None),
+    work_id: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    request_type: Optional[str] = Query(None),
+    ida_name: Optional[str] = Query(None),
+    q: Optional[str] = Query(None)
+):
+    """Query workflow requests with role filtering."""
+    results = workflow_engine.query_requests(
+        role=role,
+        target_role=target_role,
+        raised_by_role=raised_by_role,
+        work_id=work_id,
+        status=status,
+        request_type=request_type,
+        ida_name=ida_name,
+        search_query=q
+    )
+    return {
+        "total": len(results),
+        "requests": results
     }
-]
 
-def load_grievances():
-    if not GRIEVANCES_FILE.exists():
-        try:
-            with open(GRIEVANCES_FILE, "w", encoding="utf-8") as f:
-                json.dump(DEFAULT_GRIEVANCES, f, indent=2)
-            return list(DEFAULT_GRIEVANCES)
-        except Exception as e:
-            print("Error initializing grievances file:", e)
-            return list(DEFAULT_GRIEVANCES)
+
+@app.get("/api/requests/counts")
+def get_request_counts(
+    role: Optional[str] = Query(None),
+    ida_name: Optional[str] = Query(None)
+):
+    """Live counts of pending/active workflow requests (no fake fallback numbers!)."""
+    return workflow_engine.get_counts(role=role, ida_name=ida_name)
+
+
+@app.get("/api/requests/{request_id}")
+def get_request_details(request_id: str):
+    """Retrieve full request dossier with timeline audit."""
+    req = workflow_engine.get_request_by_id(request_id)
+    if not req:
+        raise HTTPException(status_code=404, detail=f"Request '{request_id}' not found.")
+    return req
+
+
+@app.patch("/api/requests/{request_id}")
+def update_request_status(request_id: str, payload: dict = Body(...)):
+    """Update status of a workflow request with audit trail."""
     try:
-        with open(GRIEVANCES_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception as e:
-        print("Error reading grievances file:", e)
-        return list(DEFAULT_GRIEVANCES)
+        actor_role = payload.get("role") or payload.get("actor_role")
+        if not actor_role:
+            raise HTTPException(status_code=422, detail="'role' is required to verify permissions.")
+            
+        new_status = payload.get("status") or payload.get("new_status")
+        if not new_status:
+            raise HTTPException(status_code=422, detail="'status' is required.")
+            
+        note = payload.get("note")
+        actor_identity = payload.get("actor_identity")
 
-def save_grievances(grievances_list):
-    try:
-        with open(GRIEVANCES_FILE, "w", encoding="utf-8") as f:
-            json.dump(grievances_list, f, indent=2)
+        updated = workflow_engine.update_request_status(
+            request_id=request_id,
+            actor_role=actor_role,
+            new_status=new_status,
+            note=note,
+            actor_identity=actor_identity
+        )
+        return {
+            "success": True,
+            "request_id": request_id,
+            "message": f"Status updated to {updated['status']}.",
+            "request": updated
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except PermissionError as pe:
+        raise HTTPException(status_code=403, detail=str(pe))
     except Exception as e:
-        print("Error saving grievances file:", e)
+        raise HTTPException(status_code=500, detail=f"Failed to update request: {str(e)}")
 
+
+# ============================================================
+# PUBLIC / CITIZEN TRANSPARENCY & GRIEVANCE APIS (COMPATIBILITY)
+# ============================================================
 
 @app.get("/api/public/grievances")
 def get_public_grievances(
@@ -4254,87 +4568,126 @@ def get_public_grievances(
     work_id: str = Query(None),
     status: str = Query(None)
 ):
-    """List public grievances with optional filters."""
-    grievances = load_grievances()
-    filtered = grievances
-
-    if constituency:
-        c_lower = constituency.strip().lower()
-        filtered = [g for g in filtered if c_lower in str(g.get("constituency", "")).lower()]
-
-    if work_id:
-        w_lower = work_id.strip().lower()
-        filtered = [g for g in filtered if w_lower in str(g.get("work_id", "")).lower()]
-
-    if status:
-        s_lower = status.strip().lower()
-        filtered = [g for g in filtered if s_lower == str(g.get("status", "")).lower()]
+    """List public grievances from unified workflow engine."""
+    all_reqs = workflow_engine.query_requests(
+        raised_by_role="CITIZEN",
+        work_id=work_id,
+        status=status
+    )
+    grievances = []
+    for r in all_reqs:
+        if r.get("request_type") not in ("GRIEVANCE", "PUBLIC_VERIFICATION"):
+            continue
+        rel = r.get("related_data") or {}
+        g_item = {
+            "complaint_id": r["request_id"],
+            "request_id": r["request_id"],
+            "work_id": r["work_id"],
+            "work_title": r["work_title"],
+            "issue_type": rel.get("issue_type") or r.get("title") or "General Grievance",
+            "description": r["description"],
+            "location": f"{r.get('constituency', '')}, {r.get('state_name', '')}".strip(", "),
+            "constituency": r.get("constituency", ""),
+            "state": r.get("state_name", ""),
+            "citizen_name": r.get("raised_by_identity", "Citizen"),
+            "citizen_phone": rel.get("citizen_phone", ""),
+            "status": r.get("status", "SUBMITTED").title(),
+            "created_at": r["created_at"],
+            "updated_at": r["updated_at"],
+            "distance_m": rel.get("distance_m", 25),
+            "photo_url": rel.get("photo_url") or "",
+            "timeline": r.get("timeline", [])
+        }
+        if constituency and constituency.strip().lower() not in g_item["constituency"].lower():
+            continue
+        grievances.append(g_item)
 
     return {
-        "total": len(filtered),
-        "grievances": filtered
+        "total": len(grievances),
+        "grievances": grievances
     }
 
 
 @app.get("/api/public/grievances/{complaint_id}")
 def get_public_grievance_by_id(complaint_id: str):
-    """Get single grievance details and tracking history."""
-    grievances = load_grievances()
-    cid_upper = complaint_id.strip().upper()
-    for g in grievances:
-        if g.get("complaint_id", "").upper() == cid_upper:
-            return g
-    raise HTTPException(status_code=404, detail="Complaint ID not found")
+    """Get single grievance details from unified workflow engine."""
+    r = workflow_engine.get_request_by_id(complaint_id)
+    if not r:
+        raise HTTPException(status_code=404, detail="Complaint ID not found")
+    rel = r.get("related_data") or {}
+    return {
+        "complaint_id": r["request_id"],
+        "request_id": r["request_id"],
+        "work_id": r["work_id"],
+        "work_title": r["work_title"],
+        "issue_type": rel.get("issue_type") or r.get("title") or "General Grievance",
+        "description": r["description"],
+        "location": f"{r.get('constituency', '')}, {r.get('state_name', '')}".strip(", "),
+        "constituency": r.get("constituency", ""),
+        "state": r.get("state_name", ""),
+        "citizen_name": r.get("raised_by_identity", "Citizen"),
+        "citizen_phone": rel.get("citizen_phone", ""),
+        "status": r.get("status", "SUBMITTED").title(),
+        "created_at": r["created_at"],
+        "updated_at": r["updated_at"],
+        "distance_m": rel.get("distance_m", 25),
+        "photo_url": rel.get("photo_url") or "",
+        "timeline": r.get("timeline", [])
+    }
 
 
 @app.post("/api/public/grievances")
-def create_public_grievance(payload: dict):
-    """Submit a new citizen grievance / issue report."""
-    import random
-    from datetime import datetime
+def create_public_grievance(payload: dict = Body(...)):
+    """Submit a new citizen grievance using unified workflow engine."""
+    work_id = payload.get("work_id")
+    if not work_id:
+        raise HTTPException(status_code=422, detail="work_id is required.")
+        
+    issue_type = payload.get("issue_type") or "Work is incomplete"
+    description = payload.get("description", "").strip()
+    if not description:
+        raise HTTPException(status_code=422, detail="description is required.")
 
-    grievances = load_grievances()
-    
-    # Generate CIT-2026-XXXXXX
-    complaint_id = f"CIT-2026-{random.randint(100000, 999999)}"
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
-    iso_now = datetime.now().isoformat()
-
-    new_grievance = {
-        "complaint_id": complaint_id,
-        "work_id": payload.get("work_id", "GENERAL-MPLADS"),
-        "work_title": payload.get("work_title", "MPLADS Community Infrastructure"),
-        "issue_type": payload.get("issue_type", "Other"),
-        "description": payload.get("description", "").strip(),
-        "location": payload.get("location", "").strip() or "Constituency Site",
-        "constituency": payload.get("constituency", "Nizamabad").strip(),
-        "state": payload.get("state", "Telangana").strip(),
-        "citizen_name": payload.get("citizen_name", "Anonymous Citizen").strip(),
+    citizen_name = payload.get("citizen_name", "Concerned Citizen").strip()
+    photo_url = payload.get("photo_url")
+    rel_data = {
+        "issue_type": issue_type,
         "citizen_phone": payload.get("citizen_phone", "").strip(),
-        "status": "Submitted",
-        "created_at": iso_now,
-        "updated_at": iso_now,
-        "distance_m": payload.get("distance_m", random.randint(15, 85)),
-        "photo_url": payload.get("photo_url") or "https://images.unsplash.com/photo-1590402494682-cd3fb53b1f70?w=600&auto=format&fit=crop&q=80",
-        "timeline": [
-            {
+        "photo_url": photo_url,
+        "distance_m": payload.get("distance_m", 25)
+    }
+
+    try:
+        req = workflow_engine.create_request(
+            work_id=work_id,
+            raised_by_role="CITIZEN",
+            request_type="GRIEVANCE",
+            title=f"Public Grievance: {issue_type}",
+            description=description,
+            priority="HIGH" if "substandard" in issue_type.lower() or "defect" in issue_type.lower() else "MEDIUM",
+            raised_by_identity=citizen_name,
+            related_data=rel_data
+        )
+
+        return {
+            "success": True,
+            "complaint_id": req["request_id"],
+            "request_id": req["request_id"],
+            "message": f"Grievance successfully registered under Tracking Code {req['request_id']}",
+            "grievance": {
+                "complaint_id": req["request_id"],
+                "work_id": req["work_id"],
+                "work_title": req["work_title"],
+                "issue_type": issue_type,
+                "description": description,
                 "status": "Submitted",
-                "timestamp": now_str,
-                "note": "Grievance received and registered on eSAKSHI Citizen Public Portal."
+                "timeline": req["timeline"]
             }
-        ]
-    }
-
-    # Prepend new grievance so it appears first
-    grievances.insert(0, new_grievance)
-    save_grievances(grievances)
-
-    return {
-        "success": True,
-        "complaint_id": complaint_id,
-        "message": f"Grievance successfully submitted under Tracking Code {complaint_id}",
-        "grievance": new_grievance
-    }
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Grievance registration failed: {str(e)}")
 
 
 @app.get("/api/public/constituency/{constituency_name}")

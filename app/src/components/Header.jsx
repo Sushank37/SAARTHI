@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, ExternalLink, LogOut } from "lucide-react";
+import { Search, ExternalLink, LogOut, Bell, ShieldAlert } from "lucide-react";
 import { useAuth } from "../context/useAuth";
 import LanguageSelector from "./LanguageSelector";
+import EarlyWarningCenter from "./EarlyWarningCenter";
+import { API_BASE } from "../constants";
 
 export default function Header({
   house,
@@ -16,10 +18,34 @@ export default function Header({
   totalWorks,
   roleConfig,
   onLogout,
+  onSelectWork,
 }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAlertCenter, setShowAlertCenter] = useState(false);
+  const [alertTotal, setAlertTotal] = useState(62918);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadAlertCount = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/alerts/early-warning?limit=1`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.total) {
+            setAlertTotal(data.total);
+          }
+        }
+      } catch (e) {
+        // quiet fallback
+      }
+    };
+    loadAlertCount();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleLogout = () => {
     if (onLogout) {
@@ -128,6 +154,60 @@ export default function Header({
 
 
 
+          {/* Authorities Early Warning Alert Trigger Button */}
+          <button
+            type="button"
+            className="header-early-alert-btn"
+            onClick={() => setShowAlertCenter(true)}
+            title="Early Warning Surveillance: Unusual Patterns, Delays, Cost Overruns, Duplicates, and Fund Misuse"
+          >
+            <span className="header-early-alert-pulse" />
+            <Bell size={14} className="header-early-alert-icon" />
+            <span>Early Alerts</span>
+            <span className="header-early-alert-badge">
+              {alertTotal ? (alertTotal > 1000 ? `${(alertTotal / 1000).toFixed(1)}k` : alertTotal) : "..."}
+            </span>
+          </button>
+
+          <div
+            className={`live-status-tag ${
+              backendStatus === "connected"
+                ? "connected"
+                : backendStatus === "connecting"
+                ? "connecting"
+                : "offline"
+            }`}
+            title={
+              backendStatus === "connected"
+                ? `Connected to FastAPI Backend · ${
+                    totalWorks ? totalWorks.toLocaleString("en-IN") : "102,703"
+                  } works loaded`
+                : "Backend Disconnected. Click to retry connection."
+            }
+            onClick={backendStatus !== "connected" ? onReconnect : undefined}
+            style={{ cursor: backendStatus !== "connected" ? "pointer" : "default" }}
+          >
+            <span
+              className={`live-dot ${
+                backendStatus === "connected"
+                  ? "green"
+                  : backendStatus === "connecting"
+                  ? "yellow"
+                  : "red"
+              }`}
+            />
+            <span>
+              {backendStatus === "connected"
+                ? `Live: ${
+                    totalWorks
+                      ? totalWorks.toLocaleString("en-IN")
+                      : "102,703"
+                  } Works`
+                : backendStatus === "connecting"
+                ? "Connecting..."
+                : "Offline (Retry)"}
+            </span>
+          </div>
           <LanguageSelector />
 
           <a
@@ -155,6 +235,13 @@ export default function Header({
 
       {/* Tricolor line */}
       <div className="compact-tricolor-line" />
+
+      {/* Authorities Early Warning Alert Center */}
+      <EarlyWarningCenter
+        isOpen={showAlertCenter}
+        onClose={() => setShowAlertCenter(false)}
+        onSelectWork={onSelectWork}
+      />
     </header>
   );
 }

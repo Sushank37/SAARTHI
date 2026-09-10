@@ -54,12 +54,12 @@ export function LanguageProvider({ children }) {
    * Automatic DOM Translator:
    * Scans text nodes in the application shell and automatically translates them
    * without requiring hardcoded markup changes across all components.
+   * Only active when a non-English language is selected.
    */
   const applyDomTranslation = useCallback(
     (rootElement = document.getElementById("root")) => {
       if (!rootElement) return;
-
-      const isEnglish = currentLang.code === "en";
+      if (currentLang.code === "en") return;
 
       const walker = document.createTreeWalker(
         rootElement,
@@ -69,7 +69,7 @@ export function LanguageProvider({ children }) {
             const parent = node.parentElement;
             if (!parent) return NodeFilter.FILTER_REJECT;
 
-            // Don't touch scripts, styles, text inputs, or the language selector dropdown itself
+            // Don't touch scripts, styles, text inputs, SVGs, or untranslatable areas
             const tagName = parent.tagName.toLowerCase();
             if (
               tagName === "script" ||
@@ -79,13 +79,21 @@ export function LanguageProvider({ children }) {
               tagName === "select" ||
               tagName === "code" ||
               parent.closest(".header-lang-wrapper") ||
-              parent.closest(".no-translate")
+              parent.closest(".no-translate") ||
+              parent.closest("svg")
             ) {
               return NodeFilter.FILTER_REJECT;
             }
 
             const trimmed = node.nodeValue.trim();
             if (!trimmed || trimmed.length < 2) return NodeFilter.FILTER_SKIP;
+
+            // Never touch pure numbers, currency figures, status codes, dates, or progress percentages
+            if (/^[\d,.\s₹%+\-/:—kK]+$/.test(trimmed)) return NodeFilter.FILTER_SKIP;
+
+            // Only accept if there is an exact match in our dictionary
+            const dictEntry = TRANSLATIONS[trimmed];
+            if (!dictEntry || !dictEntry[currentLang.code]) return NodeFilter.FILTER_SKIP;
 
             return NodeFilter.FILTER_ACCEPT;
           },
@@ -100,26 +108,19 @@ export function LanguageProvider({ children }) {
       }
 
       for (const node of nodesToTranslate) {
-        // Store original text if not already stored
-        if (node.__mplads_original === undefined) {
-          node.__mplads_original = node.nodeValue;
-        }
-
-        const originalText = node.__mplads_original;
-        const trimmedOriginal = originalText.trim();
-
-        if (isEnglish) {
-          if (node.nodeValue !== originalText) {
-            node.nodeValue = originalText;
+        const currentVal = node.nodeValue;
+        const trimmed = currentVal.trim();
+        const dictEntry = TRANSLATIONS[trimmed];
+        if (dictEntry && dictEntry[currentLang.code]) {
+          if (node.__mplads_original === undefined) {
+            node.__mplads_original = currentVal;
           }
-        } else {
-          // Check exact match in dictionary
-          const dictEntry = TRANSLATIONS[trimmedOriginal];
-          if (dictEntry && dictEntry[currentLang.code]) {
-            const translated = dictEntry[currentLang.code];
-            const leading = originalText.match(/^\s*/)[0];
-            const trailing = originalText.match(/\s*$/)[0];
-            node.nodeValue = `${leading}${translated}${trailing}`;
+          const translated = dictEntry[currentLang.code];
+          const leading = currentVal.match(/^\s*/)[0];
+          const trailing = currentVal.match(/\s*$/)[0];
+          const newVal = `${leading}${translated}${trailing}`;
+          if (node.nodeValue !== newVal) {
+            node.nodeValue = newVal;
           }
         }
       }
@@ -129,10 +130,30 @@ export function LanguageProvider({ children }) {
 
   // Apply DOM translation whenever language changes or DOM updates
   useEffect(() => {
-    // Initial run
+    // If English, disconnect observer and restore any previously translated nodes
+    if (currentLang.code === "en") {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+      const rootNode = document.getElementById("root");
+      if (rootNode) {
+        const walker = document.createTreeWalker(rootNode, NodeFilter.SHOW_TEXT);
+        let n = walker.nextNode();
+        while (n) {
+          if (n.__mplads_original !== undefined) {
+            n.nodeValue = n.__mplads_original;
+            delete n.__mplads_original;
+          }
+          n = walker.nextNode();
+        }
+      }
+      return;
+    }
+
+    // Non-English: Apply initial translations
     applyDomTranslation();
 
-    // Set up MutationObserver to translate dynamically rendered content
+    // Set up MutationObserver only for non-English translations
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
@@ -142,7 +163,7 @@ export function LanguageProvider({ children }) {
       if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         applyDomTranslation();
-      }, 100);
+      }, 150);
     });
 
     const rootNode = document.getElementById("root");

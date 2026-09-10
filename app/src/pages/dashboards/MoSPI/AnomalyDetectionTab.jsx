@@ -11,15 +11,20 @@ import {
 } from "lucide-react";
 import { API_BASE, formatNumber } from "../../../constants";
 
-const SUBTABS = [
-  { id: "all", label: "All Anomalies", count: 17723 },
-  { id: "extreme-delay", label: "Extreme Delays (>180d)", count: 12824 },
-  { id: "cost-variance", label: "Spending Overruns", count: 4899 },
-  { id: "long-completion", label: "Prolonged Lifecycles (>365d)", count: 3553 },
-];
-
 export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
   const anomalies = analytics?.anomaly_summary || {};
+  const extremeDelays = anomalies.extreme_delays_over_180 ?? 12824;
+  const costVariance = anomalies.cost_variance_cases ?? 4899;
+  const prolonged = anomalies.prolonged_completion_over_365 ?? 3553;
+  const totalAnomalies = extremeDelays + costVariance + prolonged;
+
+  const subtabs = [
+    { id: "all", label: "All Anomalies", count: totalAnomalies },
+    { id: "extreme-delay", label: "Extreme Delays (>180d)", count: extremeDelays },
+    { id: "cost-variance", label: "Spending Overruns", count: costVariance },
+    { id: "long-completion", label: "Prolonged Lifecycles (>365d)", count: prolonged },
+  ];
+
   const [activeSubtab, setActiveSubtab] = useState("all");
   const [works, setWorks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +44,7 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
           if (isMounted) {
             setWorks(d.data || []);
             setTotalCount(d.total || 0);
-            setTotalPages(d.total_pages || 1);
+            setTotalPages(d.total_pages || d.pages || 1);
           }
         }
       } catch (err) {
@@ -114,7 +119,7 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
 
         {/* Subtab Filter Bar */}
         <div className="mospi-subtab-bar" style={{ display: "flex", gap: "8px", marginBottom: "16px", borderBottom: "1px solid var(--border-color, #e2e8f0)", paddingBottom: "10px", flexWrap: "wrap" }}>
-          {SUBTABS.map((st) => {
+          {subtabs.map((st) => {
             const isActive = activeSubtab === st.id;
             return (
               <button

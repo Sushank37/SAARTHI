@@ -8,18 +8,24 @@ import {
   ChevronRight,
   ShieldCheck,
   Layers,
+  Camera,
 } from "lucide-react";
 import { API_BASE, formatNumber } from "../../../constants";
 
-const EVIDENCE_TABS = [
-  { id: "all", label: "All Evidence Records", count: 8922 },
-  { id: "low", label: "Evidence Anomalies (<60)", count: 3161, status: "danger" },
-  { id: "moderate", label: "Moderate Score (60–79)", count: 2505, status: "warning" },
-  { id: "verified", label: "Fully Verified (≥80)", count: 3256, status: "success" },
-];
-
 export default function EvidenceIntelligenceTab({ analytics, onSelectWork }) {
   const evSummary = analytics?.evidence_summary || {};
+  const totalEv = evSummary.total_with_evidence ?? 8922;
+  const lowEv = evSummary.low_score_count ?? 3161;
+  const medEv = evSummary.medium_score_count ?? 2505;
+  const highEv = evSummary.high_score_count ?? 3256;
+
+  const evidenceTabs = [
+    { id: "all", label: "All Evidence Records", count: totalEv },
+    { id: "low", label: "Evidence Anomalies (<60)", count: lowEv, status: "danger" },
+    { id: "moderate", label: "Moderate Score (60–79)", count: medEv, status: "warning" },
+    { id: "verified", label: "Fully Verified (≥80)", count: highEv, status: "success" },
+  ];
+
   const [activeTab, setActiveTab] = useState("all");
   const [works, setWorks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +35,7 @@ export default function EvidenceIntelligenceTab({ analytics, onSelectWork }) {
 
   useEffect(() => {
     let isMounted = true;
-    async function loadEvidenceWorks() {
+    async function fetchEvidenceWorks() {
       setLoading(true);
       try {
         const sub = activeTab === "all" ? "" : `&subfilter=${activeTab}`;
@@ -39,7 +45,7 @@ export default function EvidenceIntelligenceTab({ analytics, onSelectWork }) {
           if (isMounted) {
             setWorks(d.data || []);
             setTotalCount(d.total || 0);
-            setTotalPages(d.total_pages || 1);
+            setTotalPages(d.total_pages || d.pages || 1);
           }
         }
       } catch (err) {
@@ -48,7 +54,7 @@ export default function EvidenceIntelligenceTab({ analytics, onSelectWork }) {
         if (isMounted) setLoading(false);
       }
     }
-    loadEvidenceWorks();
+    fetchEvidenceWorks();
     return () => { isMounted = false; };
   }, [activeTab, page]);
 
@@ -152,7 +158,7 @@ export default function EvidenceIntelligenceTab({ analytics, onSelectWork }) {
 
         {/* Subtabs */}
         <div className="mospi-subtab-bar" style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
-          {EVIDENCE_TABS.map((tab) => {
+          {evidenceTabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button

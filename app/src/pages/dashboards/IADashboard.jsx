@@ -39,6 +39,8 @@ import {
   exportToCSV,
 } from "../../constants";
 import WorkDetailDrawer from "../../components/WorkDetailDrawer";
+import { getRequests } from "../../services/workflowService";
+import RequestTable from "../../components/workflow/RequestTable";
 import "./IADashboard.css";
 
 // 10 Standard Implementing Agency Sections requested by user
@@ -56,7 +58,7 @@ const IA_MODULES = [
 ];
 
 // Helper to format clean, human-readable agency titles
-export const cleanAgencyName = (raw) => {
+const cleanAgencyName = (raw) => {
   if (!raw) return "Select Implementing Agency";
   if (raw === "ALL") return "All Implementing Agencies";
 
@@ -144,8 +146,27 @@ export default function IADashboard({ summary, onSelectWork }) {
   const [selectedRisk, setSelectedRisk] = useState("All");
   const [filterFlaggedOnly, setFilterFlaggedOnly] = useState(false);
   const [workSearchQuery, setWorkSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [localSelectedWork, setLocalSelectedWork] = useState(null);
+
+  // Implementing Agency persistent workflow requests (Payments, EOTs, MBs)
+  const [iaRequests, setIaRequests] = useState([]);
+  const [iaRequestsLoading, setIaRequestsLoading] = useState(false);
+
+  const fetchIARequests = async () => {
+    setIaRequestsLoading(true);
+    try {
+      const data = await getRequests({ raisedByRole: "IMPLEMENTING_AGENCY" });
+      setIaRequests(data.requests || []);
+    } catch (err) {
+      console.error("Failed to load IA requests:", err);
+    } finally {
+      setIaRequestsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchIARequests();
+  }, [selectedIDA]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -492,7 +513,7 @@ export default function IADashboard({ summary, onSelectWork }) {
             {analyticsLoading ? "..." : formatNumber(analytics?.primary_kpis?.assigned_works || 0)}
           </div>
           <div className="ia-kpi-sub">
-            ₹ {formatCrores(analytics?.financials?.sanction_amount || 0)} Cr Sanctioned Value
+            {formatCrores(analytics?.financials?.sanction_amount || 0)} Sanctioned Value
           </div>
         </div>
 
@@ -512,7 +533,7 @@ export default function IADashboard({ summary, onSelectWork }) {
             {analyticsLoading ? "..." : formatNumber(analytics?.primary_kpis?.ongoing_works || 0)}
           </div>
           <div className="ia-kpi-sub">
-            ₹ {formatCrores(analytics?.financials?.actual_amount || 0)} Cr Disbursed Spend
+            {formatCrores(analytics?.financials?.actual_amount || 0)} Disbursed Spend
           </div>
         </div>
 
@@ -1134,6 +1155,30 @@ export default function IADashboard({ summary, onSelectWork }) {
             </div>
           </div>
 
+          {/* Real-time IA Workflow Requests Queue */}
+          <div style={{ padding: "0 16px 16px 16px" }}>
+            <RequestTable
+              title="Official Claims & Payment Requests Sent to District Authority"
+              subtitle="Live status of running contractor bills, Measurement Book (MB) submissions, and EOT extension applications"
+              requests={iaRequests}
+              loading={iaRequestsLoading}
+              currentRole="IMPLEMENTING_AGENCY"
+              onRefresh={fetchIARequests}
+              onOpenWork={async (workId) => {
+                try {
+                  const res = await fetch(`${API_BASE}/api/works/${workId}`);
+                  if (res.ok) {
+                    const wData = await res.json();
+                    handleSelectWork(wData, "financials");
+                  }
+                } catch (e) {
+                  console.error(e);
+                }
+              }}
+              onStatusUpdated={() => fetchIARequests()}
+            />
+          </div>
+
           <div className="ia-table-responsive">
             <table className="ia-table">
               <thead>
@@ -1289,11 +1334,11 @@ export default function IADashboard({ summary, onSelectWork }) {
                     <div className="ia-vendor-metrics-row">
                       <div className="ia-vendor-metric-item">
                         <span>Sanctioned</span>
-                        <strong>₹ {formatCrores(vend.sanction_amount)} Cr</strong>
+                        <strong>{formatCrores(vend.sanction_amount)}</strong>
                       </div>
                       <div className="ia-vendor-metric-item">
                         <span>Disbursed</span>
-                        <strong>₹ {formatCrores(vend.actual_amount)} Cr</strong>
+                        <strong>{formatCrores(vend.actual_amount)}</strong>
                       </div>
                       <div className="ia-vendor-metric-item">
                         <span>Completed</span>
@@ -2137,7 +2182,7 @@ export default function IADashboard({ summary, onSelectWork }) {
       )}
 
       {/* Fallback Drawer Container if not handled at App root */}
-      {localSelectedWork && (
+      {!onSelectWork && localSelectedWork && (
         <WorkDetailDrawer
           work={localSelectedWork}
           onClose={() => setLocalSelectedWork(null)}

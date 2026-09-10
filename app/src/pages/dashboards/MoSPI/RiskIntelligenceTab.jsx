@@ -47,8 +47,12 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Low Risk Compliance</span>
             <span className="mospi-pill emerald">Normal Operations</span>
           </div>
-          <div className="mospi-kpi-value">{formatNumber(102685)} Works</div>
-          <div className="mospi-kpi-sub">99.98% of national repository within expected tolerances</div>
+          <div className="mospi-kpi-value">
+            {formatNumber((kpis.total_works || 102703) - (kpis.risk_cases_count || 18))} Works
+          </div>
+          <div className="mospi-kpi-sub">
+            {(((kpis.total_works || 102703) - (kpis.risk_cases_count || 18)) / (kpis.total_works || 102703) * 100).toFixed(2)}% of national repository within expected tolerances
+          </div>
         </div>
 
         <div className="mospi-card" style={{ borderLeft: "4px solid #f59e0b" }}>
