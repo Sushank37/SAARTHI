@@ -209,10 +209,6 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
                 <MapPin size={11} style={{ marginRight: "3px" }} />
                 Pan-India National Scope
               </span>
-              <span className={`gov-live-status-pill ${backendConnected ? "online" : ""}`}>
-                <span className="gov-live-pulse-dot" />
-                {backendConnected ? "Live Official Dataset" : "Offline"}
-              </span>
             </div>
             <h1 className="gov-mp-page-title">
               MoSPI / Central Nodal Authority

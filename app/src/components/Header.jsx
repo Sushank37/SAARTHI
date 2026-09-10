@@ -188,45 +188,6 @@ export default function Header({
             </button>
           )}
 
-          <div
-            className={`live-status-tag ${
-              backendStatus === "connected"
-                ? "connected"
-                : backendStatus === "connecting"
-                ? "connecting"
-                : "offline"
-            }`}
-            title={
-              backendStatus === "connected"
-                ? `Connected to FastAPI Backend · ${
-                    totalWorks ? totalWorks.toLocaleString("en-IN") : "102,703"
-                  } works loaded`
-                : "Backend Disconnected. Click to retry connection."
-            }
-            onClick={backendStatus !== "connected" ? onReconnect : undefined}
-            style={{ cursor: backendStatus !== "connected" ? "pointer" : "default" }}
-          >
-            <span
-              className={`live-dot ${
-                backendStatus === "connected"
-                  ? "green"
-                  : backendStatus === "connecting"
-                  ? "yellow"
-                  : "red"
-              }`}
-            />
-            <span>
-              {backendStatus === "connected"
-                ? `Live: ${
-                    totalWorks
-                      ? totalWorks.toLocaleString("en-IN")
-                      : "102,703"
-                  } Works`
-                : backendStatus === "connecting"
-                ? "Connecting..."
-                : "Offline (Retry)"}
-            </span>
-          </div>
           <LanguageSelector />
 
           <a

@@ -74,10 +74,6 @@ export default function CitizenDashboard({ summary, onSelectWork }) {
                 <MapPin size={11} style={{ marginRight: "3px" }} />
                 Nizamabad, Telangana
               </span>
-              <span className="gov-live-status-pill online">
-                <span className="gov-live-pulse-dot" />
-                Live Transparency Feed
-              </span>
             </div>
             <h1 className="gov-mp-page-title">
               Jan Saarthi · Public Transparency & Social Audit
