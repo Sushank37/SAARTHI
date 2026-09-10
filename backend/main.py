@@ -247,6 +247,11 @@ def row_to_dict(row):
     for key, value in row.items():
         result[str(key)] = clean_value(value)
 
+    # Standardize missing/empty WORK_STAGE to "Pending Sanction"
+    ws = result.get("WORK_STAGE")
+    if ws is None or str(ws).strip().lower() in ["", "none", "nan", "null"]:
+        result["WORK_STAGE"] = "Pending Sanction"
+
     return result
 
 
@@ -963,16 +968,26 @@ def get_works(
 
 
     # Stage
-    if stage and column_exists(
-        "WORK_STAGE"
-    ):
-
-        data = data[
-            text_contains(
-                data["WORK_STAGE"],
-                stage
-            )
-        ]
+    if stage and column_exists("WORK_STAGE"):
+        stage_clean = str(stage).strip()
+        stage_lower = stage_clean.lower()
+        if stage_lower in ["pending sanction", "waiting for approval", "waiting", "pending"]:
+            st = data["WORK_STAGE"].fillna("Pending Sanction").astype(str).str.strip()
+            pending_mask = st.isin(["Pending Sanction", "Unknown", "nan", "None", ""]) | data["WORK_STAGE"].isna()
+            if column_exists("SANCTION_AMOUNT"):
+                pending_mask = pending_mask | (data["SANCTION_AMOUNT"].isna() | (data["SANCTION_AMOUNT"] == 0))
+            data = data[pending_mask]
+        elif stage_lower in ["physical inspection", "under construction", "ongoing", "in progress"]:
+            st = data["WORK_STAGE"].fillna("").astype(str).str.strip()
+            data = data[st.isin(["Physical Inspection", "Work partially Completed", "Under Construction", "Ongoing"])]
+        elif stage_lower in ["work completed", "finished", "completed"]:
+            st = data["WORK_STAGE"].fillna("").astype(str).str.strip()
+            data = data[st.isin(["Work Completed", "Completed", "Finished"])]
+        elif stage_lower in ["sanction", "approved"]:
+            st = data["WORK_STAGE"].fillna("").astype(str).str.strip()
+            data = data[st.isin(["Sanction", "Approved"])]
+        else:
+            data = data[text_contains(data["WORK_STAGE"], stage_clean)]
 
 
     # IDA / District Authority
@@ -1355,7 +1370,25 @@ def get_works_geo(
         data = data[text_contains(data["MP_NAME"], mp_name)]
 
     if stage and column_exists("WORK_STAGE"):
-        data = data[text_contains(data["WORK_STAGE"], stage)]
+        stage_clean = str(stage).strip()
+        stage_lower = stage_clean.lower()
+        if stage_lower in ["pending sanction", "waiting for approval", "waiting", "pending"]:
+            st = data["WORK_STAGE"].fillna("Pending Sanction").astype(str).str.strip()
+            pending_mask = st.isin(["Pending Sanction", "Unknown", "nan", "None", ""]) | data["WORK_STAGE"].isna()
+            if column_exists("SANCTION_AMOUNT"):
+                pending_mask = pending_mask | (data["SANCTION_AMOUNT"].isna() | (data["SANCTION_AMOUNT"] == 0))
+            data = data[pending_mask]
+        elif stage_lower in ["physical inspection", "under construction", "ongoing", "in progress"]:
+            st = data["WORK_STAGE"].fillna("").astype(str).str.strip()
+            data = data[st.isin(["Physical Inspection", "Work partially Completed", "Under Construction", "Ongoing"])]
+        elif stage_lower in ["work completed", "finished", "completed"]:
+            st = data["WORK_STAGE"].fillna("").astype(str).str.strip()
+            data = data[st.isin(["Work Completed", "Completed", "Finished"])]
+        elif stage_lower in ["sanction", "approved"]:
+            st = data["WORK_STAGE"].fillna("").astype(str).str.strip()
+            data = data[st.isin(["Sanction", "Approved"])]
+        else:
+            data = data[text_contains(data["WORK_STAGE"], stage_clean)]
 
     if risk_level and column_exists("RISK_LEVEL"):
         data = data[data["RISK_LEVEL"].fillna("").astype(str).str.upper().eq(risk_level.upper())]
