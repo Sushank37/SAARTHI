@@ -13,8 +13,11 @@ import re
 # CONFIGURATION
 # ============================================================
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_FILE = BASE_DIR / "data" / "mplads_final_dataset.csv"
+BACKEND_DIR = Path(__file__).resolve().parent
+DATA_FILE = BACKEND_DIR / "data" / "mplads_final_dataset.csv"
+if not DATA_FILE.exists():
+    DATA_FILE = BACKEND_DIR.parent / "data" / "mplads_final_dataset.csv"
+BASE_DIR = BACKEND_DIR.parent
 
 app = FastAPI(
     title="MPLADS AI Monitoring API",
