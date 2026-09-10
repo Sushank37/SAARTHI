@@ -146,6 +146,7 @@ export default function IADashboard({ summary, onSelectWork }) {
   const [selectedRisk, setSelectedRisk] = useState("All");
   const [filterFlaggedOnly, setFilterFlaggedOnly] = useState(false);
   const [workSearchQuery, setWorkSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [localSelectedWork, setLocalSelectedWork] = useState(null);
 
   // Implementing Agency persistent workflow requests (Payments, EOTs, MBs)
