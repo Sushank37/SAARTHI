@@ -760,11 +760,15 @@ export default function DADashboard({ summary, onSelectWork }) {
                   <button
                     type="button"
                     className="da-spotlight-inspect-btn btn-warning"
-                    onClick={() => handleSelectWork(priorityCases[0], "overview")}
-                    title="Open official 78-field work dossier"
+                    onClick={() => {
+                      const pCase = priorityCases[0];
+                      const sec = pCase?.DUPLICATE_RISK === "HIGH" ? "duplicates" : pCase?.RISK_LEVEL === "HIGH" ? "risk" : "sanction";
+                      handleSelectWork(pCase, sec);
+                    }}
+                    title="Open Priority Scrutiny Dossier for High-Attention Case"
                   >
                     <Eye size={13} />
-                    <span>View Dossier</span>
+                    <span>Inspect Priority Scrutiny Dossier →</span>
                   </button>
                 </div>
               </div>
@@ -2252,15 +2256,45 @@ export default function DADashboard({ summary, onSelectWork }) {
                         )}
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
-                        <button
-                          type="button"
-                          className="btn-view-dossier"
-                          onClick={() => handleSelectWork(work)}
-                          title="Open official 78-field work dossier"
-                        >
-                          <Eye size={13} />
-                          <span>View Dossier</span>
-                        </button>
+                        {(() => {
+                          let label = "Collector Dossier";
+                          let targetSec = "overview";
+                          let title = "Inspect District Magistrate Official Sanction Record";
+
+                          if (dupRisk === "HIGH" || work.CLUSTER_ID) {
+                            label = "Duplicate Dossier";
+                            targetSec = "duplicates";
+                            title = "Inspect Duplicate Cluster Scrutiny";
+                          } else if (delayDays > 45) {
+                            label = "45-Day SLA Dossier";
+                            targetSec = "compliance-45d";
+                            title = "Inspect 45-Day Statutory Sanction Delay Breach";
+                          } else if (work.COMPLETION_DURATION_DAYS > 365) {
+                            label = "Completion Dossier";
+                            targetSec = "completion";
+                            title = "Inspect 1-Year Statutory Completion Delay";
+                          } else if (stage === "Pending Sanction") {
+                            label = "Sanction Dossier";
+                            targetSec = "sanction";
+                            title = "Inspect Section 3.11 Sanction Feasibility";
+                          } else if (riskLevel === "HIGH" || work.REQUIRES_REVIEW) {
+                            label = "Risk Audit Dossier";
+                            targetSec = "risk";
+                            title = "Inspect AI Risk Scoring & Forensic Anomalies";
+                          }
+
+                          return (
+                            <button
+                              type="button"
+                              className="btn-view-dossier"
+                              onClick={() => handleSelectWork(work, targetSec)}
+                              title={title}
+                            >
+                              <Eye size={13} />
+                              <span>{label} →</span>
+                            </button>
+                          );
+                        })()}
                       </td>
                     </tr>
                   );

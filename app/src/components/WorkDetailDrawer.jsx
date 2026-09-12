@@ -219,13 +219,13 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
   const [citizenAuditVerified, setCitizenAuditVerified] = useState(false);
   const [grievanceReported, setGrievanceReported] = useState(false);
 
-  const [activeSection, setActiveSection] = useState(initialSection || "all");
+  const effectiveInitialSection = work?.__initialSection || initialSection || "all";
+  const [activeSection, setActiveSection] = useState(effectiveInitialSection);
 
   // Synchronize initial section if prop updates
   useEffect(() => {
-    if (initialSection) {
-      setActiveSection(initialSection);
-    }
+    const nextSection = work?.__initialSection || initialSection || "all";
+    setActiveSection(nextSection);
   }, [initialSection, work]);
 
   // Persistent cross-role workflow requests attached to this work

@@ -1376,7 +1376,10 @@ export default function MPDashboard(props) {
                     <div
                       key={workId}
                       className={`attention-case-card ${isHigh ? "high-severity" : "med-severity"}`}
-                      onClick={() => onSelectWork && onSelectWork(item)}
+                      onClick={() =>
+                        onSelectWork &&
+                        onSelectWork({ ...item, __initialSection: "risk", __authority: "MP" })
+                      }
                     >
                       <div className="case-top-row">
                         <span className="case-work-id">
@@ -1424,7 +1427,7 @@ export default function MPDashboard(props) {
                             if (onSelectWork) onSelectWork({ ...item, __initialSection: "risk", __authority: "MP" });
                           }}
                         >
-                          <span>Inspect MP Dossier →</span>
+                          <span>Inspect MP Delay Brief →</span>
                           <ArrowRight size={12} />
                         </button>
                       </div>
@@ -1571,7 +1574,10 @@ export default function MPDashboard(props) {
                   return (
                     <tr
                       key={work.WORK_RECOMMENDATION_DTL_ID || work.WORK_ID}
-                      onClick={() => onSelectWork && onSelectWork(work)}
+                      onClick={() =>
+                        onSelectWork &&
+                        onSelectWork({ ...work, __initialSection: "overview", __authority: "MP" })
+                      }
                     >
                       <td className="cell-id">#{workId}</td>
                       <td className="cell-work-info">
@@ -1631,18 +1637,41 @@ export default function MPDashboard(props) {
                         </span>
                       </td>
                       <td style={{ textAlign: "center" }}>
-                        <button
-                          type="button"
-                          className="gov-inspect-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (onSelectWork) onSelectWork({ ...work, __initialSection: "overview", __authority: "MP" });
-                          }}
-                          title="Open Hon'ble MP Constituency Work Dossier"
-                        >
-                          <span>MP Dossier →</span>
-                          <ArrowRight size={11} />
-                        </button>
+                        {(() => {
+                          let label = "MP Brief →";
+                          let targetSec = "overview";
+                          let title = "Open Hon'ble MP Constituency Work Dossier";
+
+                          if (stage === "Pending Sanction") {
+                            label = "Sanction SLA Brief →";
+                            targetSec = "sanction";
+                            title = "Inspect District Authority Sanction SLA Status";
+                          } else if (stage === "Work Completed") {
+                            label = "Delivery Brief →";
+                            targetSec = "completion";
+                            title = "Inspect Completed Asset Ground Delivery & Dedication";
+                          } else if (dupRisk === "HIGH" || work.FINANCIAL_RISK_SCORE >= 70) {
+                            label = "Risk Brief →";
+                            targetSec = "risk";
+                            title = "Inspect Constituency Work Risk & Grievance Flags";
+                          }
+
+                          return (
+                            <button
+                              type="button"
+                              className="gov-inspect-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (onSelectWork)
+                                  onSelectWork({ ...work, __initialSection: targetSec, __authority: "MP" });
+                              }}
+                              title={title}
+                            >
+                              <span>{label}</span>
+                              <ArrowRight size={11} />
+                            </button>
+                          );
+                        })()}
                       </td>
                     </tr>
                   );

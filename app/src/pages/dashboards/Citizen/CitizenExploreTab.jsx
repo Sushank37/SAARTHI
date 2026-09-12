@@ -326,12 +326,19 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
                           <button
                             type="button"
                             className="gov-redirect-link-btn"
-                            onClick={() => onSelectWork && onSelectWork(w)}
+                            onClick={() =>
+                              onSelectWork &&
+                              onSelectWork({
+                                ...w,
+                                __initialSection: "overview",
+                                __authority: "CITIZEN",
+                              })
+                            }
                             style={{ cursor: "pointer" }}
-                            title="Inspect complete work dossier"
+                            title="Inspect Public Community Project Factsheet"
                           >
                             <Eye size={12} />
-                            <span>Dossier</span>
+                            <span>Public Factsheet →</span>
                           </button>
 
                           <button

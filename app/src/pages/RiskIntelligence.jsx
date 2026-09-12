@@ -19,8 +19,12 @@ import {
   formatCurrency,
   exportToCSV,
 } from "../constants";
+import { useAuth } from "../context/useAuth";
 
 export default function RiskIntelligence({ onSelectWork }) {
+  const { role, roleConfig } = useAuth() || {};
+  const currentAuthority = (roleConfig?.id || role || "DISTRICT_AUTHORITY").toUpperCase();
+
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [level, setLevel] = useState("ALL");
@@ -304,9 +308,17 @@ export default function RiskIntelligence({ onSelectWork }) {
                       <button
                         type="button"
                         className="gov-redirect-link-btn"
-                        onClick={() => onSelectWork && onSelectWork(item)}
+                        title="Inspect AI Risk Anomalies & Forensic Scoring Dossier"
+                        onClick={() =>
+                          onSelectWork &&
+                          onSelectWork({
+                            ...item,
+                            __initialSection: "risk",
+                            __authority: currentAuthority,
+                          })
+                        }
                       >
-                        Audit Dossier →
+                        Inspect Risk Audit Dossier →
                       </button>
                     </td>
                   </tr>

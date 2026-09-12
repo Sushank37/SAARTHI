@@ -147,7 +147,12 @@ export default function CitizenMapTab({
           <ConstituencyMap
             constituency={selectedConstituency}
             onSelectWork={(work) => {
-              if (onSelectWork) onSelectWork(work);
+              if (onSelectWork)
+                onSelectWork({
+                  ...work,
+                  __initialSection: "overview",
+                  __authority: "CITIZEN",
+                });
             }}
           />
         </div>

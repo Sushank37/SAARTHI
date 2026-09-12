@@ -376,10 +376,21 @@ export default function CitizenOverviewTab({
                     type="button"
                     className="gov-redirect-link-btn"
                     style={{ cursor: "pointer" }}
-                    onClick={() => onSelectWork && onSelectWork({ WORK_ID: item.id, WORK_DESCRIPTION: item.title, CONSTITUENCY: item.constituency, STATE_NAME: item.state })}
+                    onClick={() =>
+                      onSelectWork &&
+                      onSelectWork({
+                        WORK_ID: item.id,
+                        WORK_DESCRIPTION: item.title,
+                        CONSTITUENCY: item.constituency,
+                        STATE_NAME: item.state,
+                        __initialSection: "overview",
+                        __authority: "CITIZEN",
+                      })
+                    }
+                    title="Inspect Public Community Project Factsheet"
                   >
                     <Eye size={12} />
-                    <span>View Dossier</span>
+                    <span>Public Factsheet →</span>
                   </button>
                 </div>
               </div>

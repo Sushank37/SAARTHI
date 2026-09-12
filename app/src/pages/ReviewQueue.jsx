@@ -17,8 +17,12 @@ import {
   formatCurrency,
   exportToCSV,
 } from "../constants";
+import { useAuth } from "../context/useAuth";
 
 export default function ReviewQueue({ onSelectWork }) {
+  const { role, roleConfig } = useAuth() || {};
+  const currentAuthority = (roleConfig?.id || role || "DISTRICT_AUTHORITY").toUpperCase();
+
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -208,9 +212,17 @@ export default function ReviewQueue({ onSelectWork }) {
                       <button
                         type="button"
                         className="gov-redirect-link-btn"
-                        onClick={() => onSelectWork && onSelectWork(item)}
+                        title="Inspect Forensic Scrutiny & Directives Clearance Dossier"
+                        onClick={() =>
+                          onSelectWork &&
+                          onSelectWork({
+                            ...item,
+                            __initialSection: "actions",
+                            __authority: currentAuthority,
+                          })
+                        }
                       >
-                        Audit Dossier →
+                        Inspect Review Dossier →
                       </button>
                     </td>
                   </tr>

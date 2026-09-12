@@ -243,11 +243,22 @@ export default function CitizenVerifyTab({ onSelectWork, onReportWork }) {
                 <button
                   type="button"
                   className="gov-redirect-link-btn"
-                  onClick={() => onSelectWork && onSelectWork({ WORK_ID: verifiedWork.work_id, WORK_DESCRIPTION: verifiedWork.title, CONSTITUENCY: verifiedWork.constituency, STATE_NAME: verifiedWork.state })}
+                  onClick={() =>
+                    onSelectWork &&
+                    onSelectWork({
+                      WORK_ID: verifiedWork.work_id,
+                      WORK_DESCRIPTION: verifiedWork.title,
+                      CONSTITUENCY: verifiedWork.constituency,
+                      STATE_NAME: verifiedWork.state,
+                      __initialSection: "actions",
+                      __authority: "CITIZEN",
+                    })
+                  }
+                  title="Inspect Social Audit & Community Verification Dossier"
                   style={{ flexGrow: 1, justifyContent: "center", cursor: "pointer" }}
                 >
                   <Eye size={12} />
-                  <span>Inspect Full Work Dossier</span>
+                  <span>Social Audit Dossier →</span>
                 </button>
 
                 <button

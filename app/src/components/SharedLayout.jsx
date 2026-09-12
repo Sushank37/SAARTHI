@@ -53,10 +53,14 @@ export default function SharedLayout() {
       return;
     }
     const initialSection = section || (typeof work === "object" ? work.__initialSection : null) || "all";
+    const currentAuthority = (typeof work === "object" && work.__authority)
+      ? String(work.__authority).toUpperCase()
+      : (roleConfig?.id?.toUpperCase() || role?.toUpperCase() || "DISTRICT_AUTHORITY");
+
     if (typeof work === "object") {
-      setSelectedWork({ ...work, __initialSection: initialSection });
+      setSelectedWork({ ...work, __initialSection: initialSection, __authority: currentAuthority });
     } else {
-      setSelectedWork({ WORK_ID: String(work).replace(/\.0$/, ""), __initialSection: initialSection });
+      setSelectedWork({ WORK_ID: String(work).replace(/\.0$/, ""), __initialSection: initialSection, __authority: currentAuthority });
     }
   };
 
