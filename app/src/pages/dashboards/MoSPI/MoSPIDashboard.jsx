@@ -285,7 +285,7 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
       {/* ============================================================
           3. TOP MODULE NAVIGATION TABS (12 Standard Sections)
           ============================================================ */}
-      <div className="gov-mp-nav-bar mospi-tab-nav-bar">
+      <div className="mospi-pills-list">
         {MOSPI_MODULES.map((mod) => {
           const Icon = mod.icon;
           const isActive =
@@ -311,12 +311,12 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
             <button
               key={mod.id}
               type="button"
-              className={`gov-mp-nav-btn ${isActive ? "active" : ""}`}
+              className={`mospi-pill-btn ${isActive ? "active" : ""}`}
               onClick={() => handleTabChange(mod.id)}
             >
               <Icon size={14} />
               <span>{mod.label}</span>
-              {badgeCount && <span className="mospi-tab-count">{badgeCount}</span>}
+              {badgeCount && <span className="mospi-pill-count">{badgeCount}</span>}
             </button>
           );
         })}

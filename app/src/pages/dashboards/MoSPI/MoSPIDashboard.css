@@ -234,56 +234,54 @@
    3. TOP MODULE NAVIGATION TABS (6 Standard Sections)
    ============================================================ */
 
-.mospi-tab-nav-bar {
+.mospi-pills-list {
   display: flex;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 5px 8px;
-  gap: 6px;
+  align-items: center;
+  gap: 5px;
   overflow-x: auto;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   scrollbar-width: thin;
 }
 
-.mospi-tab-pill {
+.mospi-pill-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 11px;
-  font-size: 12px;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
   font-weight: 600;
   color: #475569;
-  border: 1px solid transparent;
-  background: transparent;
-  border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.12s ease;
 }
 
-.mospi-tab-pill:hover {
+.mospi-pill-btn:hover {
   background: #f1f5f9;
   color: #0f172a;
+  border-color: #94a3b8;
 }
 
-.mospi-tab-pill.active {
+.mospi-pill-btn.active {
   background: #eff6ff;
-  border-color: #bfdbfe;
-  color: #0284c7;
+  border-color: #005A9C;
+  color: #005A9C;
   font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 90, 156, 0.08);
 }
 
-.mospi-tab-count {
-  font-size: 10.5px;
+.mospi-pill-count {
+  font-size: 10px;
   font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.06);
-  color: inherit;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 1px 5px;
+  border-radius: 4px;
 }
 
-.mospi-tab-pill.active .mospi-tab-count {
+.mospi-pill-btn.active .mospi-pill-count {
   background: #bfdbfe;
   color: #0369a1;
 }
@@ -837,3 +835,22 @@
   color: #ffffff;
 }
 
+/* 
+ * ============================================================
+ * MOSPI SIDEBAR OVERRIDES (Match MP Reference Style)
+ * ============================================================
+ */
+.gov-sidebar-compact a[href^="/mospi"] {
+  background: transparent !important;
+  border-left: 3px solid transparent !important;
+}
+
+.gov-sidebar-compact a[href^="/mospi"].active {
+  background: #eff6ff !important;
+  border-left-color: #005A9C !important;
+  color: #0369a1 !important;
+}
+
+.gov-sidebar-compact a[href^="/mospi"].active .nav-icon {
+  color: #005A9C !important;
+}

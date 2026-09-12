@@ -120,7 +120,7 @@ export default function CitizenDashboard({ summary, onSelectWork }) {
       </div>
 
       {/* 2. Public Tab Navigation Bar */}
-      <div className="gov-mp-nav-bar citizen-tab-bar">
+      <div className="citizen-pills-list">
         {CITIZEN_TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = currentTab === tab.id;
@@ -128,12 +128,12 @@ export default function CitizenDashboard({ summary, onSelectWork }) {
             <button
               key={tab.id}
               type="button"
-              className={`gov-mp-nav-btn ${isActive ? "active" : ""}`}
+              className={`citizen-pill-btn ${isActive ? "active" : ""}`}
               onClick={() => handleTabChange(tab.id)}
             >
               <Icon size={14} />
               <span>{tab.label}</span>
-              {tab.badge && <span className="citizen-tab-badge">{tab.badge}</span>}
+              {tab.badge && <span className="citizen-pill-badge">{tab.badge}</span>}
             </button>
           );
         })}
