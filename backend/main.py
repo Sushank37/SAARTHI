@@ -1,23 +1,41 @@
 from typing import Optional, List, Dict, Any
-from fastapi import FastAPI, HTTPException, Query, Body
+from fastapi import FastAPI, HTTPException, Query, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import pandas as pd
 import math
 import json
 import re
+import os
+import sys
 
 
 
 # ============================================================
-# CONFIGURATION
+# CONFIGURATION & ENVIRONMENT
 # ============================================================
 
 BACKEND_DIR = Path(__file__).resolve().parent
-DATA_FILE = BACKEND_DIR / "data" / "mplads_final_dataset.csv"
-if not DATA_FILE.exists():
-    DATA_FILE = BACKEND_DIR.parent / "data" / "mplads_final_dataset.csv"
 BASE_DIR = BACKEND_DIR.parent
+
+# Ensure Python search path contains both backend and root
+for path_item in [str(BACKEND_DIR), str(BASE_DIR)]:
+    if path_item not in sys.path:
+        sys.path.insert(0, path_item)
+
+# Candidate paths for the canonical master dataset (supports uncompressed .csv and compressed .csv.gz)
+candidate_data_paths = [
+    BACKEND_DIR / "data" / "mplads_final_dataset.csv.gz",
+    BACKEND_DIR / "data" / "mplads_final_dataset.csv",
+    BASE_DIR / "data" / "mplads_final_dataset.csv.gz",
+    BASE_DIR / "data" / "mplads_final_dataset.csv",
+    Path("backend/data/mplads_final_dataset.csv.gz"),
+    Path("backend/data/mplads_final_dataset.csv"),
+    Path("data/mplads_final_dataset.csv.gz"),
+    Path("data/mplads_final_dataset.csv"),
+]
+
+DATA_FILE = next((p for p in candidate_data_paths if p.exists()), candidate_data_paths[0])
 
 app = FastAPI(
     title="MPLADS AI Monitoring API",
@@ -30,17 +48,24 @@ app = FastAPI(
 # CORS
 # ============================================================
 
+allowed_origins_env = os.environ.get("ALLOWED_ORIGINS", "")
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+if allowed_origins_env:
+    for origin in allowed_origins_env.split(","):
+        cleaned = origin.strip()
+        if cleaned and cleaned not in origins:
+            origins.append(cleaned)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "*",
-    ],
+    allow_origins=origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -52,15 +77,13 @@ app.add_middleware(
 # ============================================================
 
 print("=" * 70)
-print("MPLADS AI BACKEND")
+print("MPLADS AI BACKEND (DEPLOY READY)")
 print("=" * 70)
-print()
-print("Loading dataset:")
-print(DATA_FILE)
+print(f"Data file resolved to: {DATA_FILE}")
 
 if not DATA_FILE.exists():
     raise FileNotFoundError(
-        f"Dataset not found: {DATA_FILE}"
+        f"Dataset not found at any candidate path. Checked: {[str(p) for p in candidate_data_paths]}"
     )
 
 df = pd.read_csv(
@@ -363,33 +386,40 @@ def pagination(data, page, limit):
 
 
 # ============================================================
-# ROOT
+# ROOT & HEALTH
 # ============================================================
 
 @app.get("/")
 def root():
-
     return {
+        "service": "SAARTHI MPLADS eSAKSHI Surveillance API",
         "name": "MPLADS AI Monitoring API",
-        "status": "running",
+        "status": "healthy",
+        "version": "2.1.0",
+        "total_works": len(df),
         "dataset_rows": len(df),
         "dataset_columns": len(df.columns),
-        "version": "2.1.0"
+        "docs": "/docs",
+        "api_health": "/api/health",
+        "api_summary": "/api/summary",
     }
 
-
-# ============================================================
-# HEALTH
-# ============================================================
-
-@app.get("/api/health")
-def health():
-
+@app.get("/health")
+def health_check():
     return {
         "status": "healthy",
         "dataset_loaded": True,
         "rows": len(df),
-        "columns": len(df.columns)
+        "columns": len(df.columns),
+    }
+
+@app.get("/api/health")
+def health():
+    return {
+        "status": "healthy",
+        "dataset_loaded": True,
+        "rows": len(df),
+        "columns": len(df.columns),
     }
 
 
@@ -1315,7 +1345,13 @@ def get_works(
 # WORKS GEOJSON (PRODUCTION GIS API)
 # ============================================================
 
-GEO_CACHE_FILE = BASE_DIR / "backend" / "geocoded_localities_cache.json"
+candidate_geo_paths = [
+    BACKEND_DIR / "geocoded_localities_cache.json",
+    BASE_DIR / "backend" / "geocoded_localities_cache.json",
+    Path("backend/geocoded_localities_cache.json"),
+    Path("geocoded_localities_cache.json"),
+]
+GEO_CACHE_FILE = next((p for p in candidate_geo_paths if p.exists()), candidate_geo_paths[0])
 _GEO_CACHE = {}
 if GEO_CACHE_FILE.exists():
     try:
@@ -4970,4 +5006,7 @@ print("=" * 70)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    host = os.environ.get("HOST", "0.0.0.0")
+    reload_flag = os.environ.get("ENV", "development").lower() == "development"
+    uvicorn.run("main:app", host=host, port=port, reload=reload_flag)
