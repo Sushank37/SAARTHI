@@ -2070,8 +2070,11 @@ export default function DADashboard({ summary, onSelectWork }) {
                 </tr>
               ) : works.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="p-8 text-center text-slate-500">
-                    No matching works found for the selected module and filters.
+                  <td colSpan={10} className="text-center py-6">
+                    <div className="da-empty-state-box">
+                      <CheckCircle2 size={16} />
+                      <span>No matching works found for the selected module and filters.</span>
+                    </div>
                   </td>
                 </tr>
               ) : (

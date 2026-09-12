@@ -819,7 +819,7 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
               <NavLink
                 key={item.id}
                 to={`/ia?tab=${item.tab}${currentIA ? `&ia=${encodeURIComponent(currentIA)}` : ""}`}
-                className={`nav-item-compact ${isTabActive ? "active" : ""}`}
+                className={() => `nav-item-compact ${isTabActive ? "active" : ""}`}
                 title={item.label}
               >
                 <div className="nav-label-wrap">
@@ -853,7 +853,7 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
               <NavLink
                 key={item.id}
                 to={`/da?tab=${item.tab}`}
-                className={`nav-item-compact ${isTabActive ? "active" : ""}`}
+                className={() => `nav-item-compact ${isTabActive ? "active" : ""}`}
                 title={item.label}
               >
                 <div className="nav-label-wrap">

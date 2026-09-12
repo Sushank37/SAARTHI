@@ -507,22 +507,38 @@
 }
 
 .da-strip-btn {
-  background: #b45309;
-  color: #ffffff;
-  border: none;
-  font-size: 12px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  font-size: 11.5px;
   font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.15s ease;
+  color: #b45309;
+  padding: 5px 10px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .da-strip-btn:hover {
-  background: #92400e;
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+/* New DA Empty State Box matching MP */
+.da-empty-state-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 0 auto;
 }
 
 .da-strip-btn-outline {
@@ -559,7 +575,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 12px 14px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 .da-panel-header {
@@ -567,8 +583,6 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #f1f5f9;
 }
 
 .da-panel-title {
@@ -1527,3 +1541,22 @@
   background: #92400e;
 }
 
+/* 
+ * ============================================================
+ * DA SIDEBAR OVERRIDES (Match MP Reference Style)
+ * ============================================================
+ */
+.gov-sidebar-compact a[href^="/da"] {
+  background: transparent !important;
+  border-left: 3px solid transparent !important;
+}
+
+.gov-sidebar-compact a[href^="/da"].active {
+  background: #eff6ff !important;
+  border-left-color: #005A9C !important;
+  color: #0369a1 !important;
+}
+
+.gov-sidebar-compact a[href^="/da"].active .nav-icon {
+  color: #005A9C !important;
+}
