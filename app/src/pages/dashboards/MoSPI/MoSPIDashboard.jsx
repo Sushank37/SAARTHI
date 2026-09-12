@@ -119,22 +119,33 @@ export default function MoSPIDashboard({ onSelectWork }) {
   // National Analytics state from /api/analytics/mospi
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [analyticsError, setAnalyticsError] = useState(null);
 
   // Fetch unified national analytics
   useEffect(() => {
     let isMounted = true;
     async function fetchAnalytics() {
       setLoading(true);
+      setAnalyticsError(null);
       try {
         const res = await fetch(`${API_BASE}/api/analytics/mospi`);
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted) {
-            setAnalytics(data);
-          }
+        if (!res.ok) {
+          throw new Error(`Analytics API error ${res.status}: ${res.statusText}`);
+        }
+        const data = await res.json();
+        // Lightweight contract validation — must contain the critical KPIs and anomaly objects
+        if (!data?.national_kpis || typeof data.national_kpis !== "object" ||
+            !data?.anomaly_summary || typeof data.anomaly_summary !== "object") {
+          throw new Error("Invalid analytics response: missing national_kpis or anomaly_summary");
+        }
+        if (isMounted) {
+          setAnalytics(data);
         }
       } catch (err) {
         console.error("Failed to load MoSPI analytics:", err);
+        if (isMounted) {
+          setAnalyticsError(err.message || "Failed to load analytics.");
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -180,6 +191,17 @@ export default function MoSPIDashboard({ onSelectWork }) {
 
   return (
     <div className="mospi-shell">
+      {/* Analytics fetch error banner */}
+      {analyticsError && (
+        <div style={{
+          background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: "6px",
+          padding: "8px 14px", marginBottom: "10px", display: "flex", alignItems: "center",
+          gap: "8px", fontSize: "12px", color: "#b91c1c"
+        }}>
+          <AlertTriangle size={13} />
+          <span>Analytics data unavailable — {analyticsError}</span>
+        </div>
+      )}
       {/* ============================================================
           1. OFFICIAL HEADER CARD
           ============================================================ */}
@@ -312,7 +334,9 @@ export default function MoSPIDashboard({ onSelectWork }) {
               badgeCount = formatNumber(kpis.risk_cases_count);
             }
             if (mod.id === "anomaly-detection") {
-              const count = analytics?.anomaly_summary?.total_anomalies ?? analytics?.anomaly_summary?.extreme_delays_over_180;
+              // Use total_anomalies (distinct anomalous works, union of all criteria).
+              // Do NOT fall back to extreme_delays_over_180 alone, which is only one category.
+              const count = analytics?.anomaly_summary?.total_anomalies;
               if (count != null) badgeCount = formatNumber(count);
             }
             if (mod.id === "duplicate-intelligence" && kpis.duplicate_clusters != null) {

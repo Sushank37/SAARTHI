@@ -15,7 +15,10 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
   const extremeDelays = anomalies.extreme_delays_over_180 ?? 0;
   const costVariance = anomalies.cost_variance_cases ?? 0;
   const prolonged = anomalies.prolonged_completion_over_365 ?? 0;
-  const totalAnomalies = extremeDelays + costVariance + prolonged;
+  // Use the authoritative backend total — distinct works flagged by ANY anomaly criterion.
+  // Do NOT sum categories; categories can overlap (a single work can be both delayed AND
+  // a cost-variance case), so summing overstates the true count.
+  const totalAnomalies = anomalies.total_anomalies ?? 0;
 
   const subtabs = [
     { id: "all", label: "All Anomalies", count: totalAnomalies },
@@ -27,6 +30,7 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
   const [activeSubtab, setActiveSubtab] = useState("all");
   const [works, setWorks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -35,19 +39,28 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
     let isMounted = true;
     async function fetchAnomalousWorks() {
       setLoading(true);
+      setFetchError(null);
       try {
         const sub = activeSubtab === "all" ? "" : `&subfilter=${activeSubtab}`;
         const res = await fetch(`${API_BASE}/api/works?tab=anomaly-detection${sub}&page=${page}&limit=20`);
-        if (res.ok) {
-          const d = await res.json();
-          if (isMounted) {
-            setWorks(d.data || []);
-            setTotalCount(d.total || 0);
-            setTotalPages(d.total_pages || d.pages || 1);
-          }
+        if (!res.ok) {
+          throw new Error(`API error ${res.status}: ${res.statusText}`);
+        }
+        const d = await res.json();
+        if (!Array.isArray(d.data)) {
+          throw new Error("Invalid response: expected data array");
+        }
+        if (isMounted) {
+          setWorks(d.data);
+          setTotalCount(d.total ?? 0);
+          setTotalPages(d.total_pages ?? d.pages ?? 1);
         }
       } catch (err) {
         console.error("Failed to load anomaly detection works:", err);
+        if (isMounted) {
+          setFetchError(err.message || "Failed to load anomalous works.");
+          setWorks([]);
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -163,6 +176,13 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
                   <td colSpan={8} style={{ textAlign: "center", padding: "30px" }}>
                     <div className="spinner" />
                     <p style={{ color: "#64748b", marginTop: "6px", fontSize: "12px" }}>Loading anomalous works records...</p>
+                  </td>
+                </tr>
+              ) : fetchError ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: "center", padding: "30px", color: "#b91c1c" }}>
+                    <AlertTriangle size={16} style={{ marginBottom: "4px" }} />
+                    <p style={{ fontSize: "12px", marginTop: "4px" }}>Error loading data: {fetchError}</p>
                   </td>
                 </tr>
               ) : works.length === 0 ? (

@@ -3614,16 +3614,44 @@ def compute_mospi_national_analytics():
     }
 
     # Anomaly Summary
+    # --------------------------------------------------------------------------
+    # Category definitions:
+    #   extreme_delays     : SANCTION_DELAY_DAYS > 180  (severe statutory breach)
+    #   long_completions   : COMPLETION_DURATION_DAYS > 365  (prolonged lifecycle)
+    #   cost_var_cases     : COST_VARIANCE < 0 or ACTUAL > SANCTION  (spending overrun)
+    #   sig_var_cases      : |COST_VARIANCE_PERCENT| > 20  (significant cost divergence)
+    #
+    # total_anomalies is the COUNT OF DISTINCT WORKS flagged by ANY of the three
+    # primary anomaly criteria (extreme delay OR cost variance OR prolonged lifecycle).
+    # This is the authoritative total and MUST equal what /api/works?tab=anomaly-detection
+    # returns for the 'all' sub-filter.  sig_var_cases is a diagnostic sub-metric
+    # (subset of cost_var_cases) and does NOT add to the total.
+    # --------------------------------------------------------------------------
     extreme_delays = int((sd > 180).sum()) if not sd.empty else 0
     long_completions = int((cd > 365).sum()) if not cd.empty else 0
     cost_var_cases = int(((df["COST_VARIANCE"] < 0) | (df["ACTUAL_AMOUNT"] > df["SANCTION_AMOUNT"])).sum()) if column_exists("COST_VARIANCE") else 0
     sig_var_cases = int((df["COST_VARIANCE_PERCENT"].abs() > 20).sum()) if column_exists("COST_VARIANCE_PERCENT") else 0
+
+    # Build union mask matching the /api/works?tab=anomaly-detection filter
+    anomaly_union = pd.Series(False, index=df.index)
+    if not sd.empty:
+        anomaly_union = anomaly_union | (sd > 180)
+    if column_exists("COST_VARIANCE"):
+        anomaly_union = anomaly_union | (df["COST_VARIANCE"] < 0)
+    if column_exists("ACTUAL_AMOUNT") and column_exists("SANCTION_AMOUNT"):
+        anomaly_union = anomaly_union | (df["ACTUAL_AMOUNT"] > df["SANCTION_AMOUNT"])
+    if not cd.empty:
+        anomaly_union = anomaly_union | (cd > 365)
+    total_anomaly_works = int(anomaly_union.sum())
+
     anomaly_summary = {
         "extreme_delays_over_180": extreme_delays,
         "prolonged_completion_over_365": long_completions,
         "cost_variance_cases": cost_var_cases,
         "significant_variance_cases": sig_var_cases,
-        "total_anomalies": extreme_delays + cost_var_cases
+        # Authoritative total: distinct works flagged by ANY of the three primary criteria.
+        # Matches the count returned by /api/works?tab=anomaly-detection (all sub-filter).
+        "total_anomalies": total_anomaly_works
     }
 
     # Risk factor averages among risk-flagged cases
@@ -3679,6 +3707,24 @@ def compute_mospi_national_analytics():
             "coverage_note": "Historical repository spans 1,02,703 records across all 36 States & UTs. Missing entries denote unrecorded historical fields rather than absence of activity."
         }
     }
+
+# --------------------------------------------------------------------------
+# Cache note: The MPLADS dataset is STATIC for the lifetime of this process
+# (loaded once from CSV/gz at startup; there are no upload/reload endpoints).
+# Therefore these caches are valid until process restart.
+# If a data-reload mechanism is added in the future, call
+# invalidate_mospi_caches() immediately after replacing the global `df`.
+# --------------------------------------------------------------------------
+
+def invalidate_mospi_caches():
+    """Call this whenever the master dataset (df) is replaced or reloaded.
+    Clears all derived analytics caches so the next request recomputes
+    from the current data.
+    """
+    global _mospi_analytics_cache, _early_alerts_cache
+    _mospi_analytics_cache = None
+    _early_alerts_cache = None
+
 
 @app.get("/api/analytics/mospi")
 def mospi_national_analytics():
@@ -3746,7 +3792,11 @@ def compute_early_alerts():
             "count": int(mask_delays.sum()),
             "severity": "HIGH",
             "badge_color": "amber",
-            "description": "Works exceeding statutory 45-day SLA (Section 3.12) or execution timeline past 365 days",
+            # Trigger: SANCTION_DELAY_DAYS > 90 AND SANCTION_DELAY_VS_PEER > 1.2.
+            # The 45-day figure is the statutory SLA (Section 3.12 of MPLADS Guidelines);
+            # this alert fires at >90 days to flag works already in sustained breach,
+            # not at first breach, in order to surface actionable priorities.
+            "description": "Works with sanction delay exceeding 90 days and lagging peer median by >20% — sustained breach of the 45-day Section 3.12 statutory SLA",
             "recommendation": "Issue Section 3.12 statutory explanation notice to designated District Authority."
         },
         "cost_overruns": {
@@ -3755,7 +3805,10 @@ def compute_early_alerts():
             "count": int(mask_cost.sum()),
             "severity": "CRITICAL",
             "badge_color": "purple",
-            "description": "Actual expenditure or estimate exceeding peer median project cost by >2.0x",
+            # Trigger: COST_VS_PEER > 2.5 AND SANCTION_AMOUNT > 5 lakh.
+            # The 2.5x multiplier is the alert threshold; 2.0x is an informal
+            # warning band in some narrative reports and should NOT be cited here.
+            "description": "Works where cost-vs-peer ratio exceeds 2.5x the constituency median with sanctioned amount above ₹5 lakh",
             "recommendation": "Withhold next installment disbursement pending engineering rate re-scrutiny."
         },
         "duplicate_works": {
