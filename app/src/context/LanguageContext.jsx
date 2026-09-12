@@ -1,6 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { TRANSLATIONS } from "../data/translations";
 
+// Pre-index translations by lowercased key for robust case-insensitive lookups
+const LOWER_CASE_TRANSLATIONS = new Map();
+Object.keys(TRANSLATIONS).forEach((k) => {
+  const lower = k.toLowerCase().trim();
+  if (!LOWER_CASE_TRANSLATIONS.has(lower)) {
+    LOWER_CASE_TRANSLATIONS.set(lower, TRANSLATIONS[k]);
+  }
+});
+
 export const SUPPORTED_LANGUAGES = [
   { code: "en", name: "English", native: "English" },
   { code: "hi", name: "Hindi", native: "हिन्दी" },
@@ -52,12 +61,14 @@ export function LanguageProvider({ children }) {
         return `${leading}${translation}${trailing}`;
       }
 
-      // 2. Case-insensitive lookup fallback
-      const uppercaseMatch = TRANSLATIONS[trimmed.toUpperCase()]?.[currentLang.code];
-      if (uppercaseMatch) {
+      // 2. Case-insensitive lookup fallback (handles UPPERCASE, lowercase, Title Case variations)
+      const caseInsensitiveMatch =
+        LOWER_CASE_TRANSLATIONS.get(trimmed.toLowerCase())?.[currentLang.code] ||
+        TRANSLATIONS[trimmed.toUpperCase()]?.[currentLang.code];
+      if (caseInsensitiveMatch) {
         const leading = text.match(/^\s*/)[0];
         const trailing = text.match(/\s*$/)[0];
-        return `${leading}${uppercaseMatch}${trailing}`;
+        return `${leading}${caseInsensitiveMatch}${trailing}`;
       }
 
       // 3. Parentheses entity parser: e.g. "GORAKHPUR(DISTRICT MAGISTRATE GORAKHPUR_IDA)"

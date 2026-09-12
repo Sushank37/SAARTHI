@@ -62,12 +62,6 @@ export default function SharedLayout() {
     }
   };
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  const toggleSidebar = () => {
-    setSidebarOpen((prev) => !prev);
-  };
-
   return (
     <div
       className="gov-app-shell theme-official"
@@ -89,21 +83,12 @@ export default function SharedLayout() {
       />
 
       {/* Main Layout (Sidebar only shown for Lok Sabha) */}
-      <div
-        className={`gov-layout-body ${house === "Rajya Sabha" ? "gov-layout-body-rs" : ""} ${
-          !sidebarOpen ? "sidebar-collapsed-mode" : ""
-        }`}
-      >
+      <div className={`gov-layout-body ${house === "Rajya Sabha" ? "gov-layout-body-rs" : ""}`}>
         {house !== "Rajya Sabha" && (
-          <Sidebar
-            summary={summary}
-            roleConfig={roleConfig}
-            onLogout={handleLogout}
-            collapsed={!sidebarOpen}
-          />
+          <Sidebar summary={summary} roleConfig={roleConfig} onLogout={handleLogout} />
         )}
 
-        <main className={`gov-content-viewport ${!sidebarOpen ? "full-width" : ""}`}>
+        <main className="gov-content-viewport">
           {/* If Rajya Sabha is selected, show the Phase 2 development / upcoming release notice */}
           {house === "Rajya Sabha" ? (
             <RajyaSabhaNotice onSwitchToLokSabha={() => setHouse("Lok Sabha")} />
@@ -115,9 +100,6 @@ export default function SharedLayout() {
                 selectedWork,
                 setSelectedWork: handleSelectWork,
                 onSelectWork: handleSelectWork,
-                sidebarOpen,
-                setSidebarOpen,
-                toggleSidebar,
               }}
             />
           )}

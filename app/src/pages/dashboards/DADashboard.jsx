@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Link, useSearchParams, useOutletContext } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/LanguageContext";
 import {
@@ -28,8 +28,6 @@ import {
   Bell,
   Filter,
   AlertOctagon,
-  Menu,
-  X,
 } from "lucide-react";
 import {
   API_BASE,
@@ -80,44 +78,7 @@ function LayoutDashboardIcon(props) {
   );
 }
 
-export default function DADashboard({
-  summary,
-  onSelectWork,
-  sidebarOpen: propSidebarOpen,
-  setSidebarOpen: propSetSidebarOpen,
-  toggleSidebar: propToggleSidebar,
-}) {
-  let outletCtx = {};
-  try {
-    outletCtx = useOutletContext() || {};
-  } catch {
-    outletCtx = {};
-  }
-
-  const [localSidebarOpen, setLocalSidebarOpen] = useState(true);
-
-  const isSidebarOpen =
-    propSidebarOpen !== undefined
-      ? propSidebarOpen
-      : outletCtx.sidebarOpen !== undefined
-        ? outletCtx.sidebarOpen
-        : localSidebarOpen;
-
-  const handleToggleSidebar = () => {
-    if (propToggleSidebar) {
-      propToggleSidebar();
-    } else if (outletCtx.toggleSidebar) {
-      outletCtx.toggleSidebar();
-    } else if (propSetSidebarOpen) {
-      propSetSidebarOpen((prev) => !prev);
-    } else if (outletCtx.setSidebarOpen) {
-      outletCtx.setSidebarOpen((prev) => !prev);
-    } else {
-      setLocalSidebarOpen((prev) => !prev);
-    }
-    window.dispatchEvent(new CustomEvent("toggle-sidebar"));
-  };
-
+export default function DADashboard({ summary, onSelectWork }) {
   const { roleConfig } = useAuth();
   const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -386,24 +347,9 @@ export default function DADashboard({
       <div className="da-official-header-card">
         <div className="da-header-inner">
           <div className="da-identity-block">
-            <div className="da-header-top-row">
-              <button
-                type="button"
-                id="da-sidebar-toggle-btn"
-                className={`da-hamburger-btn ${!isSidebarOpen ? "collapsed" : ""}`}
-                onClick={handleToggleSidebar}
-                title={isSidebarOpen ? t("Hide Sidebar Navigation") : t("Show Sidebar Navigation")}
-                aria-label={isSidebarOpen ? t("Hide Sidebar Navigation") : t("Show Sidebar Navigation")}
-              >
-                <Menu size={16} className="da-hamburger-icon" />
-                <span className="da-hamburger-text">{isSidebarOpen ? t("Hide Sidebar") : t("Show Sidebar")}</span>
-                {isSidebarOpen && <X size={12} className="da-hamburger-close-indicator" />}
-              </button>
-
-              <div className="da-ministry-badge">
-                <Scale size={13} />
-                <span>{t("Nodal District Authority (DA / Collectorate) · Scrutiny & Sanction Portal")}</span>
-              </div>
+            <div className="da-ministry-badge">
+              <Scale size={13} />
+              <span>{t("Nodal District Authority (DA / Collectorate) · Scrutiny & Sanction Portal")}</span>
             </div>
             <h1 className="da-name-heading">
               {analytics?.district_name
@@ -536,7 +482,7 @@ export default function DADashboard({
             <div
               className={`da-metric-card ${activeKpiFilter === null ? "active-filter" : ""}`}
               onClick={() => handleKpiCardClick(null)}
-              title="Total works under this District Authority"
+              title={t("Total works under this District Authority")}
             >
               <div className="da-metric-top">
                 <span className="da-metric-caption">{t("Total Works in Scope")}</span>
@@ -814,7 +760,7 @@ export default function DADashboard({
                     type="button"
                     className="da-spotlight-inspect-btn btn-warning"
                     onClick={() => handleSelectWork(priorityCases[0], "overview")}
-                    title="Open official 78-field work dossier"
+                    title={t("Open official 78-field work dossier")}
                   >
                     <Eye size={13} />
                     <span>{t("View Dossier")}</span>
@@ -908,28 +854,28 @@ export default function DADashboard({
                 </div>
                 <div className="da-spotlight-title-line">
                   <span className="da-spotlight-work-id">#{works[0].WORK_ID || works[0].WORK_RECOMMENDATION_DTL_ID}</span>
-                  <span className="text-xs text-slate-500 font-semibold">· Hon'ble MP: {works[0].MP_NAME || "—"}</span>
+                  <span className="text-xs text-slate-500 font-semibold">· {t("Hon'ble MP:")} {works[0].MP_NAME || "—"}</span>
                 </div>
                 <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || t("Pending Sanction Proposal")}</div>
                 <div className="da-spotlight-subline">
-                  <span>Category: <strong>{works[0].WORK_CATEGORY || "Civic Infrastructure"}</strong></span>
+                  <span>{t("Category:")} <strong>{t(works[0].WORK_CATEGORY) || t("Civic Infrastructure")}</strong></span>
                   <span>·</span>
-                  <span>Delay: <strong className={works[0].SANCTION_DELAY_DAYS > 45 ? "text-red-700 font-bold" : ""}>{works[0].SANCTION_DELAY_DAYS != null ? `${works[0].SANCTION_DELAY_DAYS} Days` : "Pending Sanction Order"}</strong></span>
+                  <span>{t("Delay:")} <strong className={works[0].SANCTION_DELAY_DAYS > 45 ? "text-red-700 font-bold" : ""}>{works[0].SANCTION_DELAY_DAYS != null ? `${works[0].SANCTION_DELAY_DAYS} ${t("Days")}` : t("Pending Sanction Order")}</strong></span>
                 </div>
               </div>
               <div className="da-spotlight-right">
                 <div className="da-spotlight-amount">
                   <span className="da-spotlight-amount-val">{formatCurrency(works[0].RECOMMENDED_AMOUNT || 0)}</span>
-                  <span className="da-spotlight-amount-label">Proposal Value</span>
+                  <span className="da-spotlight-amount-label">{t("Proposal Value")}</span>
                 </div>
                 <button
                   type="button"
                   className="da-spotlight-inspect-btn btn-warning"
                   onClick={() => handleSelectWork(works[0], "sanction")}
-                  title="Inspect Section 3.11 Sanction Dossier"
+                  title={t("Inspect Section 3.11 Sanction Dossier")}
                 >
                   <Eye size={13} />
-                  <span>Inspect Sanction Dossier</span>
+                  <span>{t("Inspect Sanction Dossier")}</span>
                 </button>
               </div>
             </div>

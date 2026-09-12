@@ -647,34 +647,6 @@ a {
   padding: 14px 10px;
   display: flex;
   flex-direction: column;
-  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-              padding 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.28s ease;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.gov-sidebar-compact.collapsed,
-.gov-layout-body.sidebar-collapsed-mode .gov-sidebar-compact {
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  border-right-width: 0px !important;
-  border-right-color: transparent !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  visibility: hidden !important;
-}
-
-.gov-layout-body.sidebar-collapsed-mode .gov-content-viewport,
-.gov-content-viewport.full-width {
-  flex: 1 1 100%;
-  width: 100%;
-  max-width: 100%;
-  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-nav-list {

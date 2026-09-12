@@ -31,20 +31,11 @@ import { API_BASE, formatNumber } from "../constants";
 import { ROLE_IDS } from "../data/roles";
 import { useAuth } from "../context/useAuth";
 
-export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
+export default function Sidebar({ summary, roleConfig, onLogout }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [searchParams] = useSearchParams();
-  const [isEventCollapsed, setIsEventCollapsed] = useState(false);
-
-  useEffect(() => {
-    const handleToggle = () => setIsEventCollapsed((prev) => !prev);
-    window.addEventListener("toggle-sidebar", handleToggle);
-    return () => window.removeEventListener("toggle-sidebar", handleToggle);
-  }, []);
-
-  const isCollapsed = collapsed !== undefined ? collapsed : isEventCollapsed;
 
   const handleLogout = () => {
     if (onLogout) {
@@ -766,7 +757,7 @@ export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
      ========================================================= */
 
   return (
-    <aside className={`gov-sidebar-compact ${isDARole ? "da-mode" : ""} ${isCollapsed ? "collapsed" : ""}`}>
+    <aside className="gov-sidebar-compact">
       {isMoSPIRole ? (
         /* =====================================================
            MOSPI NAVIGATION (6 Standard Modules)
