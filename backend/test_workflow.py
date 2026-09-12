@@ -21,7 +21,9 @@ def run_tests():
     print("=" * 60)
 
     # 1. Load dataset
-    data_file = BASE_DIR / "data" / "mplads_final_dataset.csv"
+    data_file = Path(__file__).resolve().parent / "data" / "mplads_final_dataset.csv"
+    if not data_file.exists():
+        data_file = BASE_DIR / "data" / "mplads_final_dataset.csv"
     print(f"Loading master dataset from: {data_file}")
     df = pd.read_csv(data_file, low_memory=False)
     df.columns = df.columns.astype(str).str.strip()

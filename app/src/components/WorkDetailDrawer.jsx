@@ -390,7 +390,7 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
         };
       case "CITIZEN":
         return {
-          eyebrow: "👥 JAN SAARTHI CITIZEN · PUBLIC TRANSPARENCY & SOCIAL AUDIT",
+          eyebrow: "👥 SAARTHI CITIZEN · PUBLIC TRANSPARENCY & SOCIAL AUDIT",
           badge: "PUBLIC AUDIT REGISTER",
           subtitle: "Constituency Development Verification & Democratic Social Audit",
         };
@@ -1607,7 +1607,7 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                   <div className="section-header-row" style={{ marginBottom: "10px" }}>
                     <h3 className="section-title">
                       <span className="sec-num-badge">5</span>
-                      <span>Jan Saarthi Citizen Social Audit & Public Verification</span>
+                      <span>Saarthi Citizen Social Audit & Public Verification</span>
                     </h3>
                     <span className="authority-badge-small citizen">Public Transparency</span>
                   </div>

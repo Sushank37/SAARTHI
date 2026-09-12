@@ -1,14 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   ShieldAlert,
-  AlertTriangle,
-  Clock,
-  TrendingUp,
-  FileCheck,
-  ChevronRight,
-  Info,
 } from "lucide-react";
-import { API_BASE, formatNumber, formatCrores } from "../../../constants";
+import { API_BASE, formatNumber } from "../../../constants";
 
 export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
   const [riskCases, setRiskCases] = useState([]);
@@ -38,20 +32,25 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
     return () => { isMounted = false; };
   }, []);
 
+  const totalWorks = kpis.total_works;
+  const riskCount = kpis.risk_cases_count;
+  const lowRiskCount = totalWorks != null && riskCount != null ? Math.max(0, totalWorks - riskCount) : null;
+  const lowRiskPct = totalWorks && totalWorks > 0 && lowRiskCount != null ? ((lowRiskCount / totalWorks) * 100).toFixed(2) : null;
+
   return (
     <div className="mospi-panel">
       {/* 1. National Risk Distribution Summary */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "10px" }}>
         <div className="mospi-card" style={{ borderLeft: "4px solid #10b981" }}>
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Low Risk Compliance</span>
             <span className="mospi-pill emerald">Normal Operations</span>
           </div>
           <div className="mospi-kpi-value">
-            {formatNumber((kpis.total_works || 102703) - (kpis.risk_cases_count || 18))} Works
+            {lowRiskCount != null ? `${formatNumber(lowRiskCount)} Works` : "—"}
           </div>
           <div className="mospi-kpi-sub">
-            {(((kpis.total_works || 102703) - (kpis.risk_cases_count || 18)) / (kpis.total_works || 102703) * 100).toFixed(2)}% of national repository within expected tolerances
+            {lowRiskPct != null ? `${lowRiskPct}% within expected tolerances` : "Within expected tolerances"}
           </div>
         </div>
 
@@ -60,8 +59,12 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Medium Risk (Audit Triggers)</span>
             <span className="mospi-pill amber">Requires Audit Review</span>
           </div>
-          <div className="mospi-kpi-value">{formatNumber(kpis.risk_cases_count || 18)} Works</div>
-          <div className="mospi-kpi-sub">Avg risk score: 41.42 (cost & completion outliers)</div>
+          <div className="mospi-kpi-value">
+            {riskCount != null ? `${formatNumber(riskCount)} Works` : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {riskCount != null ? "Cost & completion outliers requiring review" : "Outliers requiring verification"}
+          </div>
         </div>
 
         <div className="mospi-card" style={{ borderLeft: "4px solid #ef4444" }}>
@@ -69,8 +72,12 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">High Risk (Severe Outliers)</span>
             <span className="mospi-pill rose">Immediate Escalation</span>
           </div>
-          <div className="mospi-kpi-value">0 Works</div>
-          <div className="mospi-kpi-sub">Zero cases currently exceed critical danger threshold</div>
+          <div className="mospi-kpi-value">
+            {kpis.high_risk != null ? `${formatNumber(kpis.high_risk)} Works` : "0 Works"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {kpis.high_risk ? `${formatNumber(kpis.high_risk)} cases exceed critical danger threshold` : "Zero cases currently exceed critical danger threshold"}
+          </div>
         </div>
       </div>
 
@@ -89,7 +96,7 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
           <div className="mospi-risk-factor-card">
             <div className="mospi-rf-title">Completion Risk</div>
             <div className="mospi-rf-val" style={{ color: "#be123c" }}>
-              {rf.completion_risk || 80.2}%
+              {rf.completion_risk != null ? `${rf.completion_risk}%` : "—"}
             </div>
             <div className="mospi-rf-desc">
               Works exceeding peer median lifecycle completion days by significant margins.
@@ -99,7 +106,7 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
           <div className="mospi-risk-factor-card">
             <div className="mospi-rf-title">Cost Risk</div>
             <div className="mospi-rf-val" style={{ color: "#b45309" }}>
-              {rf.cost_risk || 70.9}%
+              {rf.cost_risk != null ? `${rf.cost_risk}%` : "—"}
             </div>
             <div className="mospi-rf-desc">
               Individual work sanctioned amount significantly exceeds peer median for same work category.
@@ -109,7 +116,7 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
           <div className="mospi-risk-factor-card">
             <div className="mospi-rf-title">Sanction Delay Risk</div>
             <div className="mospi-rf-val" style={{ color: "#0369a1" }}>
-              {rf.delay_risk || 12.1}%
+              {rf.delay_risk != null ? `${rf.delay_risk}%` : "—"}
             </div>
             <div className="mospi-rf-desc">
               Gap between MP recommendation date and District Collector administrative sanction date.
@@ -119,7 +126,7 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
           <div className="mospi-risk-factor-card">
             <div className="mospi-rf-title">Cost Variance Risk</div>
             <div className="mospi-rf-val" style={{ color: "#475569" }}>
-              {rf.variance_risk || 0.0}%
+              {rf.variance_risk != null ? `${rf.variance_risk}%` : "—"}
             </div>
             <div className="mospi-rf-desc">
               Discrepancies between sanctioned allocation and actual contractual disbursements.
@@ -143,27 +150,28 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
           <table className="mospi-data-table">
             <thead>
               <tr>
-                <th>Work ID</th>
+                <th style={{ width: "90px" }}>Work ID</th>
                 <th>State</th>
                 <th>Constituency / Authority</th>
                 <th>Work Stage</th>
-                <th>Sanction Amount</th>
-                <th>Risk Level</th>
-                <th>Risk Score</th>
+                <th style={{ textAlign: "right" }}>Sanction Amount</th>
+                <th style={{ textAlign: "center" }}>Risk Level</th>
+                <th style={{ textAlign: "center" }}>Risk Score</th>
                 <th>Primary Outlier Reason</th>
-                <th>Action</th>
+                <th style={{ textAlign: "center", width: "140px" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-4">
-                    <div className="spinner" /> Loading flagged risk cases...
+                  <td colSpan={9} style={{ textAlign: "center", padding: "30px" }}>
+                    <div className="spinner" />
+                    <p style={{ color: "#64748b", marginTop: "6px", fontSize: "12px" }}>Loading flagged risk cases...</p>
                   </td>
                 </tr>
               ) : riskCases.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-4 text-muted">
+                  <td colSpan={9} style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                     No risk cases found in the repository.
                   </td>
                 </tr>
@@ -172,27 +180,27 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
                   const workId = w.WORK_RECOMMENDATION_DTL_ID || w.WORK_ID;
                   return (
                     <tr key={workId}>
-                      <td>
-                        <strong className="font-mono text-sky-700">#{workId}</strong>
+                      <td style={{ fontWeight: 700, color: "#005A9C" }}>
+                        #{workId}
                       </td>
-                      <td>{w.STATE_NAME || "N/A"}</td>
-                      <td>{w.CONSTITUENCY || w.IDA_NAME || "N/A"}</td>
+                      <td style={{ fontWeight: 600 }}>{w.STATE_NAME || "—"}</td>
+                      <td style={{ fontSize: "11.5px", color: "#475569" }}>{w.CONSTITUENCY || w.IDA_NAME || "—"}</td>
                       <td>
-                        <span className="mospi-pill blue">{w.WORK_STAGE || "Sanction"}</span>
+                        <span className="mospi-pill blue">{w.WORK_STAGE || "—"}</span>
                       </td>
-                      <td>
-                        <strong>₹ {formatNumber(w.SANCTION_AMOUNT || 0)}</strong>
+                      <td style={{ textAlign: "right", fontWeight: 600 }}>
+                        {w.SANCTION_AMOUNT != null ? `₹ ${formatNumber(w.SANCTION_AMOUNT)}` : "—"}
                       </td>
-                      <td>
-                        <span className="mospi-pill amber">{w.RISK_LEVEL || "MEDIUM"}</span>
+                      <td style={{ textAlign: "center" }}>
+                        <span className="mospi-pill amber">{w.RISK_LEVEL || "—"}</span>
                       </td>
-                      <td>
-                        <strong>{w.RISK_SCORE ? Number(w.RISK_SCORE).toFixed(1) : "N/A"}</strong>
+                      <td style={{ textAlign: "center", fontWeight: 700 }}>
+                        {w.RISK_SCORE != null && !isNaN(Number(w.RISK_SCORE)) ? Number(w.RISK_SCORE).toFixed(1) : "—"}
                       </td>
                       <td style={{ maxWidth: "240px", fontSize: "11px", color: "#64748b" }}>
-                        {w.REVIEW_REASON || w.RISK_FACTORS || "Cost & completion outlier against peer cohort"}
+                        {w.REVIEW_REASON || w.RISK_FACTORS || "—"}
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center" }}>
                         <button
                           type="button"
                           className="mospi-dossier-btn mospi-dossier-risk"
@@ -203,8 +211,8 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
                           }}
                           title="Inspect National Risk Distribution & Algorithmic Audit Dossier"
                         >
-                          <ShieldAlert size={12} />
-                          <span>National Risk Dossier →</span>
+                          <ShieldAlert size={11} />
+                          <span>Risk Dossier →</span>
                         </button>
                       </td>
                     </tr>

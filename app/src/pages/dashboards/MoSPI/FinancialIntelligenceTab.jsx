@@ -1,12 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   IndianRupee,
   AlertCircle,
-  TrendingUp,
-  CheckCircle2,
-  AlertTriangle,
-  ExternalLink,
-  Layers,
 } from "lucide-react";
 import { API_BASE, formatNumber, formatCrores } from "../../../constants";
 
@@ -38,41 +33,49 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
   return (
     <div className="mospi-panel">
       {/* 1. Macro Financial Flow Lifecycle Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px" }}>
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Total Recommended</span>
-            <IndianRupee size={16} className="text-blue-500" />
+            <IndianRupee size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{formatCrores(kpis.total_recommended_amount || 0)}</div>
+          <div className="mospi-kpi-value">{kpis.total_recommended_amount != null ? formatCrores(kpis.total_recommended_amount) : "—"}</div>
           <div className="mospi-kpi-sub">100% of MP recommendations</div>
         </div>
 
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Total Sanctioned</span>
-            <IndianRupee size={16} className="text-emerald-500" />
+            <IndianRupee size={15} color="#0d9488" />
           </div>
-          <div className="mospi-kpi-value">{formatCrores(kpis.total_sanction_amount || 0)}</div>
-          <div className="mospi-kpi-sub">{kpis.sanction_rate || 72.6}% Sanction Conversion Rate</div>
+          <div className="mospi-kpi-value">{kpis.total_sanction_amount != null ? formatCrores(kpis.total_sanction_amount) : "—"}</div>
+          <div className="mospi-kpi-sub">
+            {kpis.sanction_rate != null ? `${kpis.sanction_rate}% Sanction Conversion Rate` : "Sanction Conversion Rate"}
+          </div>
         </div>
 
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Total Disbursed</span>
-            <IndianRupee size={16} className="text-sky-500" />
+            <IndianRupee size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{formatCrores(kpis.total_actual_amount || 0)}</div>
-          <div className="mospi-kpi-sub">{kpis.utilization_pct || 39.7}% Utilization of Sanctioned</div>
+          <div className="mospi-kpi-value">{kpis.total_actual_amount != null ? formatCrores(kpis.total_actual_amount) : "—"}</div>
+          <div className="mospi-kpi-sub">
+            {kpis.utilization_pct != null ? `${kpis.utilization_pct}% Utilization of Sanctioned` : "Utilization of Sanctioned"}
+          </div>
         </div>
 
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Unutilized Balance</span>
-            <AlertCircle size={16} className="text-amber-500" />
+            <AlertCircle size={15} color="#d97706" />
           </div>
           <div className="mospi-kpi-value">
-            {formatCrores((kpis.total_sanction_amount || 0) - (kpis.total_actual_amount || 0))}
+            {kpis.total_sanction_amount != null && kpis.total_actual_amount != null
+              ? formatCrores(kpis.total_sanction_amount - kpis.total_actual_amount)
+              : kpis.unutilized_balance != null
+              ? formatCrores(kpis.unutilized_balance)
+              : "—"}
           </div>
           <div className="mospi-kpi-sub">Committed but undisbursed funds</div>
         </div>
@@ -84,42 +87,54 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
           <div>
             <h3 className="mospi-card-title">National Fund Utilization Funnel</h3>
             <p className="mospi-card-subtitle">
-              Cumulative financial conversion across 1,02,703 Parliamentary works nationally
+              Cumulative financial conversion across {kpis.total_works != null ? formatNumber(kpis.total_works) : "all"} Parliamentary works nationally
             </p>
           </div>
           <span className="mospi-pill emerald">
-            {formatCrores(kpis.total_sanction_amount || 0)} Committed
+            {kpis.total_sanction_amount != null ? `${formatCrores(kpis.total_sanction_amount)} Committed` : "—"}
           </span>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "8px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "4px" }}>
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px" }}>
-              <span style={{ fontWeight: 600 }}>Recommended Amount</span>
-              <span style={{ fontWeight: 700 }}>{formatCrores(kpis.total_recommended_amount || 0)} (100%)</span>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "12px" }}>
+              <span style={{ fontWeight: 600, color: "#334155" }}>Recommended Amount</span>
+              <span style={{ fontWeight: 700, color: "#0f172a" }}>
+                {kpis.total_recommended_amount != null ? `${formatCrores(kpis.total_recommended_amount)} (100%)` : "—"}
+              </span>
             </div>
-            <div style={{ height: "10px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "5px", overflow: "hidden" }}>
-              <div style={{ height: "100%", width: "100%", backgroundColor: "#2563eb" }} />
+            <div style={{ height: "8px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "4px", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: "100%", backgroundColor: "#0284c7" }} />
             </div>
           </div>
 
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px" }}>
-              <span style={{ fontWeight: 600 }}>Administrative Sanctions Issued</span>
-              <span style={{ fontWeight: 700, color: "#10b981" }}>{formatCrores(kpis.total_sanction_amount || 0)} ({kpis.sanction_rate || 72.6}%)</span>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "12px" }}>
+              <span style={{ fontWeight: 600, color: "#334155" }}>Administrative Sanctions Issued</span>
+              <span style={{ fontWeight: 700, color: "#0d9488" }}>
+                {kpis.total_sanction_amount != null ? `${formatCrores(kpis.total_sanction_amount)} (${kpis.sanction_rate ?? 0}%)` : "—"}
+              </span>
             </div>
-            <div style={{ height: "10px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "5px", overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${kpis.sanction_rate || 72.6}%`, backgroundColor: "#10b981" }} />
+            <div style={{ height: "8px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "4px", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${kpis.sanction_rate ?? 0}%`, backgroundColor: "#0d9488" }} />
             </div>
           </div>
 
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px" }}>
-              <span style={{ fontWeight: 600 }}>Actual Treasury Disbursements</span>
-              <span style={{ fontWeight: 700, color: "#0ea5e9" }}>{formatCrores(kpis.total_actual_amount || 0)} ({kpis.utilization_pct || 39.7}%)</span>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "12px" }}>
+              <span style={{ fontWeight: 600, color: "#334155" }}>Actual Treasury Disbursements</span>
+              <span style={{ fontWeight: 700, color: "#0284c7" }}>
+                {kpis.total_actual_amount != null ? `${formatCrores(kpis.total_actual_amount)} (${kpis.utilization_pct ?? 0}%)` : "—"}
+              </span>
             </div>
-            <div style={{ height: "10px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "5px", overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${Math.round(((kpis.total_actual_amount || 0) / (kpis.total_recommended_amount || 1)) * 100)}%`, backgroundColor: "#0ea5e9" }} />
+            <div style={{ height: "8px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "4px", overflow: "hidden" }}>
+              <div
+                style={{
+                  height: "100%",
+                  width: `${kpis.total_recommended_amount > 0 ? Math.min(100, Math.round(((kpis.total_actual_amount ?? 0) / kpis.total_recommended_amount) * 100)) : 0}%`,
+                  backgroundColor: "#0284c7",
+                }}
+              />
             </div>
           </div>
         </div>
@@ -135,35 +150,37 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
             </p>
           </div>
           <span className="mospi-pill rose">
-            {formatNumber(analytics?.anomaly_summary?.cost_variance_cases || 4899)} Spending Anomalies
+            {analytics?.anomaly_summary?.cost_variance_cases != null
+              ? `${formatNumber(analytics.anomaly_summary.cost_variance_cases)} Spending Anomalies`
+              : "—"}
           </span>
         </div>
 
-        <div className="mospi-table-responsive">
-          <table className="mospi-table">
+        <div className="mospi-table-wrapper">
+          <table className="mospi-data-table">
             <thead>
               <tr>
-                <th>Work ID</th>
+                <th style={{ width: "90px" }}>Work ID</th>
                 <th>Description</th>
                 <th>State & District</th>
                 <th style={{ textAlign: "right" }}>Sanction Amount</th>
                 <th style={{ textAlign: "right" }}>Actual Disbursement</th>
                 <th style={{ textAlign: "right" }}>Cost Variance</th>
                 <th>Stage</th>
-                <th style={{ textAlign: "center" }}>Action</th>
+                <th style={{ textAlign: "center", width: "140px" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "40px" }}>
+                  <td colSpan={8} style={{ textAlign: "center", padding: "30px" }}>
                     <div className="spinner" />
-                    <p className="text-muted mt-2">Loading spending anomalies...</p>
+                    <p style={{ color: "#64748b", marginTop: "6px", fontSize: "12px" }}>Loading spending anomalies...</p>
                   </td>
                 </tr>
               ) : anomalyWorks.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                  <td colSpan={8} style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                     No spending anomalies detected under current filters.
                   </td>
                 </tr>
@@ -175,7 +192,7 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
 
                   return (
                     <tr key={w.WORK_RECOMMENDATION_DTL_ID || w.WORK_ID}>
-                      <td style={{ fontWeight: 700, color: "#2563eb" }}>
+                      <td style={{ fontWeight: 700, color: "#005A9C" }}>
                         #{w.WORK_ID || w.WORK_RECOMMENDATION_DTL_ID}
                       </td>
                       <td style={{ maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={w.WORK_DESCRIPTION}>
@@ -191,7 +208,7 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
                       <td style={{ textAlign: "right", fontWeight: 700, color: actAmt > sancAmt ? "#b91c1c" : "inherit" }}>
                         {actAmt > 0 ? `₹ ${actAmt.toLocaleString("en-IN")}` : "—"}
                       </td>
-                      <td style={{ textAlign: "right", fontWeight: 700, color: costVar < 0 ? "#b91c1c" : "#10b981" }}>
+                      <td style={{ textAlign: "right", fontWeight: 700, color: costVar < 0 ? "#b91c1c" : "#0d9488" }}>
                         {costVar !== 0 ? `₹ ${Math.abs(costVar).toLocaleString("en-IN")}` : "—"}
                         {costVar < 0 && <span style={{ fontSize: "10px", marginLeft: "2px" }}>(Over)</span>}
                       </td>
@@ -207,7 +224,7 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
                           onClick={() => onSelectWork && onSelectWork({ ...w, __initialSection: "financials", __authority: "MOSPI" })}
                           title="Inspect Central SNA Fund Flow & Spending Dossier"
                         >
-                          <IndianRupee size={12} />
+                          <IndianRupee size={11} />
                           <span>Treasury Dossier →</span>
                         </button>
                       </td>

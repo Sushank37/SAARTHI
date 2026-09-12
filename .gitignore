@@ -1,16 +1,8 @@
 # Large datasets
-data/mplads_final_dataset.csv
-data/duplicate_candidates.csv
-data/benchmark_works.csv
-data/duplicate_clusters.csv
-data/duplicate_clusters_v2.csv
-data/duplicate_investigations.csv
-data/master_works.csv
-data/risk_scored_.csv
-data/strong_duplicate_candidates.csv
-data/works_completed.csv
-data/works_recommended.csv
-data/works_sanctioned.csv
+data/*.csv
+data/**/*.csv
+backend/data/*.csv
+backend/data/**/*.csv
 
 
 
@@ -28,6 +20,8 @@ dist/
 # Environment
 .env
 .env.*
+!.env.example
+!**/.env.example
 
 # OS
 .DS_Store

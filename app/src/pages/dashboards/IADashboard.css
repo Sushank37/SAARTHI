@@ -63,7 +63,7 @@
   color: #0369a1;
   background: #f0f9ff;
   border: 1px solid #bae6fd;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
 }
 
@@ -78,13 +78,13 @@
 .ia-live-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
+  gap: 5px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 2px 9px;
-  border-radius: 20px;
+  padding: 2px 8px;
+  border-radius: 9999px;
   background: #ecfdf5;
-  color: #065f46;
+  color: #047857;
   border: 1px solid #a7f3d0;
 }
 
@@ -95,11 +95,11 @@
 }
 
 .ia-pulse-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #16a34a;
-  box-shadow: 0 0 6px rgba(22, 163, 74, 0.6);
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
 }
 
 .ia-live-pill.offline .ia-pulse-dot {
@@ -376,10 +376,10 @@
   justify-content: center;
 }
 
-.kpi-blue .ia-kpi-icon-wrap { background: #eff6ff; color: #0284c7; }
-.kpi-teal .ia-kpi-icon-wrap { background: #ecfdf5; color: #059669; }
-.kpi-amber .ia-kpi-icon-wrap { background: #fffbeb; color: #d97706; }
-.kpi-rose .ia-kpi-icon-wrap { background: #fef2f2; color: #dc2626; }
+.kpi-blue .ia-kpi-icon-wrap { color: #0284c7; background: transparent; }
+.kpi-teal .ia-kpi-icon-wrap { color: #0d9488; background: transparent; }
+.kpi-amber .ia-kpi-icon-wrap { color: #d97706; background: transparent; }
+.kpi-rose .ia-kpi-icon-wrap { color: #e11d48; background: transparent; }
 
 .ia-kpi-value {
   font-size: 20px;
@@ -406,14 +406,28 @@
 }
 
 .ia-section-header {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  padding: 14px 18px 4px;
+  border-bottom: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  background: var(--bg-card-muted, #f8fafc);
+  background: transparent;
+}
+
+/* New IA Empty State Box matching MP */
+.ia-empty-state-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 0 auto;
 }
 
 .ia-section-title-wrap {
@@ -426,14 +440,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14.5px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--text-primary, #0f172a);
   margin: 0;
 }
 
 .ia-section-subtitle {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-muted, #64748b);
   margin: 0;
 }
@@ -719,20 +733,21 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 9px;
+  padding: 5px 10px;
   font-size: 11.5px;
   font-weight: 600;
-  border-radius: 4px;
+  border-radius: 6px;
   border: 1px solid var(--border-color, #cbd5e1);
-  background: var(--bg-card, #ffffff);
+  background: var(--bg-card-muted, #f8fafc);
   color: #0284c7;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: all 0.15s ease;
 }
 
 .ia-action-btn:hover {
-  background: #eff6ff;
-  border-color: #bfdbfe;
+  background: #f0f9ff;
+  border-color: #7dd3fc;
+  color: #0369a1;
 }
 
 /* Pagination */
@@ -748,14 +763,15 @@
 }
 
 .ia-page-btn {
-  background: var(--bg-card, #ffffff);
+  background: var(--bg-card-muted, #f8fafc);
   border: 1px solid var(--border-color, #cbd5e1);
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
   color: var(--text-primary, #0f172a);
+  transition: all 0.15s ease;
 }
 
 .ia-page-btn:disabled {
@@ -764,7 +780,8 @@
 }
 
 .ia-page-btn:hover:not(:disabled) {
-  background: var(--bg-hover, #f1f5f9);
+  background: #f1f5f9;
+  border-color: #94a3b8;
 }
 
 /* ============================================================
@@ -978,3 +995,22 @@
   border: 1px solid #bbf7d0;
 }
 
+/* 
+ * ============================================================
+ * IA SIDEBAR OVERRIDES (Match MP Reference Style)
+ * ============================================================
+ */
+.gov-sidebar-compact a[href^="/ia"] {
+  background: transparent !important;
+  border-left: 3px solid transparent !important;
+}
+
+.gov-sidebar-compact a[href^="/ia"].active {
+  background: #eff6ff !important;
+  border-left-color: #005A9C !important;
+  color: #0369a1 !important;
+}
+
+.gov-sidebar-compact a[href^="/ia"].active .nav-icon {
+  color: #005A9C !important;
+}

@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
+import { ROLE_IDS } from "../data/roles";
 import {
   AlertTriangle,
   AlertOctagon,
@@ -80,7 +83,26 @@ export default function EarlyWarningCenter({
   onClose,
   onSelectWork,
   initialCategory = "all",
+  roleConfig: propRoleConfig,
 }) {
+  const location = useLocation();
+  const auth = useAuth() || {};
+  const authRole = auth.role;
+  const roleConfig = propRoleConfig || auth.roleConfig;
+
+  // Early warning surveillance is strictly restricted to MP, DA, and MoSPI only (citizen and IA restricted)
+  const isAuthorized = useMemo(() => {
+    const activeId = roleConfig?.id || authRole;
+    if (activeId) {
+      return (
+        activeId !== ROLE_IDS.CITIZEN &&
+        activeId !== ROLE_IDS.IMPLEMENTING_AGENCY
+      );
+    }
+    const path = location?.pathname || "";
+    return !path.startsWith("/citizen") && !path.startsWith("/ia");
+  }, [roleConfig?.id, authRole, location?.pathname]);
+
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [severityFilter, setSeverityFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -104,7 +126,7 @@ export default function EarlyWarningCenter({
 
   // Fetch alerts from backend
   const fetchAlerts = useCallback(async () => {
-    if (!isOpen) return;
+    if (!isOpen || !isAuthorized) return;
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -128,7 +150,7 @@ export default function EarlyWarningCenter({
     } finally {
       setLoading(false);
     }
-  }, [isOpen, activeCategory, severityFilter, searchQuery, page]);
+  }, [isOpen, isAuthorized, activeCategory, severityFilter, searchQuery, page]);
 
   useEffect(() => {
     fetchAlerts();
@@ -144,6 +166,9 @@ export default function EarlyWarningCenter({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
+
+  // Conditional return after all hooks have executed unconditionally
+  if (!isOpen || !isAuthorized) return null;
 
   const handleCopyWorkId = (id, e) => {
     e.stopPropagation();

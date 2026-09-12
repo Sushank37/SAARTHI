@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useSearchParams, useLocation, useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../../../context/useAuth";
+import { useState, useEffect } from "react";
+import { useSearchParams, useParams } from "react-router-dom";
 import {
   LayoutDashboard,
   Map,
@@ -91,66 +90,62 @@ const MOSPI_MODULES = [
   { id: "priority-cases", label: "Priority Cases", icon: ClipboardCheck },
 ];
 
-export default function MoSPIDashboard({ summary, onSelectWork }) {
-  const { roleConfig } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
+export default function MoSPIDashboard({ onSelectWork }) {
   const { section } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const getResolvedTab = () => {
-    const raw = section || searchParams.get("tab");
-    if (!raw || raw === "overview") return "national-overview";
-    return TAB_MAP[raw.toLowerCase()] || raw;
-  };
-
-  const [currentTab, setCurrentTab] = useState(getResolvedTab);
-
-  // Sync tab with URL parameter or route changes
-  useEffect(() => {
-    const resolved = getResolvedTab();
-    setCurrentTab(resolved);
-  }, [section, location.search]);
+  // Derive resolved tab directly from URL
+  const rawTab = section || searchParams.get("tab");
+  const currentTab = (!rawTab || rawTab === "overview")
+    ? "national-overview"
+    : (TAB_MAP[rawTab.toLowerCase()] || rawTab);
 
   // Listen to sidebar tab change events
   useEffect(() => {
     const onTabEvent = (e) => {
       if (e.detail) {
         const resolved = TAB_MAP[e.detail.toLowerCase()] || e.detail;
-        setCurrentTab(resolved);
-        const nextParams = new URLSearchParams(location.search);
-        nextParams.set("tab", resolved);
-        setSearchParams(nextParams);
+        setSearchParams((prev) => {
+          const next = new URLSearchParams(prev);
+          next.set("tab", resolved);
+          return next;
+        });
       }
     };
     window.addEventListener("mospi-tab-changed", onTabEvent);
     return () => window.removeEventListener("mospi-tab-changed", onTabEvent);
-  }, [location.search]);
+  }, [setSearchParams]);
 
   // National Analytics state from /api/analytics/mospi
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [backendConnected, setBackendConnected] = useState(true);
+  const [analyticsError, setAnalyticsError] = useState(null);
 
   // Fetch unified national analytics
   useEffect(() => {
     let isMounted = true;
     async function fetchAnalytics() {
       setLoading(true);
+      setAnalyticsError(null);
       try {
         const res = await fetch(`${API_BASE}/api/analytics/mospi`);
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted) {
-            setAnalytics(data);
-            setBackendConnected(true);
-          }
-        } else {
-          if (isMounted) setBackendConnected(false);
+        if (!res.ok) {
+          throw new Error(`Analytics API error ${res.status}: ${res.statusText}`);
+        }
+        const data = await res.json();
+        // Lightweight contract validation — must contain the critical KPIs and anomaly objects
+        if (!data?.national_kpis || typeof data.national_kpis !== "object" ||
+            !data?.anomaly_summary || typeof data.anomaly_summary !== "object") {
+          throw new Error("Invalid analytics response: missing national_kpis or anomaly_summary");
+        }
+        if (isMounted) {
+          setAnalytics(data);
         }
       } catch (err) {
         console.error("Failed to load MoSPI analytics:", err);
-        if (isMounted) setBackendConnected(false);
+        if (isMounted) {
+          setAnalyticsError(err.message || "Failed to load analytics.");
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -162,10 +157,11 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
   // Handle Tab Switch
   const handleTabChange = (tabId) => {
     const resolved = TAB_MAP[tabId.toLowerCase()] || tabId;
-    setCurrentTab(resolved);
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.set("tab", resolved);
-    setSearchParams(nextParams);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("tab", resolved);
+      return next;
+    });
     window.dispatchEvent(new CustomEvent("mospi-tab-changed", { detail: resolved }));
   };
 
@@ -194,41 +190,47 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
   };
 
   return (
-    <div className="gov-mp-shell mospi-dashboard-container">
+    <div className="mospi-shell">
+      {/* Analytics fetch error banner */}
+      {analyticsError && (
+        <div style={{
+          background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: "6px",
+          padding: "8px 14px", marginBottom: "10px", display: "flex", alignItems: "center",
+          gap: "8px", fontSize: "12px", color: "#b91c1c"
+        }}>
+          <AlertTriangle size={13} />
+          <span>Analytics data unavailable — {analyticsError}</span>
+        </div>
+      )}
       {/* ============================================================
           1. OFFICIAL HEADER CARD
           ============================================================ */}
-      <div className="gov-mp-header-card">
-        <div className="gov-mp-header-top">
-          <div className="gov-mp-title-unit">
-            <div className="gov-mp-sub-row">
-              <span className="gov-parliament-badge">
+      <div className="mospi-header-card">
+        <div className="mospi-header-top">
+          <div className="mospi-title-unit">
+            <div className="mospi-sub-row">
+              <span className="mospi-parliament-badge">
                 Central Nodal Authority · MoSPI
               </span>
-              <span className="gov-constituency-tag">
-                <MapPin size={11} style={{ marginRight: "3px" }} />
+              <span className="mospi-scope-tag">
+                <MapPin size={11} />
                 Pan-India National Scope
               </span>
-              <span className={`gov-live-status-pill ${backendConnected ? "online" : ""}`}>
-                <span className="gov-live-pulse-dot" />
-                {backendConnected ? "Live Official Dataset" : "Offline"}
-              </span>
             </div>
-            <h1 className="gov-mp-page-title">
+            <h1 className="mospi-page-title">
               MoSPI / Central Nodal Authority
             </h1>
-            <p className="gov-mp-page-subtitle">
+            <p className="mospi-page-subtitle">
               National MPLADS implementation monitoring, cross-state surveillance, duplicate detection, and macro scheme progress across Parliamentary works.
             </p>
           </div>
 
-          <div className="gov-mp-header-actions" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="mospi-header-actions">
             <button
               type="button"
-              className="gov-redirect-link-btn"
+              className="mospi-redirect-link-btn"
               onClick={handleExportSummary}
               title="Download executive national summary report"
-              style={{ cursor: "pointer" }}
             >
               <Download size={13} />
               <span>National Summary CSV</span>
@@ -238,58 +240,78 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
       </div>
 
       {/* ============================================================
-          2. MAXIMUM 4 KEY NATIONAL KPIS (Data-Supported)
+          2. EXACTLY 4 PRIMARY NATIONAL KPIS (First Viewport)
           ============================================================ */}
-      <div className="gov-mp-kpi-grid">
-        <div className="gov-mp-kpi-card kpi-blue">
-          <div className="kpi-header">
-            <span className="kpi-title">Total Works</span>
-            <Layers size={14} color="#0284c7" />
+      <div className="mospi-kpi-grid">
+        <div className="mospi-kpi-card kpi-blue">
+          <div className="mospi-kpi-header">
+            <span className="mospi-kpi-title">Total Works</span>
+            <Layers size={15} color="#0284c7" />
           </div>
-          <div className="kpi-value">{loading && !kpis.total_works ? "..." : formatNumber(kpis.total_works ?? 0)}</div>
-          <div className="kpi-sub">
-            {loading && !kpis.sanctioned_works ? "..." : `${formatNumber(kpis.sanctioned_works ?? 0)} sanctioned (${kpis.sanction_rate ?? 0}%)`}
+          <div className="mospi-kpi-value">
+            {loading ? "Loading…" : kpis.total_works != null ? formatNumber(kpis.total_works) : "—"}
           </div>
-        </div>
-
-        <div className="gov-mp-kpi-card kpi-teal">
-          <div className="kpi-header">
-            <span className="kpi-title">Total Sanctioned Value</span>
-            <IndianRupee size={14} color="#0d9488" />
-          </div>
-          <div className="kpi-value">{formatCrores(kpis.total_sanction_amount || 0)}</div>
-          <div className="kpi-sub">
-            Disbursed: {formatCrores(kpis.total_actual_amount || 0)} ({kpis.utilization_pct || 0}%)
+          <div className="mospi-kpi-sub">
+            {loading
+              ? "Loading…"
+              : kpis.sanctioned_works != null
+              ? `${formatNumber(kpis.sanctioned_works)} sanctioned (${kpis.sanction_rate ?? 0}%)`
+              : "—"}
           </div>
         </div>
 
-        <div className="gov-mp-kpi-card kpi-amber">
-          <div className="kpi-header">
-            <span className="kpi-title">Works Requiring Attention</span>
-            <ClipboardCheck size={14} color="#d97706" />
+        <div className="mospi-kpi-card kpi-teal">
+          <div className="mospi-kpi-header">
+            <span className="mospi-kpi-title">Total Sanctioned Value</span>
+            <IndianRupee size={15} color="#0d9488" />
           </div>
-          <div className="kpi-value">{loading && !kpis.attention_required ? "..." : formatNumber(kpis.attention_required ?? 0)}</div>
-          <div className="kpi-sub">
-            {loading && !kpis.duplicate_clusters ? "..." : `${formatNumber(kpis.duplicate_clusters ?? 0)} duplicate clusters flagged`}
+          <div className="mospi-kpi-value">
+            {loading ? "Loading…" : kpis.total_sanction_amount != null ? formatCrores(kpis.total_sanction_amount) : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {loading
+              ? "Loading…"
+              : kpis.total_actual_amount != null
+              ? `Disbursed: ${formatCrores(kpis.total_actual_amount)} (${kpis.utilization_pct ?? 0}%)`
+              : "—"}
           </div>
         </div>
 
-        <div className="gov-mp-kpi-card kpi-rose">
-          <div className="kpi-header">
-            <span className="kpi-title">Audit Risk Cases</span>
-            <ShieldAlert size={14} color="#e11d48" />
+        <div className="mospi-kpi-card kpi-amber">
+          <div className="mospi-kpi-header">
+            <span className="mospi-kpi-title">Works Requiring Attention</span>
+            <ClipboardCheck size={15} color="#d97706" />
           </div>
-          <div className="kpi-value">{loading && !kpis.risk_cases_count ? "..." : formatNumber(kpis.risk_cases_count ?? 0)}</div>
-          <div className="kpi-sub">
+          <div className="mospi-kpi-value">
+            {loading ? "Loading…" : kpis.attention_required != null ? formatNumber(kpis.attention_required) : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {loading
+              ? "Loading…"
+              : kpis.duplicate_clusters != null
+              ? `${formatNumber(kpis.duplicate_clusters)} duplicate clusters flagged`
+              : "—"}
+          </div>
+        </div>
+
+        <div className="mospi-kpi-card kpi-rose">
+          <div className="mospi-kpi-header">
+            <span className="mospi-kpi-title">Audit Risk Cases</span>
+            <ShieldAlert size={15} color="#e11d48" />
+          </div>
+          <div className="mospi-kpi-value">
+            {loading ? "Loading…" : kpis.risk_cases_count != null ? formatNumber(kpis.risk_cases_count) : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
             Medium-risk outliers requiring verification
           </div>
         </div>
       </div>
 
       {/* ============================================================
-          3. TOP MODULE NAVIGATION TABS (12 Standard Sections)
+          3. TOP MODULE NAVIGATION TABS (12 Modules)
           ============================================================ */}
-      <div className="gov-mp-nav-bar mospi-tab-nav-bar">
+      <div className="mospi-pills-list">
         {MOSPI_MODULES.map((mod) => {
           const Icon = mod.icon;
           const isActive =
@@ -298,36 +320,67 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
             (mod.id === "financial-intelligence" && currentTab === "financial-timeline");
 
           let badgeCount = null;
-          if (mod.id === "national-overview") badgeCount = formatNumber(kpis.total_works || 102703);
-          if (mod.id === "state-intelligence") badgeCount = "36 States";
-          if (mod.id === "district-intelligence") badgeCount = "763 IDAs";
-          if (mod.id === "risk-intelligence") badgeCount = formatNumber(kpis.risk_cases_count || 18);
-          if (mod.id === "anomaly-detection") badgeCount = "12,824";
-          if (mod.id === "duplicate-intelligence") badgeCount = formatNumber(kpis.duplicate_clusters || 1401);
-          if (mod.id === "financial-intelligence") badgeCount = "₹ 4,074 Cr";
-          if (mod.id === "delay-intelligence") badgeCount = "106d Avg";
-          if (mod.id === "ia-performance") badgeCount = "763 IAs";
-          if (mod.id === "evidence-intelligence") badgeCount = "8,922";
-          if (mod.id === "trend-analysis") badgeCount = "9 Qtrs";
-          if (mod.id === "priority-cases") badgeCount = formatNumber(kpis.attention_required || 4384);
+          if (analytics) {
+            if (mod.id === "national-overview" && kpis.total_works != null) {
+              badgeCount = formatNumber(kpis.total_works);
+            }
+            if (mod.id === "state-intelligence" && analytics?.data_coverage?.total_states != null) {
+              badgeCount = `${analytics.data_coverage.total_states} States`;
+            }
+            if (mod.id === "district-intelligence" && analytics?.data_coverage?.total_authorities != null) {
+              badgeCount = `${analytics.data_coverage.total_authorities} IDAs`;
+            }
+            if (mod.id === "risk-intelligence" && kpis.risk_cases_count != null) {
+              badgeCount = formatNumber(kpis.risk_cases_count);
+            }
+            if (mod.id === "anomaly-detection") {
+              // Use total_anomalies (distinct anomalous works, union of all criteria).
+              // Do NOT fall back to extreme_delays_over_180 alone, which is only one category.
+              const count = analytics?.anomaly_summary?.total_anomalies;
+              if (count != null) badgeCount = formatNumber(count);
+            }
+            if (mod.id === "duplicate-intelligence" && kpis.duplicate_clusters != null) {
+              badgeCount = formatNumber(kpis.duplicate_clusters);
+            }
+            if (mod.id === "financial-intelligence" && kpis.total_sanction_amount != null) {
+              badgeCount = formatCrores(kpis.total_sanction_amount);
+            }
+            if (mod.id === "delay-intelligence") {
+              const avgDelay = analytics?.timeline_benchmarks?.avg_sanction_delay_days ?? analytics?.delay_buckets?.avg_sanction_delay;
+              if (avgDelay != null) badgeCount = `${avgDelay}d Avg`;
+            }
+            if (mod.id === "ia-performance") {
+              const authCount = analytics?.data_coverage?.total_authorities ?? analytics?.ia_performance_top25?.length;
+              if (authCount != null) badgeCount = `${authCount} IAs`;
+            }
+            if (mod.id === "evidence-intelligence" && analytics?.evidence_summary?.total_with_evidence != null) {
+              badgeCount = formatNumber(analytics.evidence_summary.total_with_evidence);
+            }
+            if (mod.id === "trend-analysis" && analytics?.trends_quarterly?.length) {
+              badgeCount = `${analytics.trends_quarterly.length} Qtrs`;
+            }
+            if (mod.id === "priority-cases" && kpis.attention_required != null) {
+              badgeCount = formatNumber(kpis.attention_required);
+            }
+          }
 
           return (
             <button
               key={mod.id}
               type="button"
-              className={`gov-mp-nav-btn ${isActive ? "active" : ""}`}
+              className={`mospi-pill-btn ${isActive ? "active" : ""}`}
               onClick={() => handleTabChange(mod.id)}
             >
-              <Icon size={14} />
+              <Icon size={13} />
               <span>{mod.label}</span>
-              {badgeCount && <span className="mospi-tab-count">{badgeCount}</span>}
+              {badgeCount && <span className="mospi-pill-count">{badgeCount}</span>}
             </button>
           );
         })}
       </div>
 
       {/* ============================================================
-          4. ACTIVE TAB CONTENT (12 Standard Sections)
+          4. ACTIVE TAB CONTENT (12 Modules)
           ============================================================ */}
       {currentTab === "national-overview" && (
         <NationalOverviewTab analytics={analytics} loading={loading} />

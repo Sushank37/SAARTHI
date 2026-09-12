@@ -1,20 +1,41 @@
 from typing import Optional, List, Dict, Any
-from fastapi import FastAPI, HTTPException, Query, Body
+from fastapi import FastAPI, HTTPException, Query, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import pandas as pd
 import math
 import json
 import re
+import os
+import sys
 
 
 
 # ============================================================
-# CONFIGURATION
+# CONFIGURATION & ENVIRONMENT
 # ============================================================
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_FILE = BASE_DIR / "data" / "mplads_final_dataset.csv"
+BACKEND_DIR = Path(__file__).resolve().parent
+BASE_DIR = BACKEND_DIR.parent
+
+# Ensure Python search path contains both backend and root
+for path_item in [str(BACKEND_DIR), str(BASE_DIR)]:
+    if path_item not in sys.path:
+        sys.path.insert(0, path_item)
+
+# Candidate paths for the canonical master dataset (supports uncompressed .csv and compressed .csv.gz)
+candidate_data_paths = [
+    BACKEND_DIR / "data" / "mplads_final_dataset.csv.gz",
+    BACKEND_DIR / "data" / "mplads_final_dataset.csv",
+    BASE_DIR / "data" / "mplads_final_dataset.csv.gz",
+    BASE_DIR / "data" / "mplads_final_dataset.csv",
+    Path("backend/data/mplads_final_dataset.csv.gz"),
+    Path("backend/data/mplads_final_dataset.csv"),
+    Path("data/mplads_final_dataset.csv.gz"),
+    Path("data/mplads_final_dataset.csv"),
+]
+
+DATA_FILE = next((p for p in candidate_data_paths if p.exists()), candidate_data_paths[0])
 
 app = FastAPI(
     title="MPLADS AI Monitoring API",
@@ -27,17 +48,24 @@ app = FastAPI(
 # CORS
 # ============================================================
 
+allowed_origins_env = os.environ.get("ALLOWED_ORIGINS", "")
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+if allowed_origins_env:
+    for origin in allowed_origins_env.split(","):
+        cleaned = origin.strip()
+        if cleaned and cleaned not in origins:
+            origins.append(cleaned)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "*",
-    ],
+    allow_origins=origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -49,15 +77,13 @@ app.add_middleware(
 # ============================================================
 
 print("=" * 70)
-print("MPLADS AI BACKEND")
+print("MPLADS AI BACKEND (DEPLOY READY)")
 print("=" * 70)
-print()
-print("Loading dataset:")
-print(DATA_FILE)
+print(f"Data file resolved to: {DATA_FILE}")
 
 if not DATA_FILE.exists():
     raise FileNotFoundError(
-        f"Dataset not found: {DATA_FILE}"
+        f"Dataset not found at any candidate path. Checked: {[str(p) for p in candidate_data_paths]}"
     )
 
 df = pd.read_csv(
@@ -360,33 +386,40 @@ def pagination(data, page, limit):
 
 
 # ============================================================
-# ROOT
+# ROOT & HEALTH
 # ============================================================
 
 @app.get("/")
 def root():
-
     return {
+        "service": "SAARTHI MPLADS eSAKSHI Surveillance API",
         "name": "MPLADS AI Monitoring API",
-        "status": "running",
+        "status": "healthy",
+        "version": "2.1.0",
+        "total_works": len(df),
         "dataset_rows": len(df),
         "dataset_columns": len(df.columns),
-        "version": "2.1.0"
+        "docs": "/docs",
+        "api_health": "/api/health",
+        "api_summary": "/api/summary",
     }
 
-
-# ============================================================
-# HEALTH
-# ============================================================
-
-@app.get("/api/health")
-def health():
-
+@app.get("/health")
+def health_check():
     return {
         "status": "healthy",
         "dataset_loaded": True,
         "rows": len(df),
-        "columns": len(df.columns)
+        "columns": len(df.columns),
+    }
+
+@app.get("/api/health")
+def health():
+    return {
+        "status": "healthy",
+        "dataset_loaded": True,
+        "rows": len(df),
+        "columns": len(df.columns),
     }
 
 
@@ -1312,7 +1345,13 @@ def get_works(
 # WORKS GEOJSON (PRODUCTION GIS API)
 # ============================================================
 
-GEO_CACHE_FILE = BASE_DIR / "backend" / "geocoded_localities_cache.json"
+candidate_geo_paths = [
+    BACKEND_DIR / "geocoded_localities_cache.json",
+    BASE_DIR / "backend" / "geocoded_localities_cache.json",
+    Path("backend/geocoded_localities_cache.json"),
+    Path("geocoded_localities_cache.json"),
+]
+GEO_CACHE_FILE = next((p for p in candidate_geo_paths if p.exists()), candidate_geo_paths[0])
 _GEO_CACHE = {}
 if GEO_CACHE_FILE.exists():
     try:
@@ -3575,16 +3614,44 @@ def compute_mospi_national_analytics():
     }
 
     # Anomaly Summary
+    # --------------------------------------------------------------------------
+    # Category definitions:
+    #   extreme_delays     : SANCTION_DELAY_DAYS > 180  (severe statutory breach)
+    #   long_completions   : COMPLETION_DURATION_DAYS > 365  (prolonged lifecycle)
+    #   cost_var_cases     : COST_VARIANCE < 0 or ACTUAL > SANCTION  (spending overrun)
+    #   sig_var_cases      : |COST_VARIANCE_PERCENT| > 20  (significant cost divergence)
+    #
+    # total_anomalies is the COUNT OF DISTINCT WORKS flagged by ANY of the three
+    # primary anomaly criteria (extreme delay OR cost variance OR prolonged lifecycle).
+    # This is the authoritative total and MUST equal what /api/works?tab=anomaly-detection
+    # returns for the 'all' sub-filter.  sig_var_cases is a diagnostic sub-metric
+    # (subset of cost_var_cases) and does NOT add to the total.
+    # --------------------------------------------------------------------------
     extreme_delays = int((sd > 180).sum()) if not sd.empty else 0
     long_completions = int((cd > 365).sum()) if not cd.empty else 0
     cost_var_cases = int(((df["COST_VARIANCE"] < 0) | (df["ACTUAL_AMOUNT"] > df["SANCTION_AMOUNT"])).sum()) if column_exists("COST_VARIANCE") else 0
     sig_var_cases = int((df["COST_VARIANCE_PERCENT"].abs() > 20).sum()) if column_exists("COST_VARIANCE_PERCENT") else 0
+
+    # Build union mask matching the /api/works?tab=anomaly-detection filter
+    anomaly_union = pd.Series(False, index=df.index)
+    if not sd.empty:
+        anomaly_union = anomaly_union | (sd > 180)
+    if column_exists("COST_VARIANCE"):
+        anomaly_union = anomaly_union | (df["COST_VARIANCE"] < 0)
+    if column_exists("ACTUAL_AMOUNT") and column_exists("SANCTION_AMOUNT"):
+        anomaly_union = anomaly_union | (df["ACTUAL_AMOUNT"] > df["SANCTION_AMOUNT"])
+    if not cd.empty:
+        anomaly_union = anomaly_union | (cd > 365)
+    total_anomaly_works = int(anomaly_union.sum())
+
     anomaly_summary = {
         "extreme_delays_over_180": extreme_delays,
         "prolonged_completion_over_365": long_completions,
         "cost_variance_cases": cost_var_cases,
         "significant_variance_cases": sig_var_cases,
-        "total_anomalies": extreme_delays + cost_var_cases
+        # Authoritative total: distinct works flagged by ANY of the three primary criteria.
+        # Matches the count returned by /api/works?tab=anomaly-detection (all sub-filter).
+        "total_anomalies": total_anomaly_works
     }
 
     # Risk factor averages among risk-flagged cases
@@ -3641,6 +3708,24 @@ def compute_mospi_national_analytics():
         }
     }
 
+# --------------------------------------------------------------------------
+# Cache note: The MPLADS dataset is STATIC for the lifetime of this process
+# (loaded once from CSV/gz at startup; there are no upload/reload endpoints).
+# Therefore these caches are valid until process restart.
+# If a data-reload mechanism is added in the future, call
+# invalidate_mospi_caches() immediately after replacing the global `df`.
+# --------------------------------------------------------------------------
+
+def invalidate_mospi_caches():
+    """Call this whenever the master dataset (df) is replaced or reloaded.
+    Clears all derived analytics caches so the next request recomputes
+    from the current data.
+    """
+    global _mospi_analytics_cache, _early_alerts_cache
+    _mospi_analytics_cache = None
+    _early_alerts_cache = None
+
+
 @app.get("/api/analytics/mospi")
 def mospi_national_analytics():
     global _mospi_analytics_cache
@@ -3656,33 +3741,33 @@ def mospi_national_analytics():
 _early_alerts_cache = None
 
 def compute_early_alerts():
-    # 1. Unusual Patterns
+    # 1. Unusual Patterns & Outliers
     mask_unusual = pd.Series(False, index=df.index)
     if column_exists("SUSPICION_LEVEL"):
         mask_unusual |= (df["SUSPICION_LEVEL"].fillna("").astype(str).str.upper() == "HIGH")
     if column_exists("TOTAL_LIFECYCLE_DAYS"):
-        mask_unusual |= (df["TOTAL_LIFECYCLE_DAYS"] > 500)
+        mask_unusual |= (df["TOTAL_LIFECYCLE_DAYS"] > 600)
     if column_exists("COMPLETION_VS_PEER"):
         mask_unusual |= (df["COMPLETION_VS_PEER"] > 2.5)
 
-    # 2. Delays (Section 3.12 statutory limit)
+    # 2. Delays (Actionable Section 3.12 statutory breach >90 days, >2x legal limit & peer lag)
     mask_delays = pd.Series(False, index=df.index)
     if column_exists("SANCTION_DELAY_DAYS"):
-        mask_delays |= (df["SANCTION_DELAY_DAYS"] > 45)
+        mask_delays |= ((df["SANCTION_DELAY_DAYS"] > 90) & (df["SANCTION_DELAY_VS_PEER"].fillna(1) > 1.2))
 
-    # 3. Cost Overruns & Escalations
+    # 3. Cost Overruns & Escalations (>2.5x peer median with significant sanction amount)
     mask_cost = pd.Series(False, index=df.index)
     if column_exists("COST_VS_PEER"):
-        mask_cost |= (df["COST_VS_PEER"] > 2.0)
-    if column_exists("COST_VARIANCE"):
-        mask_cost |= (df["COST_VARIANCE"] > 0)
+        mask_cost |= ((df["COST_VS_PEER"] > 2.5) & (df["SANCTION_AMOUNT"].fillna(0) > 500000))
 
-    # 4. Duplicate Works
+    # 4. Duplicate Works (High duplicate risk / high cluster suspicion)
     mask_duplicates = pd.Series(False, index=df.index)
-    if column_exists("CLUSTER_ID"):
-        mask_duplicates |= df["CLUSTER_ID"].notna()
+    if column_exists("DUPLICATE_RISK"):
+        mask_duplicates |= (df["DUPLICATE_RISK"].fillna("").astype(str).str.upper() == "HIGH")
+    if column_exists("CLUSTER_SUSPICION_SCORE"):
+        mask_duplicates |= (df["CLUSTER_SUSPICION_SCORE"] > 80)
 
-    # 5. Potential Misuse of Funds
+    # 5. Potential Misuse of Funds (Requires audit review / high financial risk / unverified large spend)
     mask_misuse = pd.Series(False, index=df.index)
     if column_exists("REQUIRES_REVIEW"):
         mask_misuse |= boolean_series(df["REQUIRES_REVIEW"])
@@ -3707,7 +3792,11 @@ def compute_early_alerts():
             "count": int(mask_delays.sum()),
             "severity": "HIGH",
             "badge_color": "amber",
-            "description": "Works exceeding statutory 45-day SLA (Section 3.12) or execution timeline past 365 days",
+            # Trigger: SANCTION_DELAY_DAYS > 90 AND SANCTION_DELAY_VS_PEER > 1.2.
+            # The 45-day figure is the statutory SLA (Section 3.12 of MPLADS Guidelines);
+            # this alert fires at >90 days to flag works already in sustained breach,
+            # not at first breach, in order to surface actionable priorities.
+            "description": "Works with sanction delay exceeding 90 days and lagging peer median by >20% — sustained breach of the 45-day Section 3.12 statutory SLA",
             "recommendation": "Issue Section 3.12 statutory explanation notice to designated District Authority."
         },
         "cost_overruns": {
@@ -3716,7 +3805,10 @@ def compute_early_alerts():
             "count": int(mask_cost.sum()),
             "severity": "CRITICAL",
             "badge_color": "purple",
-            "description": "Actual expenditure or estimate exceeding peer median project cost by >2.0x",
+            # Trigger: COST_VS_PEER > 2.5 AND SANCTION_AMOUNT > 5 lakh.
+            # The 2.5x multiplier is the alert threshold; 2.0x is an informal
+            # warning band in some narrative reports and should NOT be cited here.
+            "description": "Works where cost-vs-peer ratio exceeds 2.5x the constituency median with sanctioned amount above ₹5 lakh",
             "recommendation": "Withhold next installment disbursement pending engineering rate re-scrutiny."
         },
         "duplicate_works": {
@@ -3760,6 +3852,9 @@ def get_early_warning_alerts(
     severity: str | None = None,
     q: str | None = None,
     state: str | None = None,
+    mp_name: str | None = None,
+    ida_name: str | None = None,
+    constituency: str | None = None,
     limit: int = 30,
     page: int = 1
 ):
@@ -3767,7 +3862,7 @@ def get_early_warning_alerts(
     if _early_alerts_cache is None:
         _early_alerts_cache = compute_early_alerts()
 
-    summary = _early_alerts_cache["summary"]
+    base_summary = _early_alerts_cache["summary"]
     masks = _early_alerts_cache["masks"]
 
     if category == "unusual_patterns":
@@ -3784,7 +3879,26 @@ def get_early_warning_alerts(
         # Combined alerts with priority ordering: fund_misuse, duplicate_works, cost_overruns, unusual_patterns, delays
         sub_mask = masks["fund_misuse"] | masks["duplicate_works"] | masks["cost_overruns"] | masks["unusual_patterns"] | masks["delays"]
 
-    filtered_df = df[sub_mask]
+    # Role and scope filtering
+    scope_mask = pd.Series(True, index=df.index)
+    if state and state.strip() and state.lower() != "all":
+        scope_mask &= (df["STATE_NAME"].fillna("").astype(str).str.lower() == state.strip().lower())
+    if mp_name and mp_name.strip():
+        scope_mask &= (df["MP_NAME"].fillna("").astype(str).str.lower() == mp_name.strip().lower())
+    if ida_name and ida_name.strip():
+        scope_mask &= (df["IDA_NAME"].fillna("").astype(str).str.lower() == ida_name.strip().lower())
+    if constituency and constituency.strip():
+        scope_mask &= (df["CONSTITUENCY"].fillna("").astype(str).str.lower() == constituency.strip().lower())
+
+    filtered_df = df[sub_mask & scope_mask]
+
+    # Dynamically update summary if scoped
+    summary = {}
+    for cat_k, cat_data in base_summary.items():
+        summary[cat_k] = {
+            **cat_data,
+            "count": int((masks[cat_k] & scope_mask).sum())
+        }
 
     # Keyword search
     if q and q.strip():
@@ -3799,8 +3913,25 @@ def get_early_warning_alerts(
             text_matches |= filtered_df["WORK_RECOMMENDATION_DTL_ID"].fillna("").astype(str).str.contains(search_term, na=False)
         filtered_df = filtered_df[text_matches]
 
-    if state and state.strip() and state.lower() != "all":
-        filtered_df = filtered_df[filtered_df["STATE_NAME"].fillna("").astype(str).str.lower() == state.strip().lower()]
+    # Pre-compute severity filter if requested
+    if severity and severity.upper() in ["CRITICAL", "HIGH", "MEDIUM"]:
+        target_sev = severity.upper()
+        if target_sev == "CRITICAL":
+            crit_mask = (
+                masks["fund_misuse"] |
+                (masks["cost_overruns"] & (df["COST_VS_PEER"].fillna(1) > 3.0)) |
+                (masks["delays"] & (df["SANCTION_DELAY_DAYS"].fillna(0) > 120)) |
+                (masks["duplicate_works"] & (df["CLUSTER_SUSPICION_SCORE"].fillna(0) > 85))
+            )
+            filtered_df = filtered_df[crit_mask]
+        elif target_sev == "HIGH":
+            high_mask = (
+                masks["delays"] |
+                masks["unusual_patterns"] |
+                masks["duplicate_works"] |
+                masks["cost_overruns"]
+            )
+            filtered_df = filtered_df[high_mask]
 
     total_matched = len(filtered_df)
     total_pages = max(1, math.ceil(total_matched / limit))
@@ -3879,10 +4010,6 @@ def get_early_warning_alerts(
         r["metric_value"] = metric
         r["audit_section"] = sec
         enriched_alerts.append(r)
-
-    # Optional severity filter
-    if severity and severity.upper() in ["CRITICAL", "HIGH", "MEDIUM"]:
-        enriched_alerts = [a for a in enriched_alerts if a.get("severity") == severity.upper()]
 
     return {
         "total": total_matched,
@@ -4967,4 +5094,7 @@ print("=" * 70)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    host = os.environ.get("HOST", "0.0.0.0")
+    reload_flag = os.environ.get("ENV", "development").lower() == "development"
+    uvicorn.run("main:app", host=host, port=port, reload=reload_flag)

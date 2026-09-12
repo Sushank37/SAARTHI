@@ -30,13 +30,11 @@ import {
 import { API_BASE, formatNumber } from "../constants";
 import { ROLE_IDS } from "../data/roles";
 import { useAuth } from "../context/useAuth";
-import { useLanguage } from "../context/LanguageContext";
 
 export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const [isEventCollapsed, setIsEventCollapsed] = useState(false);
 
@@ -222,8 +220,8 @@ export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
         daBadges?.overview !== undefined && daBadges?.overview !== null
           ? formatNumber(daBadges.overview)
           : summary?.total_works !== undefined && summary?.total_works !== null
-          ? formatNumber(summary.total_works)
-          : null,
+            ? formatNumber(summary.total_works)
+            : null,
       badgeType: "neutral",
     },
     {
@@ -284,8 +282,8 @@ export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
         daBadges?.risk_cases !== undefined && daBadges?.risk_cases !== null
           ? formatNumber(daBadges.risk_cases)
           : summary?.high_risk !== undefined && summary?.high_risk !== null
-          ? formatNumber(summary.high_risk)
-          : null,
+            ? formatNumber(summary.high_risk)
+            : null,
       badgeType: "danger",
     },
     {
@@ -298,8 +296,8 @@ export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
         daBadges?.duplicates !== undefined && daBadges?.duplicates !== null
           ? formatNumber(daBadges.duplicates)
           : summary?.duplicate_clusters !== undefined && summary?.duplicate_clusters !== null
-          ? formatNumber(summary.duplicate_clusters)
-          : null,
+            ? formatNumber(summary.duplicate_clusters)
+            : null,
       badgeType: "warning",
     },
     {
@@ -348,8 +346,8 @@ export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
         daBadges?.alerts_queue !== undefined && daBadges?.alerts_queue !== null
           ? formatNumber(daBadges.alerts_queue)
           : summary?.review_required !== undefined && summary?.review_required !== null
-          ? formatNumber(summary.review_required)
-          : null,
+            ? formatNumber(summary.review_required)
+            : null,
       badgeType: "danger",
     },
   ];
@@ -789,7 +787,7 @@ export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
               <NavLink
                 key={item.id}
                 to={`/mospi?tab=${item.tab}`}
-                className={`nav-item-compact ${isTabActive ? "active" : ""}`}
+                className={() => `nav-item-compact ${isTabActive ? "active" : ""}`}
                 title={item.label}
                 onClick={() => {
                   setActiveMospiTab(item.tab);
@@ -830,7 +828,7 @@ export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
               <NavLink
                 key={item.id}
                 to={`/ia?tab=${item.tab}${currentIA ? `&ia=${encodeURIComponent(currentIA)}` : ""}`}
-                className={`nav-item-compact ${isTabActive ? "active" : ""}`}
+                className={() => `nav-item-compact ${isTabActive ? "active" : ""}`}
                 title={item.label}
               >
                 <div className="nav-label-wrap">
@@ -853,7 +851,7 @@ export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
            ===================================================== */
         <div className="sidebar-nav-list">
           <div className="sidebar-section-title">
-            {t("Section")}
+            Section
           </div>
 
           {daNavLinks.map((item) => {
@@ -864,12 +862,12 @@ export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
               <NavLink
                 key={item.id}
                 to={`/da?tab=${item.tab}`}
-                className={`nav-item-compact ${isTabActive ? "active" : ""}`}
-                title={t(item.label)}
+                className={() => `nav-item-compact ${isTabActive ? "active" : ""}`}
+                title={item.label}
               >
                 <div className="nav-label-wrap">
                   <Icon size={16} className="nav-icon" />
-                  <span className="nav-label">{t(item.label)}</span>
+                  <span className="nav-label">{item.label}</span>
                 </div>
 
                 {item.badge !== null && item.badge !== undefined && (
@@ -899,7 +897,7 @@ export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
               <NavLink
                 key={item.id}
                 to={item.path}
-                className={`nav-item-compact ${isActive ? "active" : ""}`}
+                className={() => `nav-item-compact ${isActive ? "active" : ""}`}
               >
                 <div className="nav-label-wrap">
                   <Icon size={16} className="nav-icon" />
@@ -956,7 +954,7 @@ export default function Sidebar({ summary, roleConfig, onLogout, collapsed }) {
 
       <div className="sidebar-bottom-section">
         <div className="sidebar-mini-footer">
-          <div className="footer-label">{t("Synchronized Works")}</div>
+          <div className="footer-label">Synchronized Works</div>
           <div className="footer-value">
             {summary?.total_works !== undefined && summary?.total_works !== null
               ? formatNumber(summary.total_works)

@@ -5,6 +5,7 @@ import { useLanguage } from "../context/LanguageContext";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import WorkDetailDrawer from "./WorkDetailDrawer";
+import RajyaSabhaNotice from "./RajyaSabhaNotice";
 import { API_BASE } from "../constants";
 
 export function RouteConsumer({ Component, extraProps = {} }) {
@@ -87,29 +88,39 @@ export default function SharedLayout() {
         onSelectWork={handleSelectWork}
       />
 
-      {/* Main Two-Column Layout (Sidebar + Content) */}
-      <div className={`gov-layout-body ${!sidebarOpen ? "sidebar-collapsed-mode" : ""}`}>
-        <Sidebar
-          summary={summary}
-          roleConfig={roleConfig}
-          onLogout={handleLogout}
-          collapsed={!sidebarOpen}
-        />
+      {/* Main Layout (Sidebar only shown for Lok Sabha) */}
+      <div
+        className={`gov-layout-body ${house === "Rajya Sabha" ? "gov-layout-body-rs" : ""} ${
+          !sidebarOpen ? "sidebar-collapsed-mode" : ""
+        }`}
+      >
+        {house !== "Rajya Sabha" && (
+          <Sidebar
+            summary={summary}
+            roleConfig={roleConfig}
+            onLogout={handleLogout}
+            collapsed={!sidebarOpen}
+          />
+        )}
 
         <main className={`gov-content-viewport ${!sidebarOpen ? "full-width" : ""}`}>
-          {/* Child Route Viewport */}
-          <Outlet
-            context={{
-              summary,
-              house,
-              selectedWork,
-              setSelectedWork: handleSelectWork,
-              onSelectWork: handleSelectWork,
-              sidebarOpen,
-              setSidebarOpen,
-              toggleSidebar,
-            }}
-          />
+          {/* If Rajya Sabha is selected, show the Phase 2 development / upcoming release notice */}
+          {house === "Rajya Sabha" ? (
+            <RajyaSabhaNotice onSwitchToLokSabha={() => setHouse("Lok Sabha")} />
+          ) : (
+            <Outlet
+              context={{
+                summary,
+                house,
+                selectedWork,
+                setSelectedWork: handleSelectWork,
+                onSelectWork: handleSelectWork,
+                sidebarOpen,
+                setSidebarOpen,
+                toggleSidebar,
+              }}
+            />
+          )}
 
           {/* Official Government Footer */}
           <footer className="gov-official-footer">

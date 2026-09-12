@@ -1,5 +1,5 @@
 /* =========================================================
-   CITIZEN & PUBLIC TRANSPARENCY PORTAL (JAN SAARTHI)
+   CITIZEN & PUBLIC TRANSPARENCY PORTAL (SAARTHI)
    Official Government Light Theme · SIH 2026
 ========================================================= */
 
@@ -126,57 +126,54 @@
    2. PUBLIC TAB NAVIGATION BAR
 ========================================================= */
 
-.citizen-tab-bar {
+.citizen-pills-list {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 5px 8px;
+  gap: 5px;
   overflow-x: auto;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   scrollbar-width: thin;
 }
 
-.citizen-tab-pill {
+.citizen-pill-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 11px;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   border-radius: 4px;
-  font-size: 12px;
+  padding: 4px 8px;
+  font-size: 11px;
   font-weight: 600;
   color: #475569;
-  border: 1px solid transparent;
-  background: transparent;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.12s ease;
 }
 
-.citizen-tab-pill:hover {
+.citizen-pill-btn:hover {
   background: #f1f5f9;
   color: #0f172a;
+  border-color: #94a3b8;
 }
 
-.citizen-tab-pill.active {
+.citizen-pill-btn.active {
   background: #eff6ff;
-  border-color: #bfdbfe;
-  color: #0284c7;
+  border-color: #005A9C;
+  color: #005A9C;
   font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 90, 156, 0.08);
 }
 
-.citizen-tab-badge {
-  font-size: 10.5px;
+.citizen-pill-badge {
+  font-size: 10px;
   font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.06);
-  color: inherit;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 1px 5px;
+  border-radius: 4px;
 }
 
-.citizen-tab-pill.active .citizen-tab-badge {
+.citizen-pill-btn.active .citizen-pill-badge {
   background: #bfdbfe;
   color: #0369a1;
 }
@@ -578,4 +575,24 @@
 .status-pill-public.sanctioned {
   background: #fef9c3;
   color: #854d0e;
+}
+
+/* 
+ * ============================================================
+ * CITIZEN SIDEBAR OVERRIDES (Match MP Reference Style)
+ * ============================================================
+ */
+.gov-sidebar-compact a[href^="/citizen"] {
+  background: transparent !important;
+  border-left: 3px solid transparent !important;
+}
+
+.gov-sidebar-compact a[href^="/citizen"].active {
+  background: #eff6ff !important;
+  border-left-color: #005A9C !important;
+  color: #0369a1 !important;
+}
+
+.gov-sidebar-compact a[href^="/citizen"].active .nav-icon {
+  color: #005A9C !important;
 }

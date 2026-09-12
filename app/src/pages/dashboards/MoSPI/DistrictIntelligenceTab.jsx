@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Building2,
   Search,
   ArrowUpDown,
-  ExternalLink,
   MapPin,
   Layers,
-  ChevronRight,
   TrendingUp,
   Filter,
+  Eye,
 } from "lucide-react";
 import { API_BASE, formatNumber } from "../../../constants";
 
@@ -112,46 +111,54 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
 
   if (loading) {
     return (
-      <div className="mospi-card text-center py-5">
+      <div className="mospi-card" style={{ textAlign: "center", padding: "40px" }}>
         <div className="spinner" />
-        <p className="text-muted mt-2">Loading national district intelligence across 763 IDAs...</p>
+        <p style={{ color: "#64748b", marginTop: "8px", fontSize: "12px" }}>Loading national district intelligence...</p>
       </div>
     );
   }
 
   const topIda = idas[0] || {};
+  const totalWorksAcrossIdas = idas.reduce((sum, item) => sum + (Number(item.total_works) || 0), 0);
+  const avgPerDistrict = idas.length > 0 ? Math.round(totalWorksAcrossIdas / idas.length) : null;
 
   return (
     <div className="mospi-panel">
       {/* 1. Top Summary Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px" }}>
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Implementing Authorities</span>
-            <Building2 size={16} className="text-blue-500" />
+            <Building2 size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(idas.length || 763)}</div>
-          <div className="mospi-kpi-sub">Across 36 States & Union Territories</div>
+          <div className="mospi-kpi-value">
+            {idas.length > 0 ? formatNumber(idas.length) : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {states.length > 0 ? `Across ${states.length} States & Union Territories` : "Across States & Union Territories"}
+          </div>
         </div>
 
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Highest Volume District</span>
-            <Layers size={16} className="text-emerald-500" />
+            <Layers size={15} color="#0d9488" />
           </div>
-          <div className="mospi-kpi-value" style={{ fontSize: "18px", wordBreak: "break-word" }}>
-            {topIda.IDA_NAME ? topIda.IDA_NAME.split("(")[0] : "Jaunpur"}
+          <div className="mospi-kpi-value" style={{ fontSize: "17px", wordBreak: "break-word" }}>
+            {topIda.IDA_NAME ? topIda.IDA_NAME.split("(")[0] : "—"}
           </div>
-          <div className="mospi-kpi-sub">{formatNumber(topIda.total_works || 1851)} parliamentary works</div>
+          <div className="mospi-kpi-sub">
+            {topIda.total_works != null ? `${formatNumber(topIda.total_works)} parliamentary works` : "—"}
+          </div>
         </div>
 
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Average per District</span>
-            <TrendingUp size={16} className="text-sky-500" />
+            <TrendingUp size={15} color="#0284c7" />
           </div>
           <div className="mospi-kpi-value">
-            {idas.length ? Math.round(102703 / idas.length) : 135}
+            {avgPerDistrict != null ? formatNumber(avgPerDistrict) : "—"}
           </div>
           <div className="mospi-kpi-sub">Works per implementing agency</div>
         </div>
@@ -159,10 +166,12 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">States Represented</span>
-            <MapPin size={16} className="text-amber-500" />
+            <MapPin size={15} color="#d97706" />
           </div>
-          <div className="mospi-kpi-value">{states.length || 36}</div>
-          <div className="mospi-kpi-sub">100% Pan-India geographic coverage</div>
+          <div className="mospi-kpi-value">
+            {states.length > 0 ? states.length : "—"}
+          </div>
+          <div className="mospi-kpi-sub">Pan-India geographic coverage</div>
         </div>
       </div>
 
@@ -181,28 +190,26 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
         </div>
 
         {/* Filter Controls */}
-        <div className="mospi-table-filter-bar" style={{ display: "flex", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
-          <div style={{ position: "relative", flex: 1, minWidth: "260px" }}>
-            <Search size={14} style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "#64748b" }} />
+        <div className="mospi-table-toolbar">
+          <div className="mospi-search-box" style={{ flex: 1, minWidth: "260px" }}>
+            <Search size={13} color="#64748b" />
             <input
               type="text"
-              className="mospi-search-input"
               placeholder="Search by District / IDA name or State..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ width: "100%", paddingLeft: "32px" }}
             />
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Filter size={14} style={{ color: "#64748b" }} />
+            <Filter size={13} color="#64748b" />
             <select
               className="mospi-select"
               value={selectedState}
               onChange={(e) => setSelectedState(e.target.value)}
               style={{ minWidth: "180px" }}
             >
-              <option value="ALL">All 36 States & UTs</option>
+              <option value="ALL">All States & UTs</option>
               {states.map((st) => (
                 <option key={st.STATE_NAME} value={st.STATE_NAME}>
                   {st.STATE_NAME}
@@ -213,36 +220,36 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
         </div>
 
         {/* Table */}
-        <div className="mospi-table-responsive" style={{ maxHeight: "500px", overflowY: "auto" }}>
-          <table className="mospi-table">
+        <div className="mospi-table-wrapper" style={{ maxHeight: "480px", overflowY: "auto" }}>
+          <table className="mospi-data-table">
             <thead>
               <tr>
-                <th style={{ width: "45px" }}>#</th>
-                <th onClick={() => handleSort("IDA_NAME")} style={{ cursor: "pointer" }}>
+                <th style={{ width: "40px" }}>#</th>
+                <th className="sortable" onClick={() => handleSort("IDA_NAME")}>
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                     <span>Implementing Authority / District</span>
-                    <ArrowUpDown size={12} />
+                    <ArrowUpDown size={11} />
                   </div>
                 </th>
-                <th onClick={() => handleSort("STATE_NAME")} style={{ cursor: "pointer" }}>
+                <th className="sortable" onClick={() => handleSort("STATE_NAME")}>
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                     <span>State / UT</span>
-                    <ArrowUpDown size={12} />
+                    <ArrowUpDown size={11} />
                   </div>
                 </th>
-                <th onClick={() => handleSort("total_works")} style={{ cursor: "pointer", textAlign: "right" }}>
+                <th className="sortable" onClick={() => handleSort("total_works")} style={{ textAlign: "right" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
                     <span>Total Works</span>
-                    <ArrowUpDown size={12} />
+                    <ArrowUpDown size={11} />
                   </div>
                 </th>
-                <th style={{ textAlign: "center", width: "130px" }}>Action</th>
+                <th style={{ textAlign: "center", width: "120px" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {sortedIdas.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: "center", padding: "32px", color: "#64748b" }}>
+                  <td colSpan={5} style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                     No District Authorities found matching "{search}"
                   </td>
                 </tr>
@@ -253,7 +260,7 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                     <tr
                       key={ida.IDA_NAME || idx}
                       style={{
-                        backgroundColor: isSelected ? "var(--bg-accent, #f1f5f9)" : "transparent",
+                        backgroundColor: isSelected ? "#f0f9ff" : "transparent",
                       }}
                     >
                       <td style={{ color: "#64748b", fontWeight: 600 }}>{idx + 1}</td>
@@ -263,7 +270,7 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                         </span>
                       </td>
                       <td>
-                        <span className="mospi-pill neutral" style={{ fontSize: "11px" }}>
+                        <span className="mospi-pill neutral" style={{ fontSize: "10.5px" }}>
                           {ida.STATE_NAME || "—"}
                         </span>
                       </td>
@@ -273,12 +280,16 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                       <td style={{ textAlign: "center" }}>
                         <button
                           type="button"
-                          className="mospi-btn-sm"
+                          className="mospi-page-btn"
                           onClick={() => handleInspectIda(ida.IDA_NAME)}
                           title="Inspect active works for this authority"
+                          style={{
+                            fontSize: "11px",
+                            padding: "2px 7px",
+                          }}
                         >
+                          <Eye size={11} />
                           <span>{isSelected ? "Inspecting" : "Inspect"}</span>
-                          <ChevronRight size={12} />
                         </button>
                       </td>
                     </tr>
@@ -289,7 +300,7 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
           </table>
         </div>
         {sortedIdas.length > 100 && (
-          <div style={{ padding: "8px 16px", fontSize: "12px", color: "#64748b", borderTop: "1px solid var(--border-color, #e2e8f0)" }}>
+          <div style={{ padding: "6px 12px", fontSize: "11px", color: "#64748b", borderTop: "1px solid #e2e8f0" }}>
             Showing top 100 of {formatNumber(sortedIdas.length)} authorities. Use search to find specific district.
           </div>
         )}
@@ -297,7 +308,7 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
 
       {/* 3. Selected District Works Sub-Panel */}
       {selectedIdaName && (
-        <div className="mospi-card" style={{ borderLeft: "4px solid #2563eb" }}>
+        <div className="mospi-card" style={{ borderLeft: "4px solid #005A9C" }}>
           <div className="mospi-card-header">
             <div>
               <h3 className="mospi-card-title">
@@ -311,40 +322,40 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
               type="button"
               className="mospi-pill neutral"
               onClick={() => setSelectedIdaName(null)}
-              style={{ cursor: "pointer", border: "none" }}
+              style={{ cursor: "pointer" }}
             >
               Close Panel
             </button>
           </div>
 
           {loadingWorks ? (
-            <div className="text-center py-4">
+            <div style={{ textAlign: "center", padding: "20px" }}>
               <div className="spinner" />
-              <p className="text-muted mt-2">Loading works for {selectedIdaName}...</p>
+              <p style={{ color: "#64748b", marginTop: "6px", fontSize: "12px" }}>Loading works for {selectedIdaName}...</p>
             </div>
           ) : idaWorks.length === 0 ? (
-            <div style={{ padding: "20px", textAlign: "center", color: "#64748b" }}>
+            <div style={{ padding: "16px", textAlign: "center", color: "#64748b", fontSize: "12px" }}>
               No detailed works returned for this authority.
             </div>
           ) : (
-            <div className="mospi-table-responsive">
-              <table className="mospi-table">
+            <div className="mospi-table-wrapper">
+              <table className="mospi-data-table">
                 <thead>
                   <tr>
-                    <th>Work ID</th>
+                    <th style={{ width: "90px" }}>Work ID</th>
                     <th>Description</th>
                     <th>Stage</th>
                     <th style={{ textAlign: "right" }}>Sanction Amount</th>
-                    <th>Action</th>
+                    <th style={{ textAlign: "center", width: "130px" }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {idaWorks.map((w) => (
                     <tr key={w.WORK_RECOMMENDATION_DTL_ID || w.WORK_ID}>
-                      <td style={{ fontWeight: 700, color: "#2563eb" }}>
+                      <td style={{ fontWeight: 700, color: "#005A9C" }}>
                         #{w.WORK_ID || w.WORK_RECOMMENDATION_DTL_ID}
                       </td>
-                      <td style={{ maxWidth: "350px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <td style={{ maxWidth: "320px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={w.WORK_DESCRIPTION}>
                         {w.WORK_DESCRIPTION || "—"}
                       </td>
                       <td>
@@ -355,14 +366,14 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                       <td style={{ textAlign: "right", fontWeight: 600 }}>
                         {w.SANCTION_AMOUNT ? `₹ ${Number(w.SANCTION_AMOUNT).toLocaleString("en-IN")}` : "—"}
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center" }}>
                         <button
                           type="button"
                           className="mospi-dossier-btn mospi-dossier-district"
                           onClick={() => onSelectWork && onSelectWork({ ...w, __initialSection: "overview", __authority: "MOSPI" })}
                           title="Inspect District Central Registry Dossier"
                         >
-                          <Building2 size={12} />
+                          <Building2 size={11} />
                           <span>District Dossier →</span>
                         </button>
                       </td>

@@ -437,12 +437,6 @@ export default function MPDashboard(props) {
                 <MapPin size={12} className="inline mr-1 text-slate-500" />
                 {analytics?.constituency || "NIZAMABAD"}, {analytics?.state || "Telangana"}
               </span>
-              {backendOnline && (
-                <span className="gov-live-status-pill online">
-                  <span className="gov-live-pulse-dot" />
-                  <span>Live 1,02,703 Records</span>
-                </span>
-              )}
             </div>
             <h1 className="gov-mp-page-title">Hon'ble MP Dashboard</h1>
           </div>

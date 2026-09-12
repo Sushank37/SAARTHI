@@ -146,6 +146,7 @@ export default function IADashboard({ summary, onSelectWork }) {
   const [selectedRisk, setSelectedRisk] = useState("All");
   const [filterFlaggedOnly, setFilterFlaggedOnly] = useState(false);
   const [workSearchQuery, setWorkSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [localSelectedWork, setLocalSelectedWork] = useState(null);
 
   // Implementing Agency persistent workflow requests (Payments, EOTs, MBs)
@@ -393,7 +394,7 @@ export default function IADashboard({ summary, onSelectWork }) {
               </span>
             </div>
             <h1 className="ia-page-title">
-              {cleanAgencyName(selectedIDA)} — Execution Portal
+              {cleanAgencyName(selectedIDA)}
             </h1>
             <p className="ia-page-desc">
               Civil execution monitoring, milestone progression, Measurement Book (MB) verification, contractor payment compliance, and site photo evidence.
@@ -683,10 +684,11 @@ export default function IADashboard({ summary, onSelectWork }) {
                   </tr>
                 ) : works.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="ia-empty-state">
-                      <Layers size={32} className="ia-empty-icon" />
-                      <strong>No Assigned Works Found</strong>
-                      <p>Try adjusting your search criteria or selecting a different agency scope.</p>
+                    <td colSpan={8} className="text-center py-6">
+                      <div className="ia-empty-state-box">
+                        <CheckCircle2 size={16} />
+                        <span>No assigned works found for this agency.</span>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -870,10 +872,11 @@ export default function IADashboard({ summary, onSelectWork }) {
                     </tr>
                   ) : works.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="ia-empty-state">
-                        <Activity size={32} className="ia-empty-icon" />
-                        <strong>No Active Execution Works Found</strong>
-                        <p>All projects are either concluded or awaiting sanction clearance.</p>
+                      <td colSpan={8} className="text-center py-6">
+                        <div className="ia-empty-state-box">
+                          <CheckCircle2 size={16} />
+                          <span>No active execution works found.</span>
+                        </div>
                       </td>
                     </tr>
                   ) : (
@@ -1023,10 +1026,11 @@ export default function IADashboard({ summary, onSelectWork }) {
                   </tr>
                 ) : works.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="ia-empty-state">
-                      <CheckCircle2 size={32} color="#16a34a" />
-                      <strong>No Imminent Deadlines</strong>
-                      <p>All active works are well within standard peer completion durations.</p>
+                    <td colSpan={8} className="text-center py-6">
+                      <div className="ia-empty-state-box">
+                        <CheckCircle2 size={16} />
+                        <span>No imminent deadlines found.</span>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -1202,10 +1206,11 @@ export default function IADashboard({ summary, onSelectWork }) {
                   </tr>
                 ) : works.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="ia-empty-state">
-                      <Coins size={32} className="ia-empty-icon" />
-                      <strong>No Payment Records Found</strong>
-                      <p>Payment requests and disbursement claims will appear here.</p>
+                    <td colSpan={8} className="text-center py-6">
+                      <div className="ia-empty-state-box">
+                        <CheckCircle2 size={16} />
+                        <span>No payment records found.</span>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -1403,10 +1408,11 @@ export default function IADashboard({ summary, onSelectWork }) {
                     </tr>
                   ) : works.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="ia-empty-state">
-                        <Building2 size={32} className="ia-empty-icon" />
-                        <strong>No Vendor Records Found</strong>
-                        <p>No active assignments recorded under this scope.</p>
+                      <td colSpan={7} className="text-center py-6">
+                        <div className="ia-empty-state-box">
+                          <CheckCircle2 size={16} />
+                          <span>No vendor records found under this scope.</span>
+                        </div>
                       </td>
                     </tr>
                   ) : (
@@ -1535,10 +1541,11 @@ export default function IADashboard({ summary, onSelectWork }) {
                   </tr>
                 ) : works.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="ia-empty-state">
-                      <FileCheck size={32} className="ia-empty-icon" />
-                      <strong>No Uploaded Evidence Found</strong>
-                      <p>Stage documentation records will appear here.</p>
+                    <td colSpan={7} className="text-center py-6">
+                      <div className="ia-empty-state-box">
+                        <CheckCircle2 size={16} />
+                        <span>No uploaded evidence found.</span>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -1668,10 +1675,11 @@ export default function IADashboard({ summary, onSelectWork }) {
                   </tr>
                 ) : works.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="ia-empty-state">
-                      <Camera size={32} className="ia-empty-icon" />
-                      <strong>No Photographic Records Pending</strong>
-                      <p>All active inspection sites have validated photography.</p>
+                    <td colSpan={7} className="text-center py-6">
+                      <div className="ia-empty-state-box">
+                        <CheckCircle2 size={16} />
+                        <span>No photographic records pending.</span>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -1953,10 +1961,11 @@ export default function IADashboard({ summary, onSelectWork }) {
                   </tr>
                 ) : works.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="ia-empty-state">
-                      <CheckCircle2 size={32} className="ia-empty-icon" />
-                      <strong>No Works Ready for Completion</strong>
-                      <p>Projects ready for final inspection or handover will appear here.</p>
+                    <td colSpan={8} className="text-center py-6">
+                      <div className="ia-empty-state-box">
+                        <CheckCircle2 size={16} />
+                        <span>No works ready for completion.</span>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -2091,10 +2100,11 @@ export default function IADashboard({ summary, onSelectWork }) {
                   </tr>
                 ) : works.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="ia-empty-state">
-                      <Sparkles size={32} className="ia-empty-icon" />
-                      <strong>No Inconsistencies Detected</strong>
-                      <p>All active works pass AI verification tests with no audit flags.</p>
+                    <td colSpan={7} className="text-center py-6">
+                      <div className="ia-empty-state-box">
+                        <CheckCircle2 size={16} />
+                        <span>No inconsistencies detected.</span>
+                      </div>
                     </td>
                   </tr>
                 ) : (
