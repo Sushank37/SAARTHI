@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Clock,
   Calendar,
   AlertTriangle,
   CheckCircle2,
-  ExternalLink,
   ChevronLeft,
   ChevronRight,
-  Filter,
 } from "lucide-react";
 import { API_BASE, formatNumber } from "../../../constants";
 
@@ -67,11 +65,11 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
   return (
     <div className="mospi-panel">
       {/* 1. National Delay Benchmarks */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px" }}>
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">National Avg Sanction Delay</span>
-            <Clock size={16} className="text-amber-500" />
+            <Clock size={15} color="#d97706" />
           </div>
           <div className="mospi-kpi-value">{delayInfo.avg_sanction_delay || 105.7}d</div>
           <div className="mospi-kpi-sub">Prescribed guideline: 45 days</div>
@@ -80,7 +78,7 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Avg Execution Duration</span>
-            <Calendar size={16} className="text-sky-500" />
+            <Calendar size={15} color="#0284c7" />
           </div>
           <div className="mospi-kpi-value">{delayInfo.avg_completion_duration || 174.5}d</div>
           <div className="mospi-kpi-sub">From administrative sanction to completion</div>
@@ -89,7 +87,7 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Over 45-Day Guideline</span>
-            <AlertTriangle size={16} className="text-rose-500" />
+            <AlertTriangle size={15} color="#e11d48" />
           </div>
           <div className="mospi-kpi-value">{formatNumber(delayInfo.over_statutory_count || 54761)}</div>
           <div className="mospi-kpi-sub">70.6% of sanctioned works took &gt;45d</div>
@@ -98,7 +96,7 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Compliant Under 45d</span>
-            <CheckCircle2 size={16} className="text-emerald-500" />
+            <CheckCircle2 size={15} color="#0d9488" />
           </div>
           <div className="mospi-kpi-value">{formatNumber(delayInfo.under_45 || 22856)}</div>
           <div className="mospi-kpi-sub">29.4% strictly adhered to 45d limit</div>
@@ -116,37 +114,37 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginTop: "8px" }}>
-          <div style={{ padding: "12px", backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px" }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, color: "#166534", textTransform: "uppercase" }}>≤ 45 Days</div>
-            <div style={{ fontSize: "22px", fontWeight: 800, color: "#15803d", marginTop: "4px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "10px", marginTop: "4px" }}>
+          <div style={{ padding: "10px 12px", backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "6px" }}>
+            <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#166534", textTransform: "uppercase" }}>≤ 45 Days</div>
+            <div style={{ fontSize: "20px", fontWeight: 800, color: "#15803d", marginTop: "2px" }}>
               {formatNumber(delayInfo.under_45 || 22856)}
             </div>
-            <div style={{ fontSize: "11px", color: "#166534", marginTop: "2px" }}>Compliant with SLA (29.4%)</div>
+            <div style={{ fontSize: "10.5px", color: "#166534", marginTop: "1px" }}>Compliant with SLA (29.4%)</div>
           </div>
 
-          <div style={{ padding: "12px", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px" }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>46 – 90 Days</div>
-            <div style={{ fontSize: "22px", fontWeight: 800, color: "#334155", marginTop: "4px" }}>
+          <div style={{ padding: "10px 12px", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px" }}>
+            <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>46 – 90 Days</div>
+            <div style={{ fontSize: "20px", fontWeight: 800, color: "#334155", marginTop: "2px" }}>
               {formatNumber(delayInfo.from_46_to_90 || 20580)}
             </div>
-            <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>Moderate Delay (26.5%)</div>
+            <div style={{ fontSize: "10.5px", color: "#64748b", marginTop: "1px" }}>Moderate Delay (26.5%)</div>
           </div>
 
-          <div style={{ padding: "12px", backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "8px" }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, color: "#b45309", textTransform: "uppercase" }}>91 – 180 Days</div>
-            <div style={{ fontSize: "22px", fontWeight: 800, color: "#d97706", marginTop: "4px" }}>
+          <div style={{ padding: "10px 12px", backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "6px" }}>
+            <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#b45309", textTransform: "uppercase" }}>91 – 180 Days</div>
+            <div style={{ fontSize: "20px", fontWeight: 800, color: "#d97706", marginTop: "2px" }}>
               {formatNumber(delayInfo.from_91_to_180 || 21357)}
             </div>
-            <div style={{ fontSize: "11px", color: "#b45309", marginTop: "2px" }}>Significant Delay (27.5%)</div>
+            <div style={{ fontSize: "10.5px", color: "#b45309", marginTop: "1px" }}>Significant Delay (27.5%)</div>
           </div>
 
-          <div style={{ padding: "12px", backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px" }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, color: "#991b1b", textTransform: "uppercase" }}>&gt; 180 Days</div>
-            <div style={{ fontSize: "22px", fontWeight: 800, color: "#b91c1c", marginTop: "4px" }}>
+          <div style={{ padding: "10px 12px", backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px" }}>
+            <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#991b1b", textTransform: "uppercase" }}>&gt; 180 Days</div>
+            <div style={{ fontSize: "20px", fontWeight: 800, color: "#b91c1c", marginTop: "2px" }}>
               {formatNumber(delayInfo.over_180 || 12824)}
             </div>
-            <div style={{ fontSize: "11px", color: "#991b1b", marginTop: "2px" }}>Critical Overrun (16.5%)</div>
+            <div style={{ fontSize: "10.5px", color: "#991b1b", marginTop: "1px" }}>Critical Overrun (16.5%)</div>
           </div>
         </div>
       </div>
@@ -166,24 +164,18 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
         </div>
 
         {/* Bucket Subtabs */}
-        <div className="mospi-subtab-bar" style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
+        <div className="mospi-subtab-bar">
           {delayBucketTabs.map((tab) => {
             const isActive = activeBucket === tab.id;
             return (
               <button
                 key={tab.id}
                 type="button"
-                className={`mospi-pill ${isActive ? "blue" : "neutral"}`}
+                className={`mospi-subtab-btn ${isActive ? "active" : ""}`}
                 onClick={() => handleBucketClick(tab.id)}
-                style={{
-                  cursor: "pointer",
-                  fontWeight: isActive ? 700 : 500,
-                  fontSize: "12px",
-                  padding: "6px 12px",
-                }}
               >
                 <span>{tab.label}</span>
-                <span style={{ opacity: 0.8, fontSize: "11px", marginLeft: "4px" }}>
+                <span style={{ opacity: 0.85, fontSize: "10.5px" }}>
                   ({formatNumber(tab.count)})
                 </span>
               </button>
@@ -192,8 +184,8 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
         </div>
 
         {/* Table */}
-        <div className="mospi-table-responsive">
-          <table className="mospi-table">
+        <div className="mospi-table-wrapper">
+          <table className="mospi-data-table">
             <thead>
               <tr>
                 <th style={{ width: "90px" }}>Work ID</th>
@@ -201,22 +193,22 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
                 <th>State & District</th>
                 <th>Recommendation Date</th>
                 <th>Sanction Date</th>
-                <th style={{ textAlign: "right" }}>Sanction Delay</th>
+                <th style={{ textAlign: "center" }}>Sanction Delay</th>
                 <th style={{ textAlign: "right" }}>Sanction Amount</th>
-                <th style={{ textAlign: "center", width: "100px" }}>Action</th>
+                <th style={{ textAlign: "center", width: "130px" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "40px" }}>
+                  <td colSpan={8} style={{ textAlign: "center", padding: "30px" }}>
                     <div className="spinner" />
-                    <p className="text-muted mt-2">Loading delayed works registry...</p>
+                    <p style={{ color: "#64748b", marginTop: "6px", fontSize: "12px" }}>Loading delayed works registry...</p>
                   </td>
                 </tr>
               ) : works.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                  <td colSpan={8} style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                     No works found matching this delay bucket.
                   </td>
                 </tr>
@@ -228,7 +220,7 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
 
                   return (
                     <tr key={w.WORK_RECOMMENDATION_DTL_ID || w.WORK_ID}>
-                      <td style={{ fontWeight: 700, color: "#2563eb" }}>
+                      <td style={{ fontWeight: 700, color: "#005A9C" }}>
                         #{w.WORK_ID || w.WORK_RECOMMENDATION_DTL_ID}
                       </td>
                       <td style={{ maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={w.WORK_DESCRIPTION}>
@@ -238,14 +230,14 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
                         <div style={{ fontWeight: 600, color: "#0f172a" }}>{w.STATE_NAME || "—"}</div>
                         <div style={{ fontSize: "11px", color: "#64748b" }}>{w.IDA_NAME || "—"}</div>
                       </td>
-                      <td style={{ fontSize: "12px", color: "#64748b" }}>
+                      <td style={{ fontSize: "11.5px", color: "#64748b" }}>
                         {w.RECOMMENDATION_DATE || "—"}
                       </td>
-                      <td style={{ fontSize: "12px", color: "#64748b" }}>
+                      <td style={{ fontSize: "11.5px", color: "#64748b" }}>
                         {w.SANCTION_DATE || "—"}
                       </td>
-                      <td style={{ textAlign: "right" }}>
-                        <span className={`mospi-pill ${isCompliant ? "emerald" : isSevere ? "rose" : "warning"}`}>
+                      <td style={{ textAlign: "center" }}>
+                        <span className={`mospi-pill ${isCompliant ? "emerald" : isSevere ? "rose" : "amber"}`}>
                           {delayDays} Days
                         </span>
                       </td>
@@ -259,7 +251,7 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
                           onClick={() => onSelectWork && onSelectWork({ ...w, __initialSection: "compliance-45d", __authority: "MOSPI" })}
                           title="Inspect MoSPI National Delay Breach & Compliance Dossier"
                         >
-                          <Clock size={12} />
+                          <Clock size={11} />
                           <span>Delay Dossier →</span>
                         </button>
                       </td>
@@ -272,28 +264,28 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
         </div>
 
         {/* Pagination Bar */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "16px", paddingTop: "12px", borderTop: "1px solid var(--border-color, #e2e8f0)" }}>
-          <span style={{ fontSize: "12px", color: "#64748b" }}>
+        <div className="mospi-pagination-bar">
+          <span className="mospi-page-info">
             Showing page {page} of {totalPages} ({formatNumber(totalCount)} total works)
           </span>
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div className="mospi-page-btn-group">
             <button
               type="button"
-              className="mospi-btn-sm"
+              className="mospi-page-btn"
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
             >
-              <ChevronLeft size={14} />
+              <ChevronLeft size={12} />
               <span>Previous</span>
             </button>
             <button
               type="button"
-              className="mospi-btn-sm"
+              className="mospi-page-btn"
               disabled={page >= totalPages}
               onClick={() => setPage(page + 1)}
             >
               <span>Next</span>
-              <ChevronRight size={14} />
+              <ChevronRight size={12} />
             </button>
           </div>
         </div>

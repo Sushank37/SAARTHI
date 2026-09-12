@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   GitBranch,
   AlertTriangle,
-  ExternalLink,
   Search,
   Filter,
   Layers,
   CheckCircle2,
+  Copy,
 } from "lucide-react";
-import { API_BASE, formatNumber, formatCrores } from "../../../constants";
+import { API_BASE, formatNumber } from "../../../constants";
 
 export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
   const [duplicateCases, setDuplicateCases] = useState([]);
@@ -53,11 +53,11 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
   return (
     <div className="mospi-panel">
       {/* 1. Duplicate Intelligence Key Metrics */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px" }}>
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Detected Clusters</span>
-            <GitBranch size={16} className="text-amber-500" />
+            <GitBranch size={15} color="#d97706" />
           </div>
           <div className="mospi-kpi-value">{formatNumber(kpis.duplicate_clusters || 1401)}</div>
           <div className="mospi-kpi-sub">Cross-district/state similarity clusters</div>
@@ -66,7 +66,7 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Linked Proposal Works</span>
-            <Layers size={16} className="text-sky-500" />
+            <Layers size={15} color="#0284c7" />
           </div>
           <div className="mospi-kpi-value">{formatNumber(kpis.works_in_clusters || 8922)}</div>
           <div className="mospi-kpi-sub">8.7% of total national repository</div>
@@ -75,7 +75,7 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">High Duplicate Risk</span>
-            <AlertTriangle size={16} className="text-rose-500" />
+            <AlertTriangle size={15} color="#e11d48" />
           </div>
           <div className="mospi-kpi-value">{formatNumber(kpis.high_duplicate_works || 4047)}</div>
           <div className="mospi-kpi-sub">Exact description & budget matches</div>
@@ -84,7 +84,7 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Avg Cluster Suspicion</span>
-            <CheckCircle2 size={16} className="text-emerald-500" />
+            <CheckCircle2 size={15} color="#0d9488" />
           </div>
           <div className="mospi-kpi-value">85.1%</div>
           <div className="mospi-kpi-sub">Semantic, temporal & spatial similarity</div>
@@ -106,21 +106,19 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
         </div>
 
         {/* Filter Bar */}
-        <div className="mospi-table-filter-bar" style={{ display: "flex", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
-          <div style={{ position: "relative", flex: 1, minWidth: "260px" }}>
-            <Search size={14} style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "#64748b" }} />
+        <div className="mospi-table-toolbar">
+          <div className="mospi-search-box" style={{ flex: 1, minWidth: "260px" }}>
+            <Search size={13} color="#64748b" />
             <input
               type="text"
-              className="mospi-search-input"
               placeholder="Search by Work ID, Cluster ID, State, or description..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ width: "100%", paddingLeft: "32px" }}
             />
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Filter size={14} style={{ color: "#64748b" }} />
+            <Filter size={13} color="#64748b" />
             <select
               className="mospi-select"
               value={filterRisk}
@@ -135,31 +133,31 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
         </div>
 
         {/* Table */}
-        <div className="mospi-table-responsive">
-          <table className="mospi-table">
+        <div className="mospi-table-wrapper">
+          <table className="mospi-data-table">
             <thead>
               <tr>
                 <th style={{ width: "90px" }}>Work ID</th>
-                <th style={{ width: "100px" }}>Cluster ID</th>
+                <th style={{ width: "95px" }}>Cluster ID</th>
                 <th>State & Constituency</th>
                 <th>Description</th>
                 <th style={{ textAlign: "right" }}>Sanction Amount</th>
                 <th style={{ textAlign: "center" }}>Duplicate Risk</th>
                 <th style={{ textAlign: "center" }}>Cluster Score</th>
-                <th style={{ textAlign: "center", width: "100px" }}>Action</th>
+                <th style={{ textAlign: "center", width: "135px" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "40px" }}>
+                  <td colSpan={8} style={{ textAlign: "center", padding: "30px" }}>
                     <div className="spinner" />
-                    <p className="text-muted mt-2">Loading duplicate surveillance data...</p>
+                    <p style={{ color: "#64748b", marginTop: "6px", fontSize: "12px" }}>Loading duplicate surveillance data...</p>
                   </td>
                 </tr>
               ) : filteredCases.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                  <td colSpan={8} style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                     No duplicate cluster proposals found matching your filter criteria.
                   </td>
                 </tr>
@@ -172,7 +170,7 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
 
                   return (
                     <tr key={item.WORK_RECOMMENDATION_DTL_ID || item.WORK_ID}>
-                      <td style={{ fontWeight: 700, color: "#2563eb" }}>
+                      <td style={{ fontWeight: 700, color: "#005A9C" }}>
                         #{item.WORK_ID || item.WORK_RECOMMENDATION_DTL_ID}
                       </td>
                       <td>
@@ -191,7 +189,7 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
                         {item.SANCTION_AMOUNT ? `₹ ${Number(item.SANCTION_AMOUNT).toLocaleString("en-IN")}` : "—"}
                       </td>
                       <td style={{ textAlign: "center" }}>
-                        <span className={`mospi-pill ${isHigh ? "rose" : "warning"}`}>
+                        <span className={`mospi-pill ${isHigh ? "rose" : "amber"}`}>
                           {item.DUPLICATE_RISK || "MEDIUM"}
                         </span>
                       </td>
@@ -205,7 +203,7 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
                           onClick={() => onSelectWork && onSelectWork({ ...item, __initialSection: "duplicates", __authority: "MOSPI" })}
                           title="Inspect Cross-Jurisdiction Duplicate Cluster Dossier"
                         >
-                          <Copy size={12} />
+                          <Copy size={11} />
                           <span>Duplicate Dossier →</span>
                         </button>
                       </td>

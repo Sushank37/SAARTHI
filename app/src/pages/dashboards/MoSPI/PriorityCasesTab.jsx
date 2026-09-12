@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
-  Filter,
   Download,
-  ChevronRight,
-  ClipboardCheck,
-  AlertTriangle,
   AlertOctagon,
-  FileCheck,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-import { API_BASE, formatNumber, formatCrores, exportToCSV } from "../../../constants";
+import { API_BASE, formatNumber, exportToCSV } from "../../../constants";
 import { getRequests } from "../../../services/workflowService";
 import RequestTable from "../../../components/workflow/RequestTable";
 
@@ -35,13 +32,26 @@ export default function PriorityCasesTab({ onSelectWork }) {
   };
 
   useEffect(() => {
-    fetchEscalations();
+    let isMounted = true;
+    async function loadInitialEscalations() {
+      setEscalationsLoading(true);
+      try {
+        const data = await getRequests({ targetRole: "MOSPI" });
+        if (isMounted) setNationalEscalations(data.requests || []);
+      } catch (err) {
+        console.error("Failed to load initial escalations:", err);
+      } finally {
+        if (isMounted) setEscalationsLoading(false);
+      }
+    }
+    loadInitialEscalations();
+    return () => { isMounted = false; };
   }, []);
+
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [selectedState, setSelectedState] = useState("ALL");
   const [selectedRisk, setSelectedRisk] = useState("ALL");
 
   // Debounce search input
@@ -64,7 +74,6 @@ export default function PriorityCasesTab({ onSelectWork }) {
         params.set("limit", limit);
 
         if (debouncedSearch.trim()) params.set("q", debouncedSearch.trim());
-        if (selectedState !== "ALL") params.set("state", selectedState);
         if (selectedRisk !== "ALL") params.set("risk_level", selectedRisk);
 
         const res = await fetch(`${API_BASE}/api/review-cases?${params.toString()}`);
@@ -83,7 +92,7 @@ export default function PriorityCasesTab({ onSelectWork }) {
     }
     loadCases();
     return () => { isMounted = false; };
-  }, [page, limit, debouncedSearch, selectedState, selectedRisk]);
+  }, [page, limit, debouncedSearch, selectedRisk]);
 
   const totalPages = Math.ceil(totalCases / limit) || 1;
 
@@ -95,7 +104,7 @@ export default function PriorityCasesTab({ onSelectWork }) {
   return (
     <div className="mospi-panel">
       {/* Centralized National Administrative Escalations Queue */}
-      <div style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "10px" }}>
         <RequestTable
           title="MoSPI Central National Escalations Queue"
           subtitle="Direct escalation referrals and inter-state disputes transmitted by District Collectors to Central Nodal Ministry"
@@ -130,9 +139,9 @@ export default function PriorityCasesTab({ onSelectWork }) {
             </p>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
             <div className="mospi-search-box">
-              <Search size={14} className="text-slate-400" />
+              <Search size={13} color="#64748b" />
               <input
                 type="text"
                 placeholder="Search Work ID or description..."
@@ -152,8 +161,8 @@ export default function PriorityCasesTab({ onSelectWork }) {
               <option value="LOW">Low Risk</option>
             </select>
 
-            <button type="button" className="mospi-export-btn" onClick={handleExport} title="Export current review queue">
-              <Download size={14} />
+            <button type="button" className="mospi-redirect-link-btn" onClick={handleExport} title="Export current review queue">
+              <Download size={13} />
               <span>Export CSV</span>
             </button>
           </div>
@@ -164,26 +173,27 @@ export default function PriorityCasesTab({ onSelectWork }) {
           <table className="mospi-data-table">
             <thead>
               <tr>
-                <th>Work ID</th>
+                <th style={{ width: "90px" }}>Work ID</th>
                 <th>State</th>
                 <th>Implementing Authority</th>
                 <th>Work Stage</th>
-                <th>Sanction Amount</th>
-                <th>Risk Level</th>
+                <th style={{ textAlign: "right" }}>Sanction Amount</th>
+                <th style={{ textAlign: "center" }}>Risk Level</th>
                 <th>Reason for Review</th>
-                <th>Action</th>
+                <th style={{ textAlign: "center", width: "145px" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-4">
-                    <div className="spinner" /> Loading priority review works...
+                  <td colSpan={8} style={{ textAlign: "center", padding: "30px" }}>
+                    <div className="spinner" />
+                    <p style={{ color: "#64748b", marginTop: "6px", fontSize: "12px" }}>Loading priority review works...</p>
                   </td>
                 </tr>
               ) : cases.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-4 text-muted">
+                  <td colSpan={8} style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                     No priority works match your filter criteria.
                   </td>
                 </tr>
@@ -192,28 +202,28 @@ export default function PriorityCasesTab({ onSelectWork }) {
                   const workId = w.WORK_RECOMMENDATION_DTL_ID || w.WORK_ID;
                   return (
                     <tr key={workId}>
-                      <td>
-                        <strong className="font-mono text-sky-700">#{workId}</strong>
+                      <td style={{ fontWeight: 700, color: "#005A9C" }}>
+                        #{workId}
                       </td>
-                      <td>{w.STATE_NAME || "N/A"}</td>
-                      <td style={{ maxWidth: "220px", fontSize: "11px", color: "#475569" }}>
+                      <td style={{ fontWeight: 600 }}>{w.STATE_NAME || "N/A"}</td>
+                      <td style={{ maxWidth: "200px", fontSize: "11px", color: "#475569" }}>
                         {w.IDA_NAME || "N/A"}
                       </td>
                       <td>
                         <span className="mospi-pill blue">{w.WORK_STAGE || "Sanction"}</span>
                       </td>
-                      <td>
-                        <strong>₹ {formatNumber(w.SANCTION_AMOUNT || 0)}</strong>
+                      <td style={{ textAlign: "right", fontWeight: 600 }}>
+                        ₹ {formatNumber(w.SANCTION_AMOUNT || 0)}
                       </td>
-                      <td>
-                        <span className={`mospi-pill ${w.RISK_LEVEL === "HIGH" ? "rose" : w.RISK_LEVEL === "MEDIUM" ? "amber" : "gray"}`}>
+                      <td style={{ textAlign: "center" }}>
+                        <span className={`mospi-pill ${w.RISK_LEVEL === "HIGH" ? "rose" : w.RISK_LEVEL === "MEDIUM" ? "amber" : "neutral"}`}>
                           {w.RISK_LEVEL || "LOW"}
                         </span>
                       </td>
                       <td style={{ maxWidth: "260px", fontSize: "11px", color: "#64748b" }}>
                         {w.REVIEW_REASON || "Flagged for administrative verification"}
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center" }}>
                         <button
                           type="button"
                           className="mospi-dossier-btn mospi-dossier-vigilance"
@@ -224,7 +234,7 @@ export default function PriorityCasesTab({ onSelectWork }) {
                           }}
                           title="Open Central MoSPI Vigilance Directives Dossier"
                         >
-                          <AlertOctagon size={12} />
+                          <AlertOctagon size={11} />
                           <span>Vigilance Dossier →</span>
                         </button>
                       </td>
@@ -249,7 +259,8 @@ export default function PriorityCasesTab({ onSelectWork }) {
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
             >
-              Previous
+              <ChevronLeft size={12} />
+              <span>Previous</span>
             </button>
             <button
               type="button"
@@ -257,7 +268,8 @@ export default function PriorityCasesTab({ onSelectWork }) {
               disabled={page >= totalPages}
               onClick={() => setPage(page + 1)}
             >
-              Next
+              <span>Next</span>
+              <ChevronRight size={12} />
             </button>
           </div>
         </div>

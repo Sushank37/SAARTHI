@@ -1,11 +1,7 @@
-import React from "react";
 import {
   TrendingUp,
   Calendar,
   Layers,
-  IndianRupee,
-  ArrowUpRight,
-  ArrowDownRight,
   CheckCircle2,
 } from "lucide-react";
 import { formatNumber } from "../../../constants";
@@ -18,11 +14,11 @@ export default function TrendAnalysisTab({ analytics }) {
   return (
     <div className="mospi-panel">
       {/* 1. Summary Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px" }}>
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Monitoring Horizon</span>
-            <Calendar size={16} className="text-blue-500" />
+            <Calendar size={15} color="#0284c7" />
           </div>
           <div className="mospi-kpi-value">9 Quarters</div>
           <div className="mospi-kpi-sub">From 2024-Q3 to 2026-Q3</div>
@@ -31,25 +27,25 @@ export default function TrendAnalysisTab({ analytics }) {
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Peak Intake Quarter</span>
-            <Layers size={16} className="text-emerald-500" />
+            <Layers size={15} color="#0d9488" />
           </div>
-          <div className="mospi-kpi-value" style={{ fontSize: "20px" }}>2025-Q3</div>
+          <div className="mospi-kpi-value" style={{ fontSize: "18px" }}>2025-Q3</div>
           <div className="mospi-kpi-sub">15,110 works recommended</div>
         </div>
 
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Peak Sanction Quarter</span>
-            <CheckCircle2 size={16} className="text-sky-500" />
+            <CheckCircle2 size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value" style={{ fontSize: "20px" }}>2025-Q3</div>
+          <div className="mospi-kpi-value" style={{ fontSize: "18px" }}>2025-Q3</div>
           <div className="mospi-kpi-sub">13,810 works sanctioned</div>
         </div>
 
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Active Quarter Intake</span>
-            <TrendingUp size={16} className="text-purple-500" />
+            <TrendingUp size={15} color="#7c3aed" />
           </div>
           <div className="mospi-kpi-value">12,104</div>
           <div className="mospi-kpi-sub">Works recorded in 2026-Q3</div>
@@ -65,23 +61,23 @@ export default function TrendAnalysisTab({ analytics }) {
               Comparison of Parliamentary recommendations versus Collectorate administrative sanctions over time
             </p>
           </div>
-          <div style={{ display: "flex", gap: "12px", alignItems: "center", fontSize: "12px" }}>
+          <div style={{ display: "flex", gap: "12px", alignItems: "center", fontSize: "11.5px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              <span style={{ width: "10px", height: "10px", backgroundColor: "#2563eb", borderRadius: "2px" }} />
-              <span>Recommended Works</span>
+              <span style={{ width: "9px", height: "9px", backgroundColor: "#0284c7", borderRadius: "2px" }} />
+              <span style={{ color: "#334155", fontWeight: 500 }}>Recommended</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              <span style={{ width: "10px", height: "10px", backgroundColor: "#10b981", borderRadius: "2px" }} />
-              <span>Sanctioned Works</span>
+              <span style={{ width: "9px", height: "9px", backgroundColor: "#0d9488", borderRadius: "2px" }} />
+              <span style={{ color: "#334155", fontWeight: 500 }}>Sanctioned</span>
             </div>
           </div>
         </div>
 
         {/* Bar chart representation */}
-        <div style={{ display: "flex", alignItems: "flex-end", height: "220px", gap: "16px", padding: "20px 10px 10px 10px", borderBottom: "1px solid #e2e8f0" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", height: "200px", gap: "12px", padding: "16px 8px 8px", borderBottom: "1px solid #e2e8f0" }}>
           {trends.map((t) => {
-            const recHeight = Math.round((t.recommended_count / maxCount) * 160);
-            const sancHeight = Math.round((t.sanctioned_count / maxCount) * 160);
+            const recHeight = Math.round((t.recommended_count / maxCount) * 140);
+            const sancHeight = Math.round((t.sanctioned_count / maxCount) * 140);
 
             return (
               <div
@@ -95,27 +91,27 @@ export default function TrendAnalysisTab({ analytics }) {
                   justifyContent: "flex-end",
                 }}
               >
-                <div style={{ display: "flex", gap: "4px", alignItems: "flex-end", width: "100%", justifyContent: "center" }}>
+                <div style={{ display: "flex", gap: "3px", alignItems: "flex-end", width: "100%", justifyContent: "center" }}>
                   <div
                     style={{
-                      width: "16px",
+                      width: "14px",
                       height: `${recHeight}px`,
-                      backgroundColor: "#2563eb",
-                      borderRadius: "3px 3px 0 0",
+                      backgroundColor: "#0284c7",
+                      borderRadius: "2px 2px 0 0",
                     }}
                     title={`${t.quarter} Recommended: ${formatNumber(t.recommended_count)}`}
                   />
                   <div
                     style={{
-                      width: "16px",
+                      width: "14px",
                       height: `${sancHeight}px`,
-                      backgroundColor: "#10b981",
-                      borderRadius: "3px 3px 0 0",
+                      backgroundColor: "#0d9488",
+                      borderRadius: "2px 2px 0 0",
                     }}
                     title={`${t.quarter} Sanctioned: ${formatNumber(t.sanctioned_count)}`}
                   />
                 </div>
-                <div style={{ fontSize: "11px", fontWeight: 700, color: "#475569", marginTop: "8px" }}>
+                <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#475569", marginTop: "6px" }}>
                   {t.quarter}
                 </div>
               </div>
@@ -135,8 +131,8 @@ export default function TrendAnalysisTab({ analytics }) {
           </div>
         </div>
 
-        <div className="mospi-table-responsive">
-          <table className="mospi-table">
+        <div className="mospi-table-wrapper">
+          <table className="mospi-data-table">
             <thead>
               <tr>
                 <th>Quarter</th>
@@ -144,7 +140,7 @@ export default function TrendAnalysisTab({ analytics }) {
                 <th style={{ textAlign: "right" }}>Recommended (₹ Cr)</th>
                 <th style={{ textAlign: "right" }}>Sanctioned Works</th>
                 <th style={{ textAlign: "right" }}>Sanctioned (₹ Cr)</th>
-                <th style={{ textAlign: "right" }}>Quarterly Sanction Rate</th>
+                <th style={{ textAlign: "right" }}>Sanction Rate</th>
               </tr>
             </thead>
             <tbody>
@@ -155,20 +151,20 @@ export default function TrendAnalysisTab({ analytics }) {
                     <td style={{ fontWeight: 700, color: "#0f172a" }}>
                       {t.quarter}
                     </td>
-                    <td style={{ textAlign: "right", fontWeight: 600, color: "#2563eb" }}>
+                    <td style={{ textAlign: "right", fontWeight: 600, color: "#0284c7" }}>
                       {formatNumber(t.recommended_count)}
                     </td>
                     <td style={{ textAlign: "right", fontWeight: 600 }}>
                       ₹ {t.recommended_amount_cr}
                     </td>
-                    <td style={{ textAlign: "right", fontWeight: 600, color: "#10b981" }}>
+                    <td style={{ textAlign: "right", fontWeight: 600, color: "#0d9488" }}>
                       {formatNumber(t.sanctioned_count)}
                     </td>
                     <td style={{ textAlign: "right", fontWeight: 600 }}>
                       ₹ {t.sanctioned_amount_cr}
                     </td>
                     <td style={{ textAlign: "right" }}>
-                      <span className={`mospi-pill ${rate >= 75 ? "emerald" : rate >= 50 ? "neutral" : "warning"}`}>
+                      <span className={`mospi-pill ${rate >= 75 ? "emerald" : rate >= 50 ? "neutral" : "amber"}`}>
                         {rate}%
                       </span>
                     </td>
