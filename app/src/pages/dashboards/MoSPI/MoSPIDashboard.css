@@ -898,3 +898,251 @@
     align-items: flex-start;
   }
 }
+
+/* ============================================================
+   14. VIEWPORT-LEVEL INSPECT MODAL & BACKDROP
+   ============================================================ */
+
+.mospi-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  animation: mospiModalFadeIn 0.15s ease-out;
+}
+
+@keyframes mospiModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mospi-modal-dialog {
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  border-top: 4px solid #005A9C;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  width: min(960px, calc(100vw - 32px));
+  max-height: min(85vh, 720px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: mospiModalSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  overflow: hidden;
+}
+
+@keyframes mospiModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.mospi-modal-header {
+  padding: 14px 20px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.mospi-modal-title-box {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.mospi-modal-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mospi-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.mospi-modal-subtitle {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.mospi-modal-close-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.mospi-modal-close-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+.mospi-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  box-sizing: border-box;
+}
+
+.mospi-modal-footer {
+  padding: 10px 20px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.mospi-modal-footer-meta {
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+/* ============================================================
+   15. DISTRICT DOSSIER SUMMARY MODAL CONTENT
+   ============================================================ */
+
+/* ← Back to Inspect navigation button */
+.mospi-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 5px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mospi-back-btn:hover {
+  background: #e0f2fe;
+  border-color: #7dd3fc;
+  color: #0284c7;
+}
+
+/* Description box at top of dossier */
+.mospi-dossier-desc-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #005A9C;
+  border-radius: 4px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.mospi-dossier-desc-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.mospi-dossier-desc-body {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #1e293b;
+  word-break: break-word;
+}
+
+/* Summary fields grid */
+.mospi-dossier-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .mospi-dossier-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Individual field card */
+.mospi-dossier-work-field {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mospi-dossier-work-field.highlight-blue {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.mospi-dossier-work-field.highlight-danger {
+  background: #fff5f5;
+  border-color: #fca5a5;
+}
+
+.mospi-dossier-work-field.full-span {
+  grid-column: 1 / -1;
+}
+
+.mospi-dossier-field-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.04em;
+}
+
+.mospi-dossier-field-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
