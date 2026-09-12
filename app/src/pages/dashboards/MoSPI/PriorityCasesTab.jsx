@@ -205,23 +205,23 @@ export default function PriorityCasesTab({ onSelectWork }) {
                       <td style={{ fontWeight: 700, color: "#005A9C" }}>
                         #{workId}
                       </td>
-                      <td style={{ fontWeight: 600 }}>{w.STATE_NAME || "N/A"}</td>
+                      <td style={{ fontWeight: 600 }}>{w.STATE_NAME || "—"}</td>
                       <td style={{ maxWidth: "200px", fontSize: "11px", color: "#475569" }}>
-                        {w.IDA_NAME || "N/A"}
+                        {w.IDA_NAME || "—"}
                       </td>
                       <td>
-                        <span className="mospi-pill blue">{w.WORK_STAGE || "Sanction"}</span>
+                        <span className="mospi-pill blue">{w.WORK_STAGE || "—"}</span>
                       </td>
                       <td style={{ textAlign: "right", fontWeight: 600 }}>
-                        ₹ {formatNumber(w.SANCTION_AMOUNT || 0)}
+                        {w.SANCTION_AMOUNT != null ? `₹ ${formatNumber(w.SANCTION_AMOUNT)}` : "—"}
                       </td>
                       <td style={{ textAlign: "center" }}>
                         <span className={`mospi-pill ${w.RISK_LEVEL === "HIGH" ? "rose" : w.RISK_LEVEL === "MEDIUM" ? "amber" : "neutral"}`}>
-                          {w.RISK_LEVEL || "LOW"}
+                          {w.RISK_LEVEL || "—"}
                         </span>
                       </td>
                       <td style={{ maxWidth: "260px", fontSize: "11px", color: "#64748b" }}>
-                        {w.REVIEW_REASON || "Flagged for administrative verification"}
+                        {w.REVIEW_REASON || "—"}
                       </td>
                       <td style={{ textAlign: "center" }}>
                         <button

@@ -12,10 +12,10 @@ import { API_BASE, formatNumber } from "../../../constants";
 
 export default function EvidenceIntelligenceTab({ analytics, onSelectWork }) {
   const evSummary = analytics?.evidence_summary || {};
-  const totalEv = evSummary.total_with_evidence ?? 8922;
-  const lowEv = evSummary.low_score_count ?? 3161;
-  const medEv = evSummary.medium_score_count ?? 2505;
-  const highEv = evSummary.high_score_count ?? 3256;
+  const totalEv = evSummary.total_with_evidence ?? 0;
+  const lowEv = evSummary.low_score_count ?? 0;
+  const medEv = evSummary.medium_score_count ?? 0;
+  const highEv = evSummary.high_score_count ?? 0;
 
   const evidenceTabs = [
     { id: "all", label: "All Evidence Records", count: totalEv },
@@ -70,7 +70,9 @@ export default function EvidenceIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Works with Evidence</span>
             <FileCheck size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(evSummary.total_with_evidence || 8922)}</div>
+          <div className="mospi-kpi-value">
+            {evSummary.total_with_evidence != null ? formatNumber(evSummary.total_with_evidence) : "—"}
+          </div>
           <div className="mospi-kpi-sub">Uploaded geo-photos & documentation</div>
         </div>
 
@@ -79,8 +81,12 @@ export default function EvidenceIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">National Average Score</span>
             <ShieldCheck size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{evSummary.avg_evidence_score || 67.1} / 100</div>
-          <div className="mospi-kpi-sub">Across 8,922 candidate evidence items</div>
+          <div className="mospi-kpi-value">
+            {evSummary.avg_evidence_score != null ? `${evSummary.avg_evidence_score} / 100` : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {totalEv > 0 ? `Across ${formatNumber(totalEv)} candidate evidence items` : "Candidate evidence items"}
+          </div>
         </div>
 
         <div className="mospi-card">
@@ -88,7 +94,9 @@ export default function EvidenceIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Evidence Anomalies (&lt;60)</span>
             <AlertTriangle size={15} color="#e11d48" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(evSummary.low_score_count || 3161)}</div>
+          <div className="mospi-kpi-value">
+            {evSummary.low_score_count != null ? formatNumber(evSummary.low_score_count) : "—"}
+          </div>
           <div className="mospi-kpi-sub">Deficient geotagging / documentation</div>
         </div>
 
@@ -97,7 +105,9 @@ export default function EvidenceIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">High Confidence (≥80)</span>
             <CheckCircle2 size={15} color="#0d9488" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(evSummary.high_score_count || 3256)}</div>
+          <div className="mospi-kpi-value">
+            {evSummary.high_score_count != null ? formatNumber(evSummary.high_score_count) : "—"}
+          </div>
           <div className="mospi-kpi-sub">Fully validated physical evidence</div>
         </div>
       </div>
@@ -117,25 +127,31 @@ export default function EvidenceIntelligenceTab({ analytics, onSelectWork }) {
           <div style={{ padding: "10px 12px", backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px" }}>
             <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#991b1b", textTransform: "uppercase" }}>Deficient / Anomalies (&lt; 60)</div>
             <div style={{ fontSize: "20px", fontWeight: 800, color: "#b91c1c", marginTop: "2px" }}>
-              {formatNumber(evSummary.low_score_count || 3161)}
+              {evSummary.low_score_count != null ? formatNumber(evSummary.low_score_count) : "—"}
             </div>
-            <div style={{ fontSize: "10.5px", color: "#991b1b", marginTop: "1px" }}>35.4% of evidence works</div>
+            <div style={{ fontSize: "10.5px", color: "#991b1b", marginTop: "1px" }}>
+              {totalEv > 0 && evSummary.low_score_count != null ? `${((lowEv / totalEv) * 100).toFixed(1)}% of evidence works` : "Deficient evidence"}
+            </div>
           </div>
 
           <div style={{ padding: "10px 12px", backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "6px" }}>
             <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#b45309", textTransform: "uppercase" }}>Moderate (60 – 79)</div>
             <div style={{ fontSize: "20px", fontWeight: 800, color: "#d97706", marginTop: "2px" }}>
-              {formatNumber(evSummary.medium_score_count || 2505)}
+              {evSummary.medium_score_count != null ? formatNumber(evSummary.medium_score_count) : "—"}
             </div>
-            <div style={{ fontSize: "10.5px", color: "#b45309", marginTop: "1px" }}>28.1% of evidence works</div>
+            <div style={{ fontSize: "10.5px", color: "#b45309", marginTop: "1px" }}>
+              {totalEv > 0 && evSummary.medium_score_count != null ? `${((medEv / totalEv) * 100).toFixed(1)}% of evidence works` : "Moderate quality"}
+            </div>
           </div>
 
           <div style={{ padding: "10px 12px", backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "6px" }}>
             <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#166534", textTransform: "uppercase" }}>High Quality (≥ 80)</div>
             <div style={{ fontSize: "20px", fontWeight: 800, color: "#15803d", marginTop: "2px" }}>
-              {formatNumber(evSummary.high_score_count || 3256)}
+              {evSummary.high_score_count != null ? formatNumber(evSummary.high_score_count) : "—"}
             </div>
-            <div style={{ fontSize: "10.5px", color: "#166534", marginTop: "1px" }}>36.5% of evidence works</div>
+            <div style={{ fontSize: "10.5px", color: "#166534", marginTop: "1px" }}>
+              {totalEv > 0 && evSummary.high_score_count != null ? `${((highEv / totalEv) * 100).toFixed(1)}% of evidence works` : "High quality"}
+            </div>
           </div>
         </div>
       </div>

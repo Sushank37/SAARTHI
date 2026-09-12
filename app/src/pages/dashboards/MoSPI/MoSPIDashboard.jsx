@@ -226,9 +226,15 @@ export default function MoSPIDashboard({ onSelectWork }) {
             <span className="mospi-kpi-title">Total Works</span>
             <Layers size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{loading && !kpis.total_works ? "..." : formatNumber(kpis.total_works ?? 0)}</div>
+          <div className="mospi-kpi-value">
+            {loading ? "Loading…" : kpis.total_works != null ? formatNumber(kpis.total_works) : "—"}
+          </div>
           <div className="mospi-kpi-sub">
-            {loading && !kpis.sanctioned_works ? "..." : `${formatNumber(kpis.sanctioned_works ?? 0)} sanctioned (${kpis.sanction_rate ?? 0}%)`}
+            {loading
+              ? "Loading…"
+              : kpis.sanctioned_works != null
+              ? `${formatNumber(kpis.sanctioned_works)} sanctioned (${kpis.sanction_rate ?? 0}%)`
+              : "—"}
           </div>
         </div>
 
@@ -237,9 +243,15 @@ export default function MoSPIDashboard({ onSelectWork }) {
             <span className="mospi-kpi-title">Total Sanctioned Value</span>
             <IndianRupee size={15} color="#0d9488" />
           </div>
-          <div className="mospi-kpi-value">{loading && !kpis.total_sanction_amount ? "..." : formatCrores(kpis.total_sanction_amount || 0)}</div>
+          <div className="mospi-kpi-value">
+            {loading ? "Loading…" : kpis.total_sanction_amount != null ? formatCrores(kpis.total_sanction_amount) : "—"}
+          </div>
           <div className="mospi-kpi-sub">
-            Disbursed: {formatCrores(kpis.total_actual_amount || 0)} ({kpis.utilization_pct || 0}%)
+            {loading
+              ? "Loading…"
+              : kpis.total_actual_amount != null
+              ? `Disbursed: ${formatCrores(kpis.total_actual_amount)} (${kpis.utilization_pct ?? 0}%)`
+              : "—"}
           </div>
         </div>
 
@@ -248,9 +260,15 @@ export default function MoSPIDashboard({ onSelectWork }) {
             <span className="mospi-kpi-title">Works Requiring Attention</span>
             <ClipboardCheck size={15} color="#d97706" />
           </div>
-          <div className="mospi-kpi-value">{loading && !kpis.attention_required ? "..." : formatNumber(kpis.attention_required ?? 0)}</div>
+          <div className="mospi-kpi-value">
+            {loading ? "Loading…" : kpis.attention_required != null ? formatNumber(kpis.attention_required) : "—"}
+          </div>
           <div className="mospi-kpi-sub">
-            {loading && !kpis.duplicate_clusters ? "..." : `${formatNumber(kpis.duplicate_clusters ?? 0)} duplicate clusters flagged`}
+            {loading
+              ? "Loading…"
+              : kpis.duplicate_clusters != null
+              ? `${formatNumber(kpis.duplicate_clusters)} duplicate clusters flagged`
+              : "—"}
           </div>
         </div>
 
@@ -259,7 +277,9 @@ export default function MoSPIDashboard({ onSelectWork }) {
             <span className="mospi-kpi-title">Audit Risk Cases</span>
             <ShieldAlert size={15} color="#e11d48" />
           </div>
-          <div className="mospi-kpi-value">{loading && !kpis.risk_cases_count ? "..." : formatNumber(kpis.risk_cases_count ?? 0)}</div>
+          <div className="mospi-kpi-value">
+            {loading ? "Loading…" : kpis.risk_cases_count != null ? formatNumber(kpis.risk_cases_count) : "—"}
+          </div>
           <div className="mospi-kpi-sub">
             Medium-risk outliers requiring verification
           </div>
@@ -278,18 +298,47 @@ export default function MoSPIDashboard({ onSelectWork }) {
             (mod.id === "financial-intelligence" && currentTab === "financial-timeline");
 
           let badgeCount = null;
-          if (mod.id === "national-overview") badgeCount = formatNumber(kpis.total_works || 102703);
-          if (mod.id === "state-intelligence") badgeCount = "36 States";
-          if (mod.id === "district-intelligence") badgeCount = "763 IDAs";
-          if (mod.id === "risk-intelligence") badgeCount = formatNumber(kpis.risk_cases_count || 18);
-          if (mod.id === "anomaly-detection") badgeCount = "12,824";
-          if (mod.id === "duplicate-intelligence") badgeCount = formatNumber(kpis.duplicate_clusters || 1401);
-          if (mod.id === "financial-intelligence") badgeCount = "₹ 4,074 Cr";
-          if (mod.id === "delay-intelligence") badgeCount = "106d Avg";
-          if (mod.id === "ia-performance") badgeCount = "763 IAs";
-          if (mod.id === "evidence-intelligence") badgeCount = "8,922";
-          if (mod.id === "trend-analysis") badgeCount = "9 Qtrs";
-          if (mod.id === "priority-cases") badgeCount = formatNumber(kpis.attention_required || 4384);
+          if (analytics) {
+            if (mod.id === "national-overview" && kpis.total_works != null) {
+              badgeCount = formatNumber(kpis.total_works);
+            }
+            if (mod.id === "state-intelligence" && analytics?.data_coverage?.total_states != null) {
+              badgeCount = `${analytics.data_coverage.total_states} States`;
+            }
+            if (mod.id === "district-intelligence" && analytics?.data_coverage?.total_authorities != null) {
+              badgeCount = `${analytics.data_coverage.total_authorities} IDAs`;
+            }
+            if (mod.id === "risk-intelligence" && kpis.risk_cases_count != null) {
+              badgeCount = formatNumber(kpis.risk_cases_count);
+            }
+            if (mod.id === "anomaly-detection") {
+              const count = analytics?.anomaly_summary?.total_anomalies ?? analytics?.anomaly_summary?.extreme_delays_over_180;
+              if (count != null) badgeCount = formatNumber(count);
+            }
+            if (mod.id === "duplicate-intelligence" && kpis.duplicate_clusters != null) {
+              badgeCount = formatNumber(kpis.duplicate_clusters);
+            }
+            if (mod.id === "financial-intelligence" && kpis.total_sanction_amount != null) {
+              badgeCount = formatCrores(kpis.total_sanction_amount);
+            }
+            if (mod.id === "delay-intelligence") {
+              const avgDelay = analytics?.timeline_benchmarks?.avg_sanction_delay_days ?? analytics?.delay_buckets?.avg_sanction_delay;
+              if (avgDelay != null) badgeCount = `${avgDelay}d Avg`;
+            }
+            if (mod.id === "ia-performance") {
+              const authCount = analytics?.data_coverage?.total_authorities ?? analytics?.ia_performance_top25?.length;
+              if (authCount != null) badgeCount = `${authCount} IAs`;
+            }
+            if (mod.id === "evidence-intelligence" && analytics?.evidence_summary?.total_with_evidence != null) {
+              badgeCount = formatNumber(analytics.evidence_summary.total_with_evidence);
+            }
+            if (mod.id === "trend-analysis" && analytics?.trends_quarterly?.length) {
+              badgeCount = `${analytics.trends_quarterly.length} Qtrs`;
+            }
+            if (mod.id === "priority-cases" && kpis.attention_required != null) {
+              badgeCount = formatNumber(kpis.attention_required);
+            }
+          }
 
           return (
             <button

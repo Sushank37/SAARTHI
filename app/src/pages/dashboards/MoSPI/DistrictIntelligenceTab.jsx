@@ -113,12 +113,14 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
     return (
       <div className="mospi-card" style={{ textAlign: "center", padding: "40px" }}>
         <div className="spinner" />
-        <p style={{ color: "#64748b", marginTop: "8px", fontSize: "12px" }}>Loading national district intelligence across 763 IDAs...</p>
+        <p style={{ color: "#64748b", marginTop: "8px", fontSize: "12px" }}>Loading national district intelligence...</p>
       </div>
     );
   }
 
   const topIda = idas[0] || {};
+  const totalWorksAcrossIdas = idas.reduce((sum, item) => sum + (Number(item.total_works) || 0), 0);
+  const avgPerDistrict = idas.length > 0 ? Math.round(totalWorksAcrossIdas / idas.length) : null;
 
   return (
     <div className="mospi-panel">
@@ -129,8 +131,12 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
             <span className="mospi-kpi-title">Implementing Authorities</span>
             <Building2 size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(idas.length || 763)}</div>
-          <div className="mospi-kpi-sub">Across 36 States & Union Territories</div>
+          <div className="mospi-kpi-value">
+            {idas.length > 0 ? formatNumber(idas.length) : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {states.length > 0 ? `Across ${states.length} States & Union Territories` : "Across States & Union Territories"}
+          </div>
         </div>
 
         <div className="mospi-card">
@@ -139,9 +145,11 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
             <Layers size={15} color="#0d9488" />
           </div>
           <div className="mospi-kpi-value" style={{ fontSize: "17px", wordBreak: "break-word" }}>
-            {topIda.IDA_NAME ? topIda.IDA_NAME.split("(")[0] : "Jaunpur"}
+            {topIda.IDA_NAME ? topIda.IDA_NAME.split("(")[0] : "—"}
           </div>
-          <div className="mospi-kpi-sub">{formatNumber(topIda.total_works || 1851)} parliamentary works</div>
+          <div className="mospi-kpi-sub">
+            {topIda.total_works != null ? `${formatNumber(topIda.total_works)} parliamentary works` : "—"}
+          </div>
         </div>
 
         <div className="mospi-card">
@@ -150,7 +158,7 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
             <TrendingUp size={15} color="#0284c7" />
           </div>
           <div className="mospi-kpi-value">
-            {idas.length ? Math.round(102703 / idas.length) : 135}
+            {avgPerDistrict != null ? formatNumber(avgPerDistrict) : "—"}
           </div>
           <div className="mospi-kpi-sub">Works per implementing agency</div>
         </div>
@@ -160,8 +168,10 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
             <span className="mospi-kpi-title">States Represented</span>
             <MapPin size={15} color="#d97706" />
           </div>
-          <div className="mospi-kpi-value">{states.length || 36}</div>
-          <div className="mospi-kpi-sub">100% Pan-India geographic coverage</div>
+          <div className="mospi-kpi-value">
+            {states.length > 0 ? states.length : "—"}
+          </div>
+          <div className="mospi-kpi-sub">Pan-India geographic coverage</div>
         </div>
       </div>
 
@@ -199,7 +209,7 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
               onChange={(e) => setSelectedState(e.target.value)}
               style={{ minWidth: "180px" }}
             >
-              <option value="ALL">All 36 States & UTs</option>
+              <option value="ALL">All States & UTs</option>
               {states.map((st) => (
                 <option key={st.STATE_NAME} value={st.STATE_NAME}>
                   {st.STATE_NAME}

@@ -1,18 +1,21 @@
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 export function formatNumber(value) {
+  if (value === null || value === undefined || value === "") return "—";
   const number = Number(value);
   if (Number.isNaN(number)) return "—";
   return number.toLocaleString("en-IN");
 }
 
 export function formatDecimal(value, digits = 1) {
+  if (value === null || value === undefined || value === "") return "—";
   const number = Number(value);
   if (Number.isNaN(number)) return "—";
   return number.toFixed(digits);
 }
 
 export function formatCurrency(value) {
+  if (value === null || value === undefined || value === "") return "—";
   const number = Number(value);
   if (Number.isNaN(number)) return "—";
   return number.toLocaleString("en-IN", {
@@ -23,8 +26,9 @@ export function formatCurrency(value) {
 }
 
 export function formatCrores(amountInRupees) {
+  if (amountInRupees === null || amountInRupees === undefined || amountInRupees === "") return "—";
   const number = Number(amountInRupees);
-  if (Number.isNaN(number) || number === null || number === undefined) return "—";
+  if (Number.isNaN(number)) return "—";
   if (number === 0) return "₹ 0.00 Cr";
   // Guard: if value is already in Crores (e.g. < 10,000 and non-zero), do not divide by 10^7 again
   const crores = Math.abs(number) < 10000 ? number : number / 10000000;
