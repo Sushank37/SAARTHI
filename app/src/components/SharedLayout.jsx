@@ -61,6 +61,12 @@ export default function SharedLayout() {
     }
   };
 
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+
   return (
     <div
       className="gov-app-shell theme-official"
@@ -82,10 +88,15 @@ export default function SharedLayout() {
       />
 
       {/* Main Two-Column Layout (Sidebar + Content) */}
-      <div className="gov-layout-body">
-        <Sidebar summary={summary} roleConfig={roleConfig} onLogout={handleLogout} />
+      <div className={`gov-layout-body ${!sidebarOpen ? "sidebar-collapsed-mode" : ""}`}>
+        <Sidebar
+          summary={summary}
+          roleConfig={roleConfig}
+          onLogout={handleLogout}
+          collapsed={!sidebarOpen}
+        />
 
-        <main className="gov-content-viewport">
+        <main className={`gov-content-viewport ${!sidebarOpen ? "full-width" : ""}`}>
           {/* Child Route Viewport */}
           <Outlet
             context={{
@@ -94,6 +105,9 @@ export default function SharedLayout() {
               selectedWork,
               setSelectedWork: handleSelectWork,
               onSelectWork: handleSelectWork,
+              sidebarOpen,
+              setSidebarOpen,
+              toggleSidebar,
             }}
           />
 

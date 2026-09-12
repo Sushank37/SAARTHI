@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useOutletContext } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/LanguageContext";
 import {
@@ -28,6 +28,8 @@ import {
   Bell,
   Filter,
   AlertOctagon,
+  Menu,
+  X,
 } from "lucide-react";
 import {
   API_BASE,
@@ -78,7 +80,44 @@ function LayoutDashboardIcon(props) {
   );
 }
 
-export default function DADashboard({ summary, onSelectWork }) {
+export default function DADashboard({
+  summary,
+  onSelectWork,
+  sidebarOpen: propSidebarOpen,
+  setSidebarOpen: propSetSidebarOpen,
+  toggleSidebar: propToggleSidebar,
+}) {
+  let outletCtx = {};
+  try {
+    outletCtx = useOutletContext() || {};
+  } catch (e) {
+    outletCtx = {};
+  }
+
+  const [localSidebarOpen, setLocalSidebarOpen] = useState(true);
+
+  const isSidebarOpen =
+    propSidebarOpen !== undefined
+      ? propSidebarOpen
+      : outletCtx.sidebarOpen !== undefined
+      ? outletCtx.sidebarOpen
+      : localSidebarOpen;
+
+  const handleToggleSidebar = () => {
+    if (propToggleSidebar) {
+      propToggleSidebar();
+    } else if (outletCtx.toggleSidebar) {
+      outletCtx.toggleSidebar();
+    } else if (propSetSidebarOpen) {
+      propSetSidebarOpen((prev) => !prev);
+    } else if (outletCtx.setSidebarOpen) {
+      outletCtx.setSidebarOpen((prev) => !prev);
+    } else {
+      setLocalSidebarOpen((prev) => !prev);
+    }
+    window.dispatchEvent(new CustomEvent("toggle-sidebar"));
+  };
+
   const { roleConfig } = useAuth();
   const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -347,9 +386,24 @@ export default function DADashboard({ summary, onSelectWork }) {
       <div className="da-official-header-card">
         <div className="da-header-inner">
           <div className="da-identity-block">
-            <div className="da-ministry-badge">
-              <Scale size={13} />
-              <span>{t("Nodal District Authority (DA / Collectorate) · Scrutiny & Sanction Portal")}</span>
+            <div className="da-header-top-row">
+              <button
+                type="button"
+                id="da-sidebar-toggle-btn"
+                className={`da-hamburger-btn ${!isSidebarOpen ? "collapsed" : ""}`}
+                onClick={handleToggleSidebar}
+                title={isSidebarOpen ? t("Hide Sidebar Navigation") : t("Show Sidebar Navigation")}
+                aria-label={isSidebarOpen ? t("Hide Sidebar Navigation") : t("Show Sidebar Navigation")}
+              >
+                <Menu size={16} className="da-hamburger-icon" />
+                <span className="da-hamburger-text">{isSidebarOpen ? t("Hide Sidebar") : t("Show Sidebar")}</span>
+                {isSidebarOpen && <X size={12} className="da-hamburger-close-indicator" />}
+              </button>
+
+              <div className="da-ministry-badge">
+                <Scale size={13} />
+                <span>{t("Nodal District Authority (DA / Collectorate) · Scrutiny & Sanction Portal")}</span>
+              </div>
             </div>
             <h1 className="da-name-heading">
               {analytics?.district_name

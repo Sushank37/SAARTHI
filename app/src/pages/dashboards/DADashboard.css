@@ -202,6 +202,67 @@
   min-width: 290px;
 }
 
+.da-header-top-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.da-hamburger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  line-height: 1.2;
+}
+
+.da-hamburger-btn:hover {
+  background: #f1f5f9;
+  border-color: #005A9C;
+  color: #005A9C;
+}
+
+.da-hamburger-btn:active {
+  transform: scale(0.97);
+}
+
+.da-hamburger-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.da-hamburger-btn.collapsed {
+  background: #f0f9ff;
+  border-color: #0284c7;
+  color: #0369a1;
+}
+
+.da-hamburger-btn.collapsed .da-hamburger-text {
+  color: #0369a1;
+}
+
+.da-hamburger-close-indicator {
+  opacity: 0.65;
+  margin-left: 2px;
+}
+
+.da-hamburger-btn:focus-visible {
+  outline: 2px solid #005A9C;
+  outline-offset: 2px;
+}
+
 .da-ministry-badge {
   display: inline-flex;
   align-items: center;
@@ -215,7 +276,6 @@
   border: 1px solid #bae6fd;
   padding: 2px 8px;
   border-radius: 4px;
-  margin-bottom: 6px;
 }
 
 .da-name-heading {
