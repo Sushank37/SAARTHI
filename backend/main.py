@@ -56,10 +56,12 @@ origins = [
     "http://127.0.0.1:5174",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "*",
 ]
 if allowed_origins_env:
-    origins.extend([o.strip() for o in allowed_origins_env.split(",") if o.strip()])
+    for origin in allowed_origins_env.split(","):
+        cleaned = origin.strip()
+        if cleaned and cleaned not in origins:
+            origins.append(cleaned)
 
 app.add_middleware(
     CORSMiddleware,
