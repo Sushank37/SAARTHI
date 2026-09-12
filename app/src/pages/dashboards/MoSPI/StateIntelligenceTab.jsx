@@ -5,15 +5,11 @@ import {
   ChevronDown,
   ChevronRight,
   MapPin,
-  Building2,
-  ExternalLink,
-  Layers,
   ArrowUpDown,
-  CheckCircle2,
 } from "lucide-react";
 import { API_BASE, formatNumber, formatCrores, exportToCSV } from "../../../constants";
 
-export default function StateIntelligenceTab({ onSelectWork }) {
+export default function StateIntelligenceTab() {
   const [states, setStates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -111,9 +107,9 @@ export default function StateIntelligenceTab({ onSelectWork }) {
             </p>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
             <div className="mospi-search-box">
-              <Search size={14} className="text-slate-400" />
+              <Search size={13} color="#64748b" />
               <input
                 type="text"
                 placeholder="Search State or UT (e.g. Uttar Pradesh, Odisha)..."
@@ -122,8 +118,8 @@ export default function StateIntelligenceTab({ onSelectWork }) {
               />
             </div>
 
-            <button type="button" className="mospi-export-btn" onClick={handleExport} title="Export state analytics table">
-              <Download size={14} />
+            <button type="button" className="mospi-redirect-link-btn" onClick={handleExport} title="Export state analytics table">
+              <Download size={13} />
               <span>Export CSV</span>
             </button>
           </div>
@@ -134,43 +130,68 @@ export default function StateIntelligenceTab({ onSelectWork }) {
           <table className="mospi-data-table">
             <thead>
               <tr>
-                <th onClick={() => handleSort("STATE_NAME")}>
-                  State / Union Territory <ArrowUpDown size={11} style={{ display: "inline" }} />
+                <th className="sortable" onClick={() => handleSort("STATE_NAME")}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                    <span>State / Union Territory</span>
+                    <ArrowUpDown size={11} />
+                  </div>
                 </th>
-                <th onClick={() => handleSort("TOTAL_WORKS")}>
-                  Works <ArrowUpDown size={11} style={{ display: "inline" }} />
+                <th className="sortable" onClick={() => handleSort("TOTAL_WORKS")} style={{ textAlign: "right" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
+                    <span>Works</span>
+                    <ArrowUpDown size={11} />
+                  </div>
                 </th>
-                <th onClick={() => handleSort("SANCTIONED_WORKS")}>
-                  Sanctioned <ArrowUpDown size={11} style={{ display: "inline" }} />
+                <th className="sortable" onClick={() => handleSort("SANCTIONED_WORKS")} style={{ textAlign: "right" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
+                    <span>Sanctioned</span>
+                    <ArrowUpDown size={11} />
+                  </div>
                 </th>
-                <th onClick={() => handleSort("ONGOING_WORKS")}>
-                  Ongoing <ArrowUpDown size={11} style={{ display: "inline" }} />
+                <th className="sortable" onClick={() => handleSort("ONGOING_WORKS")} style={{ textAlign: "right" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
+                    <span>Ongoing</span>
+                    <ArrowUpDown size={11} />
+                  </div>
                 </th>
-                <th onClick={() => handleSort("COMPLETED_WORKS")}>
-                  Completed <ArrowUpDown size={11} style={{ display: "inline" }} />
+                <th className="sortable" onClick={() => handleSort("COMPLETED_WORKS")} style={{ textAlign: "right" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
+                    <span>Completed</span>
+                    <ArrowUpDown size={11} />
+                  </div>
                 </th>
-                <th onClick={() => handleSort("SANCTION_AMOUNT")}>
-                  Sanctioned (₹ Cr) <ArrowUpDown size={11} style={{ display: "inline" }} />
+                <th className="sortable" onClick={() => handleSort("SANCTION_AMOUNT")} style={{ textAlign: "right" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
+                    <span>Sanctioned (₹ Cr)</span>
+                    <ArrowUpDown size={11} />
+                  </div>
                 </th>
-                <th onClick={() => handleSort("ACTUAL_AMOUNT")}>
-                  Disbursed (₹ Cr) <ArrowUpDown size={11} style={{ display: "inline" }} />
+                <th className="sortable" onClick={() => handleSort("ACTUAL_AMOUNT")} style={{ textAlign: "right" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
+                    <span>Disbursed (₹ Cr)</span>
+                    <ArrowUpDown size={11} />
+                  </div>
                 </th>
-                <th onClick={() => handleSort("REVIEW_REQUIRED")}>
-                  Review Required <ArrowUpDown size={11} style={{ display: "inline" }} />
+                <th className="sortable" onClick={() => handleSort("REVIEW_REQUIRED")} style={{ textAlign: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+                    <span>Review Required</span>
+                    <ArrowUpDown size={11} />
+                  </div>
                 </th>
-                <th>District Drill-Down</th>
+                <th style={{ textAlign: "center", width: "120px" }}>District Drill-Down</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-5">
-                    <div className="spinner" /> Loading 36 State Intelligence metrics...
+                  <td colSpan={9} style={{ textAlign: "center", padding: "36px" }}>
+                    <div className="spinner" />
+                    <p style={{ color: "#64748b", marginTop: "8px", fontSize: "12px" }}>Loading 36 State Intelligence metrics...</p>
                   </td>
                 </tr>
               ) : filteredStates.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-4 text-muted">
+                  <td colSpan={9} style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                     No States match your search query.
                   </td>
                 </tr>
@@ -180,32 +201,32 @@ export default function StateIntelligenceTab({ onSelectWork }) {
                   return (
                     <React.Fragment key={st.STATE_NAME}>
                       <tr className={isExpanded ? "expanded-row" : ""}>
-                        <td className="mospi-state-name">
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                            <MapPin size={13} className="text-slate-400" />
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: 700, color: "#0f172a" }}>
+                            <MapPin size={12} color="#005A9C" />
                             <span>{st.STATE_NAME}</span>
                           </div>
                         </td>
-                        <td>
-                          <strong>{formatNumber(st.TOTAL_WORKS)}</strong>
+                        <td style={{ textAlign: "right", fontWeight: 700 }}>
+                          {formatNumber(st.TOTAL_WORKS)}
                         </td>
-                        <td>{formatNumber(st.SANCTIONED_WORKS || 0)}</td>
-                        <td>
+                        <td style={{ textAlign: "right" }}>{formatNumber(st.SANCTIONED_WORKS || 0)}</td>
+                        <td style={{ textAlign: "right" }}>
                           <span className="mospi-pill blue">{formatNumber(st.ONGOING_WORKS || 0)}</span>
                         </td>
-                        <td>
+                        <td style={{ textAlign: "right" }}>
                           <span className="mospi-pill emerald">{formatNumber(st.COMPLETED_WORKS || 0)}</span>
                         </td>
-                        <td>{formatCrores(st.SANCTION_AMOUNT || 0)}</td>
-                        <td>{formatCrores(st.ACTUAL_AMOUNT || 0)}</td>
-                        <td>
+                        <td style={{ textAlign: "right", fontWeight: 600 }}>{formatCrores(st.SANCTION_AMOUNT || 0)}</td>
+                        <td style={{ textAlign: "right", fontWeight: 600 }}>{formatCrores(st.ACTUAL_AMOUNT || 0)}</td>
+                        <td style={{ textAlign: "center" }}>
                           {st.REVIEW_REQUIRED > 0 ? (
                             <span className="mospi-pill rose">{formatNumber(st.REVIEW_REQUIRED)}</span>
                           ) : (
                             <span className="mospi-pill gray">0</span>
                           )}
                         </td>
-                        <td>
+                        <td style={{ textAlign: "center" }}>
                           <button
                             type="button"
                             className="mospi-page-btn"
@@ -213,13 +234,13 @@ export default function StateIntelligenceTab({ onSelectWork }) {
                             style={{
                               display: "inline-flex",
                               alignItems: "center",
-                              gap: "4px",
+                              gap: "3px",
                               fontSize: "11px",
-                              padding: "3px 8px",
+                              padding: "3px 7px",
                             }}
                           >
                             <span>{isExpanded ? "Close" : "Districts"}</span>
-                            {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                            {isExpanded ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
                           </button>
                         </td>
                       </tr>
@@ -234,16 +255,17 @@ export default function StateIntelligenceTab({ onSelectWork }) {
                                   {st.STATE_NAME} — Designated District Authorities & Implementing Bodies ({districts.length} Authorities)
                                 </span>
                                 <span style={{ fontSize: "11px", color: "#64748b" }}>
-                                  Click any authority to explore its works in the repository
+                                  District registry mapping
                                 </span>
                               </div>
 
                               {districtLoading ? (
-                                <div className="text-center py-3">
-                                  <div className="spinner" /> Loading district authorities for {st.STATE_NAME}...
+                                <div style={{ textAlign: "center", padding: "16px" }}>
+                                  <div className="spinner" />
+                                  <p style={{ fontSize: "11.5px", color: "#64748b", marginTop: "4px" }}>Loading district authorities for {st.STATE_NAME}...</p>
                                 </div>
                               ) : districts.length === 0 ? (
-                                <div className="text-muted py-2" style={{ fontSize: "12px" }}>
+                                <div style={{ fontSize: "11.5px", color: "#64748b", padding: "10px 0" }}>
                                   No district implementing authorities found for {st.STATE_NAME}.
                                 </div>
                               ) : (
@@ -262,7 +284,7 @@ export default function StateIntelligenceTab({ onSelectWork }) {
                                           {d.constituency ? `Constituency: ${d.constituency}` : "District Authority"}
                                         </div>
                                       </div>
-                                      <span className="mospi-pill blue" style={{ fontSize: "10.5px" }}>
+                                      <span className="mospi-pill blue" style={{ fontSize: "10px" }}>
                                         {formatNumber(d.works_count)} Works
                                       </span>
                                     </div>

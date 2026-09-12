@@ -1,14 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   ShieldAlert,
-  AlertTriangle,
-  Clock,
-  TrendingUp,
-  FileCheck,
-  ChevronRight,
-  Info,
 } from "lucide-react";
-import { API_BASE, formatNumber, formatCrores } from "../../../constants";
+import { API_BASE, formatNumber } from "../../../constants";
 
 export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
   const [riskCases, setRiskCases] = useState([]);
@@ -41,7 +35,7 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
   return (
     <div className="mospi-panel">
       {/* 1. National Risk Distribution Summary */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "10px" }}>
         <div className="mospi-card" style={{ borderLeft: "4px solid #10b981" }}>
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Low Risk Compliance</span>
@@ -51,7 +45,7 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
             {formatNumber((kpis.total_works || 102703) - (kpis.risk_cases_count || 18))} Works
           </div>
           <div className="mospi-kpi-sub">
-            {(((kpis.total_works || 102703) - (kpis.risk_cases_count || 18)) / (kpis.total_works || 102703) * 100).toFixed(2)}% of national repository within expected tolerances
+            {(((kpis.total_works || 102703) - (kpis.risk_cases_count || 18)) / (kpis.total_works || 102703) * 100).toFixed(2)}% within expected tolerances
           </div>
         </div>
 
@@ -143,27 +137,28 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
           <table className="mospi-data-table">
             <thead>
               <tr>
-                <th>Work ID</th>
+                <th style={{ width: "90px" }}>Work ID</th>
                 <th>State</th>
                 <th>Constituency / Authority</th>
                 <th>Work Stage</th>
-                <th>Sanction Amount</th>
-                <th>Risk Level</th>
-                <th>Risk Score</th>
+                <th style={{ textAlign: "right" }}>Sanction Amount</th>
+                <th style={{ textAlign: "center" }}>Risk Level</th>
+                <th style={{ textAlign: "center" }}>Risk Score</th>
                 <th>Primary Outlier Reason</th>
-                <th>Action</th>
+                <th style={{ textAlign: "center", width: "140px" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-4">
-                    <div className="spinner" /> Loading flagged risk cases...
+                  <td colSpan={9} style={{ textAlign: "center", padding: "30px" }}>
+                    <div className="spinner" />
+                    <p style={{ color: "#64748b", marginTop: "6px", fontSize: "12px" }}>Loading flagged risk cases...</p>
                   </td>
                 </tr>
               ) : riskCases.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-4 text-muted">
+                  <td colSpan={9} style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                     No risk cases found in the repository.
                   </td>
                 </tr>
@@ -172,27 +167,27 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
                   const workId = w.WORK_RECOMMENDATION_DTL_ID || w.WORK_ID;
                   return (
                     <tr key={workId}>
-                      <td>
-                        <strong className="font-mono text-sky-700">#{workId}</strong>
+                      <td style={{ fontWeight: 700, color: "#005A9C" }}>
+                        #{workId}
                       </td>
-                      <td>{w.STATE_NAME || "N/A"}</td>
-                      <td>{w.CONSTITUENCY || w.IDA_NAME || "N/A"}</td>
+                      <td style={{ fontWeight: 600 }}>{w.STATE_NAME || "N/A"}</td>
+                      <td style={{ fontSize: "11.5px", color: "#475569" }}>{w.CONSTITUENCY || w.IDA_NAME || "N/A"}</td>
                       <td>
                         <span className="mospi-pill blue">{w.WORK_STAGE || "Sanction"}</span>
                       </td>
-                      <td>
-                        <strong>₹ {formatNumber(w.SANCTION_AMOUNT || 0)}</strong>
+                      <td style={{ textAlign: "right", fontWeight: 600 }}>
+                        ₹ {formatNumber(w.SANCTION_AMOUNT || 0)}
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center" }}>
                         <span className="mospi-pill amber">{w.RISK_LEVEL || "MEDIUM"}</span>
                       </td>
-                      <td>
-                        <strong>{w.RISK_SCORE ? Number(w.RISK_SCORE).toFixed(1) : "N/A"}</strong>
+                      <td style={{ textAlign: "center", fontWeight: 700 }}>
+                        {w.RISK_SCORE ? Number(w.RISK_SCORE).toFixed(1) : "N/A"}
                       </td>
                       <td style={{ maxWidth: "240px", fontSize: "11px", color: "#64748b" }}>
                         {w.REVIEW_REASON || w.RISK_FACTORS || "Cost & completion outlier against peer cohort"}
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center" }}>
                         <button
                           type="button"
                           className="mospi-dossier-btn mospi-dossier-risk"
@@ -203,8 +198,8 @@ export default function RiskIntelligenceTab({ analytics, onSelectWork }) {
                           }}
                           title="Inspect National Risk Distribution & Algorithmic Audit Dossier"
                         >
-                          <ShieldAlert size={12} />
-                          <span>National Risk Dossier →</span>
+                          <ShieldAlert size={11} />
+                          <span>Risk Dossier →</span>
                         </button>
                       </td>
                     </tr>

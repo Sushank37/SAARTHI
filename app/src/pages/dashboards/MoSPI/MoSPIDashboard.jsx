@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useSearchParams, useLocation, useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../../../context/useAuth";
+import { useState, useEffect } from "react";
+import { useSearchParams, useParams } from "react-router-dom";
 import {
   LayoutDashboard,
   Map,
@@ -91,46 +90,35 @@ const MOSPI_MODULES = [
   { id: "priority-cases", label: "Priority Cases", icon: ClipboardCheck },
 ];
 
-export default function MoSPIDashboard({ summary, onSelectWork }) {
-  const { roleConfig } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
+export default function MoSPIDashboard({ onSelectWork }) {
   const { section } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const getResolvedTab = () => {
-    const raw = section || searchParams.get("tab");
-    if (!raw || raw === "overview") return "national-overview";
-    return TAB_MAP[raw.toLowerCase()] || raw;
-  };
-
-  const [currentTab, setCurrentTab] = useState(getResolvedTab);
-
-  // Sync tab with URL parameter or route changes
-  useEffect(() => {
-    const resolved = getResolvedTab();
-    setCurrentTab(resolved);
-  }, [section, location.search]);
+  // Derive resolved tab directly from URL
+  const rawTab = section || searchParams.get("tab");
+  const currentTab = (!rawTab || rawTab === "overview")
+    ? "national-overview"
+    : (TAB_MAP[rawTab.toLowerCase()] || rawTab);
 
   // Listen to sidebar tab change events
   useEffect(() => {
     const onTabEvent = (e) => {
       if (e.detail) {
         const resolved = TAB_MAP[e.detail.toLowerCase()] || e.detail;
-        setCurrentTab(resolved);
-        const nextParams = new URLSearchParams(location.search);
-        nextParams.set("tab", resolved);
-        setSearchParams(nextParams);
+        setSearchParams((prev) => {
+          const next = new URLSearchParams(prev);
+          next.set("tab", resolved);
+          return next;
+        });
       }
     };
     window.addEventListener("mospi-tab-changed", onTabEvent);
     return () => window.removeEventListener("mospi-tab-changed", onTabEvent);
-  }, [location.search]);
+  }, [setSearchParams]);
 
   // National Analytics state from /api/analytics/mospi
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [backendConnected, setBackendConnected] = useState(true);
 
   // Fetch unified national analytics
   useEffect(() => {
@@ -143,14 +131,10 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
           const data = await res.json();
           if (isMounted) {
             setAnalytics(data);
-            setBackendConnected(true);
           }
-        } else {
-          if (isMounted) setBackendConnected(false);
         }
       } catch (err) {
         console.error("Failed to load MoSPI analytics:", err);
-        if (isMounted) setBackendConnected(false);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -162,10 +146,11 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
   // Handle Tab Switch
   const handleTabChange = (tabId) => {
     const resolved = TAB_MAP[tabId.toLowerCase()] || tabId;
-    setCurrentTab(resolved);
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.set("tab", resolved);
-    setSearchParams(nextParams);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("tab", resolved);
+      return next;
+    });
     window.dispatchEvent(new CustomEvent("mospi-tab-changed", { detail: resolved }));
   };
 
@@ -194,37 +179,36 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
   };
 
   return (
-    <div className="gov-mp-shell mospi-dashboard-container">
+    <div className="mospi-shell">
       {/* ============================================================
           1. OFFICIAL HEADER CARD
           ============================================================ */}
-      <div className="gov-mp-header-card">
-        <div className="gov-mp-header-top">
-          <div className="gov-mp-title-unit">
-            <div className="gov-mp-sub-row">
-              <span className="gov-parliament-badge">
+      <div className="mospi-header-card">
+        <div className="mospi-header-top">
+          <div className="mospi-title-unit">
+            <div className="mospi-sub-row">
+              <span className="mospi-parliament-badge">
                 Central Nodal Authority · MoSPI
               </span>
-              <span className="gov-constituency-tag">
-                <MapPin size={11} style={{ marginRight: "3px" }} />
+              <span className="mospi-scope-tag">
+                <MapPin size={11} />
                 Pan-India National Scope
               </span>
             </div>
-            <h1 className="gov-mp-page-title">
+            <h1 className="mospi-page-title">
               MoSPI / Central Nodal Authority
             </h1>
-            <p className="gov-mp-page-subtitle">
+            <p className="mospi-page-subtitle">
               National MPLADS implementation monitoring, cross-state surveillance, duplicate detection, and macro scheme progress across Parliamentary works.
             </p>
           </div>
 
-          <div className="gov-mp-header-actions" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="mospi-header-actions">
             <button
               type="button"
-              className="gov-redirect-link-btn"
+              className="mospi-redirect-link-btn"
               onClick={handleExportSummary}
               title="Download executive national summary report"
-              style={{ cursor: "pointer" }}
             >
               <Download size={13} />
               <span>National Summary CSV</span>
@@ -234,58 +218,58 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
       </div>
 
       {/* ============================================================
-          2. MAXIMUM 4 KEY NATIONAL KPIS (Data-Supported)
+          2. EXACTLY 4 PRIMARY NATIONAL KPIS (First Viewport)
           ============================================================ */}
-      <div className="gov-mp-kpi-grid">
-        <div className="gov-mp-kpi-card kpi-blue">
-          <div className="kpi-header">
-            <span className="kpi-title">Total Works</span>
-            <Layers size={14} color="#0284c7" />
+      <div className="mospi-kpi-grid">
+        <div className="mospi-kpi-card kpi-blue">
+          <div className="mospi-kpi-header">
+            <span className="mospi-kpi-title">Total Works</span>
+            <Layers size={15} color="#0284c7" />
           </div>
-          <div className="kpi-value">{loading && !kpis.total_works ? "..." : formatNumber(kpis.total_works ?? 0)}</div>
-          <div className="kpi-sub">
+          <div className="mospi-kpi-value">{loading && !kpis.total_works ? "..." : formatNumber(kpis.total_works ?? 0)}</div>
+          <div className="mospi-kpi-sub">
             {loading && !kpis.sanctioned_works ? "..." : `${formatNumber(kpis.sanctioned_works ?? 0)} sanctioned (${kpis.sanction_rate ?? 0}%)`}
           </div>
         </div>
 
-        <div className="gov-mp-kpi-card kpi-teal">
-          <div className="kpi-header">
-            <span className="kpi-title">Total Sanctioned Value</span>
-            <IndianRupee size={14} color="#0d9488" />
+        <div className="mospi-kpi-card kpi-teal">
+          <div className="mospi-kpi-header">
+            <span className="mospi-kpi-title">Total Sanctioned Value</span>
+            <IndianRupee size={15} color="#0d9488" />
           </div>
-          <div className="kpi-value">{formatCrores(kpis.total_sanction_amount || 0)}</div>
-          <div className="kpi-sub">
+          <div className="mospi-kpi-value">{loading && !kpis.total_sanction_amount ? "..." : formatCrores(kpis.total_sanction_amount || 0)}</div>
+          <div className="mospi-kpi-sub">
             Disbursed: {formatCrores(kpis.total_actual_amount || 0)} ({kpis.utilization_pct || 0}%)
           </div>
         </div>
 
-        <div className="gov-mp-kpi-card kpi-amber">
-          <div className="kpi-header">
-            <span className="kpi-title">Works Requiring Attention</span>
-            <ClipboardCheck size={14} color="#d97706" />
+        <div className="mospi-kpi-card kpi-amber">
+          <div className="mospi-kpi-header">
+            <span className="mospi-kpi-title">Works Requiring Attention</span>
+            <ClipboardCheck size={15} color="#d97706" />
           </div>
-          <div className="kpi-value">{loading && !kpis.attention_required ? "..." : formatNumber(kpis.attention_required ?? 0)}</div>
-          <div className="kpi-sub">
+          <div className="mospi-kpi-value">{loading && !kpis.attention_required ? "..." : formatNumber(kpis.attention_required ?? 0)}</div>
+          <div className="mospi-kpi-sub">
             {loading && !kpis.duplicate_clusters ? "..." : `${formatNumber(kpis.duplicate_clusters ?? 0)} duplicate clusters flagged`}
           </div>
         </div>
 
-        <div className="gov-mp-kpi-card kpi-rose">
-          <div className="kpi-header">
-            <span className="kpi-title">Audit Risk Cases</span>
-            <ShieldAlert size={14} color="#e11d48" />
+        <div className="mospi-kpi-card kpi-rose">
+          <div className="mospi-kpi-header">
+            <span className="mospi-kpi-title">Audit Risk Cases</span>
+            <ShieldAlert size={15} color="#e11d48" />
           </div>
-          <div className="kpi-value">{loading && !kpis.risk_cases_count ? "..." : formatNumber(kpis.risk_cases_count ?? 0)}</div>
-          <div className="kpi-sub">
+          <div className="mospi-kpi-value">{loading && !kpis.risk_cases_count ? "..." : formatNumber(kpis.risk_cases_count ?? 0)}</div>
+          <div className="mospi-kpi-sub">
             Medium-risk outliers requiring verification
           </div>
         </div>
       </div>
 
       {/* ============================================================
-          3. TOP MODULE NAVIGATION TABS (12 Standard Sections)
+          3. TOP MODULE NAVIGATION TABS (12 Modules)
           ============================================================ */}
-      <div className="gov-mp-nav-bar mospi-tab-nav-bar">
+      <div className="mospi-nav-bar">
         {MOSPI_MODULES.map((mod) => {
           const Icon = mod.icon;
           const isActive =
@@ -311,10 +295,10 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
             <button
               key={mod.id}
               type="button"
-              className={`gov-mp-nav-btn ${isActive ? "active" : ""}`}
+              className={`mospi-nav-btn ${isActive ? "active" : ""}`}
               onClick={() => handleTabChange(mod.id)}
             >
-              <Icon size={14} />
+              <Icon size={13} />
               <span>{mod.label}</span>
               {badgeCount && <span className="mospi-tab-count">{badgeCount}</span>}
             </button>
@@ -323,7 +307,7 @@ export default function MoSPIDashboard({ summary, onSelectWork }) {
       </div>
 
       {/* ============================================================
-          4. ACTIVE TAB CONTENT (12 Standard Sections)
+          4. ACTIVE TAB CONTENT (12 Modules)
           ============================================================ */}
       {currentTab === "national-overview" && (
         <NationalOverviewTab analytics={analytics} loading={loading} />

@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   AlertTriangle,
   Clock,
   IndianRupee,
   Calendar,
-  ExternalLink,
   ChevronLeft,
   ChevronRight,
-  Filter,
+  ShieldAlert,
 } from "lucide-react";
 import { API_BASE, formatNumber } from "../../../constants";
 
@@ -65,11 +64,11 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
   return (
     <div className="mospi-panel">
       {/* 1. Summary KPI Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px" }}>
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Extreme Sanction Delays</span>
-            <Clock size={16} className="text-amber-500" />
+            <Clock size={15} color="#d97706" />
           </div>
           <div className="mospi-kpi-value">{formatNumber(anomalies.extreme_delays_over_180 || 12824)}</div>
           <div className="mospi-kpi-sub">&gt; 180 days from MP recommendation</div>
@@ -78,7 +77,7 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Spending Discrepancies</span>
-            <IndianRupee size={16} className="text-rose-500" />
+            <IndianRupee size={15} color="#e11d48" />
           </div>
           <div className="mospi-kpi-value">{formatNumber(anomalies.cost_variance_cases || 4899)}</div>
           <div className="mospi-kpi-sub">Actual disbursement &gt; sanction amount</div>
@@ -87,7 +86,7 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Prolonged Lifecycles</span>
-            <Calendar size={16} className="text-purple-500" />
+            <Calendar size={15} color="#7c3aed" />
           </div>
           <div className="mospi-kpi-value">{formatNumber(anomalies.prolonged_completion_over_365 || 3553)}</div>
           <div className="mospi-kpi-sub">&gt; 365 days from sanction to completion</div>
@@ -96,7 +95,7 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Significant Cost Variances</span>
-            <AlertTriangle size={16} className="text-red-500" />
+            <AlertTriangle size={15} color="#dc2626" />
           </div>
           <div className="mospi-kpi-value">{formatNumber(anomalies.significant_variance_cases || 490)}</div>
           <div className="mospi-kpi-sub">&gt; 20% divergence from peer norm</div>
@@ -118,58 +117,49 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
         </div>
 
         {/* Subtab Filter Bar */}
-        <div className="mospi-subtab-bar" style={{ display: "flex", gap: "8px", marginBottom: "16px", borderBottom: "1px solid var(--border-color, #e2e8f0)", paddingBottom: "10px", flexWrap: "wrap" }}>
+        <div className="mospi-subtab-bar">
           {subtabs.map((st) => {
             const isActive = activeSubtab === st.id;
             return (
               <button
                 key={st.id}
                 type="button"
-                className={`mospi-pill ${isActive ? "blue" : "neutral"}`}
+                className={`mospi-subtab-btn ${isActive ? "active" : ""}`}
                 onClick={() => handleSubtabClick(st.id)}
-                style={{
-                  cursor: "pointer",
-                  fontWeight: isActive ? 700 : 500,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  padding: "6px 12px",
-                  fontSize: "12px",
-                }}
               >
                 <span>{st.label}</span>
-                <span style={{ opacity: 0.8, fontSize: "11px" }}>({formatNumber(st.count)})</span>
+                <span style={{ opacity: 0.85, fontSize: "10.5px" }}>({formatNumber(st.count)})</span>
               </button>
             );
           })}
         </div>
 
         {/* Table */}
-        <div className="mospi-table-responsive">
-          <table className="mospi-table">
+        <div className="mospi-table-wrapper">
+          <table className="mospi-data-table">
             <thead>
               <tr>
-                <th style={{ width: "100px" }}>Work ID</th>
+                <th style={{ width: "90px" }}>Work ID</th>
                 <th>Description</th>
                 <th>State & District</th>
-                <th>Sanctioned (₹)</th>
-                <th>Disbursed (₹)</th>
-                <th>Sanction Delay</th>
-                <th>Completion Time</th>
-                <th style={{ textAlign: "center", width: "110px" }}>Action</th>
+                <th style={{ textAlign: "right" }}>Sanctioned (₹)</th>
+                <th style={{ textAlign: "right" }}>Disbursed (₹)</th>
+                <th style={{ textAlign: "center" }}>Sanction Delay</th>
+                <th style={{ textAlign: "center" }}>Completion Time</th>
+                <th style={{ textAlign: "center", width: "130px" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "40px" }}>
+                  <td colSpan={8} style={{ textAlign: "center", padding: "30px" }}>
                     <div className="spinner" />
-                    <p className="text-muted mt-2">Loading anomalous works records...</p>
+                    <p style={{ color: "#64748b", marginTop: "6px", fontSize: "12px" }}>Loading anomalous works records...</p>
                   </td>
                 </tr>
               ) : works.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                  <td colSpan={8} style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                     No works flagged for this anomaly criterion.
                   </td>
                 </tr>
@@ -184,7 +174,7 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
 
                   return (
                     <tr key={w.WORK_RECOMMENDATION_DTL_ID || w.WORK_ID}>
-                      <td style={{ fontWeight: 700, color: "#2563eb" }}>
+                      <td style={{ fontWeight: 700, color: "#005A9C" }}>
                         #{w.WORK_ID || w.WORK_RECOMMENDATION_DTL_ID}
                       </td>
                       <td style={{ maxWidth: "260px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={w.WORK_DESCRIPTION}>
@@ -196,24 +186,24 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
                           {w.IDA_NAME || "—"}
                         </div>
                       </td>
-                      <td style={{ fontWeight: 600 }}>
+                      <td style={{ textAlign: "right", fontWeight: 600 }}>
                         {sancAmt > 0 ? `₹ ${sancAmt.toLocaleString("en-IN")}` : "—"}
                       </td>
-                      <td style={{ fontWeight: 600, color: isSpendingOverrun ? "#b91c1c" : "inherit" }}>
+                      <td style={{ textAlign: "right", fontWeight: 600, color: isSpendingOverrun ? "#b91c1c" : "inherit" }}>
                         {actAmt > 0 ? `₹ ${actAmt.toLocaleString("en-IN")}` : "—"}
                         {isSpendingOverrun && (
                           <span className="mospi-pill rose" style={{ marginLeft: "4px", fontSize: "10px" }}>
-                            Exceeded
+                            Over
                           </span>
                         )}
                       </td>
-                      <td>
-                        <span className={`mospi-pill ${isExtremeDelay ? "warning" : "neutral"}`}>
+                      <td style={{ textAlign: "center" }}>
+                        <span className={`mospi-pill ${isExtremeDelay ? "amber" : "neutral"}`}>
                           {delayDays > 0 ? `${delayDays}d` : "—"}
                         </span>
                       </td>
-                      <td>
-                        <span className={`mospi-pill ${compDays > 365 ? "warning" : "neutral"}`}>
+                      <td style={{ textAlign: "center" }}>
+                        <span className={`mospi-pill ${compDays > 365 ? "amber" : "neutral"}`}>
                           {compDays > 0 ? `${compDays}d` : "—"}
                         </span>
                       </td>
@@ -224,7 +214,7 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
                           onClick={() => onSelectWork && onSelectWork({ ...w, __initialSection: "risk", __authority: "MOSPI" })}
                           title="Inspect MoSPI Central Anomaly & Forensic Dossier"
                         >
-                          <ShieldAlert size={12} />
+                          <ShieldAlert size={11} />
                           <span>Anomaly Dossier →</span>
                         </button>
                       </td>
@@ -237,28 +227,28 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
         </div>
 
         {/* Pagination Bar */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "16px", paddingTop: "12px", borderTop: "1px solid var(--border-color, #e2e8f0)" }}>
-          <span style={{ fontSize: "12px", color: "#64748b" }}>
+        <div className="mospi-pagination-bar">
+          <span className="mospi-page-info">
             Showing page {page} of {totalPages} ({formatNumber(totalCount)} total works)
           </span>
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div className="mospi-page-btn-group">
             <button
               type="button"
-              className="mospi-btn-sm"
+              className="mospi-page-btn"
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
             >
-              <ChevronLeft size={14} />
+              <ChevronLeft size={12} />
               <span>Previous</span>
             </button>
             <button
               type="button"
-              className="mospi-btn-sm"
+              className="mospi-page-btn"
               disabled={page >= totalPages}
               onClick={() => setPage(page + 1)}
             >
               <span>Next</span>
-              <ChevronRight size={14} />
+              <ChevronRight size={12} />
             </button>
           </div>
         </div>
