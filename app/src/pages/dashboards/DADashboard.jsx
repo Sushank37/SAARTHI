@@ -247,29 +247,44 @@ export default function DADashboard({ summary, onSelectWork }) {
   };
 
   // Load District Works from canonical backend
-  const loadDistrictWorks = async () => {
+  const loadDistrictWorks = async (signal) => {
     setWorksLoading(true);
     try {
       const params = getFilterParams();
       params.set("page", worksPage);
       params.set("limit", worksLimit);
 
-      const res = await fetch(`${API_BASE}/api/works?${params.toString()}`);
+      const res = await fetch(`${API_BASE}/api/works?${params.toString()}`, {
+        signal,
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setWorks(data.data || []);
-      setWorksTotal(data.total || 0);
+
+      // Ignore responses from requests that are no longer current.
+      if (!signal?.aborted) {
+        setWorks(data.data || []);
+        setWorksTotal(data.total || 0);
+      }
     } catch (err) {
-      console.error("Error loading district works register:", err);
-      setWorks([]);
-      setWorksTotal(0);
+      if (err.name !== "AbortError") {
+        console.error("Error loading district works register:", err);
+        if (!signal?.aborted) {
+          setWorks([]);
+          setWorksTotal(0);
+        }
+      }
     } finally {
-      setWorksLoading(false);
+      if (!signal?.aborted) {
+        setWorksLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    loadDistrictWorks();
+    const controller = new AbortController();
+    loadDistrictWorks(controller.signal);
+
+    return () => controller.abort();
   }, [
     selectedIDA,
     currentTab,
