@@ -54,8 +54,16 @@ export default function IAPerformanceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Total Implementing Agencies</span>
             <Briefcase size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(analytics?.data_coverage?.total_authorities || 763)}</div>
-          <div className="mospi-kpi-sub">763 unique IDAs & Executive Agencies</div>
+          <div className="mospi-kpi-value">
+            {analytics?.data_coverage?.total_authorities != null
+              ? formatNumber(analytics.data_coverage.total_authorities)
+              : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {analytics?.data_coverage?.total_authorities != null
+              ? `${formatNumber(analytics.data_coverage.total_authorities)} unique IDAs & Executive Agencies`
+              : "Unique IDAs & Executive Agencies"}
+          </div>
         </div>
 
         <div className="mospi-card">
@@ -63,8 +71,16 @@ export default function IAPerformanceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Top Workload Agency</span>
             <Building2 size={15} color="#0d9488" />
           </div>
-          <div className="mospi-kpi-value" style={{ fontSize: "17px" }}>Jaunpur IDA</div>
-          <div className="mospi-kpi-sub">1,851 registered works handled</div>
+          <div className="mospi-kpi-value" style={{ fontSize: "17px" }}>
+            {topIAs.length > 0 && topIAs[0].IDA_NAME
+              ? topIAs[0].IDA_NAME.split("(")[0]
+              : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {topIAs.length > 0 && topIAs[0].total_works != null
+              ? `${formatNumber(topIAs[0].total_works)} registered works handled`
+              : "Registered works handled"}
+          </div>
         </div>
 
         <div className="mospi-card">
@@ -72,7 +88,11 @@ export default function IAPerformanceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">National Execution Rate</span>
             <CheckCircle2 size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{analytics?.national_kpis?.utilization_pct || 39.7}%</div>
+          <div className="mospi-kpi-value">
+            {analytics?.national_kpis?.utilization_pct != null
+              ? `${analytics.national_kpis.utilization_pct}%`
+              : "—"}
+          </div>
           <div className="mospi-kpi-sub">Treasury disbursement against sanctions</div>
         </div>
 
@@ -81,7 +101,11 @@ export default function IAPerformanceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Average Sanction Delay</span>
             <Clock size={15} color="#d97706" />
           </div>
-          <div className="mospi-kpi-value">{analytics?.timeline_benchmarks?.avg_sanction_delay_days || 105.7}d</div>
+          <div className="mospi-kpi-value">
+            {analytics?.timeline_benchmarks?.avg_sanction_delay_days != null
+              ? `${analytics.timeline_benchmarks.avg_sanction_delay_days}d`
+              : "—"}
+          </div>
           <div className="mospi-kpi-sub">Across all implementing agencies</div>
         </div>
       </div>

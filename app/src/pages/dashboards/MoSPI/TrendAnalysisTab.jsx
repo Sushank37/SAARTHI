@@ -11,6 +11,14 @@ export default function TrendAnalysisTab({ analytics }) {
 
   const maxCount = Math.max(...trends.map((t) => Math.max(t.recommended_count || 0, t.sanctioned_count || 0)), 1);
 
+  const peakIntake = trends.length
+    ? [...trends].sort((a, b) => (b.recommended_count || 0) - (a.recommended_count || 0))[0]
+    : null;
+  const peakSanction = trends.length
+    ? [...trends].sort((a, b) => (b.sanctioned_count || 0) - (a.sanctioned_count || 0))[0]
+    : null;
+  const latestQuarter = trends.length ? trends[trends.length - 1] : null;
+
   return (
     <div className="mospi-panel">
       {/* 1. Summary Cards */}
@@ -20,8 +28,12 @@ export default function TrendAnalysisTab({ analytics }) {
             <span className="mospi-kpi-title">Monitoring Horizon</span>
             <Calendar size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">9 Quarters</div>
-          <div className="mospi-kpi-sub">From 2024-Q3 to 2026-Q3</div>
+          <div className="mospi-kpi-value">
+            {trends.length > 0 ? `${trends.length} Quarters` : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {trends.length > 0 ? `From ${trends[0].quarter} to ${trends[trends.length - 1].quarter}` : "Historical tracking"}
+          </div>
         </div>
 
         <div className="mospi-card">
@@ -29,8 +41,12 @@ export default function TrendAnalysisTab({ analytics }) {
             <span className="mospi-kpi-title">Peak Intake Quarter</span>
             <Layers size={15} color="#0d9488" />
           </div>
-          <div className="mospi-kpi-value" style={{ fontSize: "18px" }}>2025-Q3</div>
-          <div className="mospi-kpi-sub">15,110 works recommended</div>
+          <div className="mospi-kpi-value" style={{ fontSize: "18px" }}>
+            {peakIntake ? peakIntake.quarter : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {peakIntake && peakIntake.recommended_count != null ? `${formatNumber(peakIntake.recommended_count)} works recommended` : "Works recommended"}
+          </div>
         </div>
 
         <div className="mospi-card">
@@ -38,8 +54,12 @@ export default function TrendAnalysisTab({ analytics }) {
             <span className="mospi-kpi-title">Peak Sanction Quarter</span>
             <CheckCircle2 size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value" style={{ fontSize: "18px" }}>2025-Q3</div>
-          <div className="mospi-kpi-sub">13,810 works sanctioned</div>
+          <div className="mospi-kpi-value" style={{ fontSize: "18px" }}>
+            {peakSanction ? peakSanction.quarter : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {peakSanction && peakSanction.sanctioned_count != null ? `${formatNumber(peakSanction.sanctioned_count)} works sanctioned` : "Works sanctioned"}
+          </div>
         </div>
 
         <div className="mospi-card">
@@ -47,8 +67,12 @@ export default function TrendAnalysisTab({ analytics }) {
             <span className="mospi-kpi-title">Active Quarter Intake</span>
             <TrendingUp size={15} color="#7c3aed" />
           </div>
-          <div className="mospi-kpi-value">12,104</div>
-          <div className="mospi-kpi-sub">Works recorded in 2026-Q3</div>
+          <div className="mospi-kpi-value">
+            {latestQuarter && latestQuarter.recommended_count != null ? formatNumber(latestQuarter.recommended_count) : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {latestQuarter ? `Works recorded in ${latestQuarter.quarter}` : "Latest recorded quarter"}
+          </div>
         </div>
       </div>
 

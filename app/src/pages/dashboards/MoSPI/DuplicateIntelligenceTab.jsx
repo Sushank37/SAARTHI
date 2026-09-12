@@ -50,6 +50,13 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
     return matchesRisk && matchesSearch;
   });
 
+  const validScores = duplicateCases
+    .map((c) => Number(c.CLUSTER_SUSPICION_SCORE))
+    .filter((s) => !isNaN(s) && s > 0);
+  const avgClusterSuspicion = validScores.length
+    ? (validScores.reduce((a, b) => a + b, 0) / validScores.length * (validScores[0] <= 1 ? 100 : 1)).toFixed(1)
+    : null;
+
   return (
     <div className="mospi-panel">
       {/* 1. Duplicate Intelligence Key Metrics */}
@@ -59,7 +66,9 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Detected Clusters</span>
             <GitBranch size={15} color="#d97706" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(kpis.duplicate_clusters || 1401)}</div>
+          <div className="mospi-kpi-value">
+            {kpis.duplicate_clusters != null ? formatNumber(kpis.duplicate_clusters) : "—"}
+          </div>
           <div className="mospi-kpi-sub">Cross-district/state similarity clusters</div>
         </div>
 
@@ -68,8 +77,14 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Linked Proposal Works</span>
             <Layers size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(kpis.works_in_clusters || 8922)}</div>
-          <div className="mospi-kpi-sub">8.7% of total national repository</div>
+          <div className="mospi-kpi-value">
+            {kpis.works_in_clusters != null ? formatNumber(kpis.works_in_clusters) : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {kpis.total_works > 0 && kpis.works_in_clusters != null
+              ? `${((kpis.works_in_clusters / kpis.total_works) * 100).toFixed(1)}% of total national repository`
+              : "Works in flagged clusters"}
+          </div>
         </div>
 
         <div className="mospi-card">
@@ -77,7 +92,9 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">High Duplicate Risk</span>
             <AlertTriangle size={15} color="#e11d48" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(kpis.high_duplicate_works || 4047)}</div>
+          <div className="mospi-kpi-value">
+            {kpis.high_duplicate_works != null ? formatNumber(kpis.high_duplicate_works) : "—"}
+          </div>
           <div className="mospi-kpi-sub">Exact description & budget matches</div>
         </div>
 
@@ -86,7 +103,9 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Avg Cluster Suspicion</span>
             <CheckCircle2 size={15} color="#0d9488" />
           </div>
-          <div className="mospi-kpi-value">85.1%</div>
+          <div className="mospi-kpi-value">
+            {avgClusterSuspicion ? `${avgClusterSuspicion}%` : "—"}
+          </div>
           <div className="mospi-kpi-sub">Semantic, temporal & spatial similarity</div>
         </div>
       </div>
@@ -164,9 +183,9 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
               ) : (
                 filteredCases.map((item) => {
                   const isHigh = (item.DUPLICATE_RISK || "").toUpperCase() === "HIGH";
-                  const score = item.CLUSTER_SUSPICION_SCORE
-                    ? Math.round(Number(item.CLUSTER_SUSPICION_SCORE) * 100)
-                    : 85;
+                  const scoreVal = item.CLUSTER_SUSPICION_SCORE != null && !isNaN(Number(item.CLUSTER_SUSPICION_SCORE))
+                    ? Math.round(Number(item.CLUSTER_SUSPICION_SCORE) * (Number(item.CLUSTER_SUSPICION_SCORE) <= 1 ? 100 : 1))
+                    : null;
 
                   return (
                     <tr key={item.WORK_RECOMMENDATION_DTL_ID || item.WORK_ID}>
@@ -194,7 +213,7 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
                         </span>
                       </td>
                       <td style={{ textAlign: "center", fontWeight: 700 }}>
-                        {score}%
+                        {scoreVal != null ? `${scoreVal}%` : "—"}
                       </td>
                       <td style={{ textAlign: "center" }}>
                         <button

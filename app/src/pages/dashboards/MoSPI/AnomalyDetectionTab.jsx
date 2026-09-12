@@ -12,9 +12,9 @@ import { API_BASE, formatNumber } from "../../../constants";
 
 export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
   const anomalies = analytics?.anomaly_summary || {};
-  const extremeDelays = anomalies.extreme_delays_over_180 ?? 12824;
-  const costVariance = anomalies.cost_variance_cases ?? 4899;
-  const prolonged = anomalies.prolonged_completion_over_365 ?? 3553;
+  const extremeDelays = anomalies.extreme_delays_over_180 ?? 0;
+  const costVariance = anomalies.cost_variance_cases ?? 0;
+  const prolonged = anomalies.prolonged_completion_over_365 ?? 0;
   const totalAnomalies = extremeDelays + costVariance + prolonged;
 
   const subtabs = [
@@ -70,7 +70,9 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Extreme Sanction Delays</span>
             <Clock size={15} color="#d97706" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(anomalies.extreme_delays_over_180 || 12824)}</div>
+          <div className="mospi-kpi-value">
+            {anomalies.extreme_delays_over_180 != null ? formatNumber(anomalies.extreme_delays_over_180) : "—"}
+          </div>
           <div className="mospi-kpi-sub">&gt; 180 days from MP recommendation</div>
         </div>
 
@@ -79,7 +81,9 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Spending Discrepancies</span>
             <IndianRupee size={15} color="#e11d48" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(anomalies.cost_variance_cases || 4899)}</div>
+          <div className="mospi-kpi-value">
+            {anomalies.cost_variance_cases != null ? formatNumber(anomalies.cost_variance_cases) : "—"}
+          </div>
           <div className="mospi-kpi-sub">Actual disbursement &gt; sanction amount</div>
         </div>
 
@@ -88,7 +92,9 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Prolonged Lifecycles</span>
             <Calendar size={15} color="#7c3aed" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(anomalies.prolonged_completion_over_365 || 3553)}</div>
+          <div className="mospi-kpi-value">
+            {anomalies.prolonged_completion_over_365 != null ? formatNumber(anomalies.prolonged_completion_over_365) : "—"}
+          </div>
           <div className="mospi-kpi-sub">&gt; 365 days from sanction to completion</div>
         </div>
 
@@ -97,7 +103,9 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Significant Cost Variances</span>
             <AlertTriangle size={15} color="#dc2626" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(anomalies.significant_variance_cases || 490)}</div>
+          <div className="mospi-kpi-value">
+            {anomalies.significant_variance_cases != null ? formatNumber(anomalies.significant_variance_cases) : "—"}
+          </div>
           <div className="mospi-kpi-sub">&gt; 20% divergence from peer norm</div>
         </div>
       </div>
@@ -108,7 +116,7 @@ export default function AnomalyDetectionTab({ analytics, onSelectWork }) {
           <div>
             <h3 className="mospi-card-title">National Anomaly Registry</h3>
             <p className="mospi-card-subtitle">
-              Systemic outliers, execution delay patterns, and expenditure divergences across 1,02,703 works
+              Systemic outliers, execution delay patterns, and expenditure divergences across {analytics?.national_kpis?.total_works != null ? formatNumber(analytics.national_kpis.total_works) : "all"} works
             </p>
           </div>
           <span className="mospi-pill amber">

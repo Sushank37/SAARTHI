@@ -3,7 +3,7 @@ import {
   IndianRupee,
   AlertCircle,
 } from "lucide-react";
-import { API_BASE, formatCrores } from "../../../constants";
+import { API_BASE, formatNumber, formatCrores } from "../../../constants";
 
 export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
   const kpis = analytics?.national_kpis || {};
@@ -39,7 +39,7 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Total Recommended</span>
             <IndianRupee size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{formatCrores(kpis.total_recommended_amount || 0)}</div>
+          <div className="mospi-kpi-value">{kpis.total_recommended_amount != null ? formatCrores(kpis.total_recommended_amount) : "—"}</div>
           <div className="mospi-kpi-sub">100% of MP recommendations</div>
         </div>
 
@@ -48,8 +48,10 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Total Sanctioned</span>
             <IndianRupee size={15} color="#0d9488" />
           </div>
-          <div className="mospi-kpi-value">{formatCrores(kpis.total_sanction_amount || 0)}</div>
-          <div className="mospi-kpi-sub">{kpis.sanction_rate || 72.6}% Sanction Conversion Rate</div>
+          <div className="mospi-kpi-value">{kpis.total_sanction_amount != null ? formatCrores(kpis.total_sanction_amount) : "—"}</div>
+          <div className="mospi-kpi-sub">
+            {kpis.sanction_rate != null ? `${kpis.sanction_rate}% Sanction Conversion Rate` : "Sanction Conversion Rate"}
+          </div>
         </div>
 
         <div className="mospi-card">
@@ -57,8 +59,10 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Total Disbursed</span>
             <IndianRupee size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{formatCrores(kpis.total_actual_amount || 0)}</div>
-          <div className="mospi-kpi-sub">{kpis.utilization_pct || 39.7}% Utilization of Sanctioned</div>
+          <div className="mospi-kpi-value">{kpis.total_actual_amount != null ? formatCrores(kpis.total_actual_amount) : "—"}</div>
+          <div className="mospi-kpi-sub">
+            {kpis.utilization_pct != null ? `${kpis.utilization_pct}% Utilization of Sanctioned` : "Utilization of Sanctioned"}
+          </div>
         </div>
 
         <div className="mospi-card">
@@ -67,7 +71,11 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
             <AlertCircle size={15} color="#d97706" />
           </div>
           <div className="mospi-kpi-value">
-            {formatCrores((kpis.total_sanction_amount || 0) - (kpis.total_actual_amount || 0))}
+            {kpis.total_sanction_amount != null && kpis.total_actual_amount != null
+              ? formatCrores(kpis.total_sanction_amount - kpis.total_actual_amount)
+              : kpis.unutilized_balance != null
+              ? formatCrores(kpis.unutilized_balance)
+              : "—"}
           </div>
           <div className="mospi-kpi-sub">Committed but undisbursed funds</div>
         </div>
@@ -79,11 +87,11 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
           <div>
             <h3 className="mospi-card-title">National Fund Utilization Funnel</h3>
             <p className="mospi-card-subtitle">
-              Cumulative financial conversion across 1,02,703 Parliamentary works nationally
+              Cumulative financial conversion across {kpis.total_works != null ? formatNumber(kpis.total_works) : "all"} Parliamentary works nationally
             </p>
           </div>
           <span className="mospi-pill emerald">
-            {formatCrores(kpis.total_sanction_amount || 0)} Committed
+            {kpis.total_sanction_amount != null ? `${formatCrores(kpis.total_sanction_amount)} Committed` : "—"}
           </span>
         </div>
 
@@ -91,7 +99,9 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "12px" }}>
               <span style={{ fontWeight: 600, color: "#334155" }}>Recommended Amount</span>
-              <span style={{ fontWeight: 700, color: "#0f172a" }}>{formatCrores(kpis.total_recommended_amount || 0)} (100%)</span>
+              <span style={{ fontWeight: 700, color: "#0f172a" }}>
+                {kpis.total_recommended_amount != null ? `${formatCrores(kpis.total_recommended_amount)} (100%)` : "—"}
+              </span>
             </div>
             <div style={{ height: "8px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "4px", overflow: "hidden" }}>
               <div style={{ height: "100%", width: "100%", backgroundColor: "#0284c7" }} />
@@ -101,20 +111,30 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "12px" }}>
               <span style={{ fontWeight: 600, color: "#334155" }}>Administrative Sanctions Issued</span>
-              <span style={{ fontWeight: 700, color: "#0d9488" }}>{formatCrores(kpis.total_sanction_amount || 0)} ({kpis.sanction_rate || 72.6}%)</span>
+              <span style={{ fontWeight: 700, color: "#0d9488" }}>
+                {kpis.total_sanction_amount != null ? `${formatCrores(kpis.total_sanction_amount)} (${kpis.sanction_rate ?? 0}%)` : "—"}
+              </span>
             </div>
             <div style={{ height: "8px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "4px", overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${kpis.sanction_rate || 72.6}%`, backgroundColor: "#0d9488" }} />
+              <div style={{ height: "100%", width: `${kpis.sanction_rate ?? 0}%`, backgroundColor: "#0d9488" }} />
             </div>
           </div>
 
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "12px" }}>
               <span style={{ fontWeight: 600, color: "#334155" }}>Actual Treasury Disbursements</span>
-              <span style={{ fontWeight: 700, color: "#0284c7" }}>{formatCrores(kpis.total_actual_amount || 0)} ({kpis.utilization_pct || 39.7}%)</span>
+              <span style={{ fontWeight: 700, color: "#0284c7" }}>
+                {kpis.total_actual_amount != null ? `${formatCrores(kpis.total_actual_amount)} (${kpis.utilization_pct ?? 0}%)` : "—"}
+              </span>
             </div>
             <div style={{ height: "8px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "4px", overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${Math.round(((kpis.total_actual_amount || 0) / (kpis.total_recommended_amount || 1)) * 100)}%`, backgroundColor: "#0284c7" }} />
+              <div
+                style={{
+                  height: "100%",
+                  width: `${kpis.total_recommended_amount > 0 ? Math.min(100, Math.round(((kpis.total_actual_amount ?? 0) / kpis.total_recommended_amount) * 100)) : 0}%`,
+                  backgroundColor: "#0284c7",
+                }}
+              />
             </div>
           </div>
         </div>
@@ -130,7 +150,9 @@ export default function FinancialIntelligenceTab({ analytics, onSelectWork }) {
             </p>
           </div>
           <span className="mospi-pill rose">
-            {formatCrores(analytics?.anomaly_summary?.cost_variance_cases || 4899)} Spending Anomalies
+            {analytics?.anomaly_summary?.cost_variance_cases != null
+              ? `${formatNumber(analytics.anomaly_summary.cost_variance_cases)} Spending Anomalies`
+              : "—"}
           </span>
         </div>
 

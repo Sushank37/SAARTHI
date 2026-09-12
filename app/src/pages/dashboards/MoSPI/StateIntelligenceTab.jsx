@@ -83,8 +83,8 @@ export default function StateIntelligenceTab() {
     return states
       .filter((s) => !q || (s.STATE_NAME && s.STATE_NAME.toLowerCase().includes(q)))
       .sort((a, b) => {
-        const valA = Number(a[sortBy] || 0);
-        const valB = Number(b[sortBy] || 0);
+        const valA = a[sortBy] != null ? Number(a[sortBy]) : 0;
+        const valB = b[sortBy] != null ? Number(b[sortBy]) : 0;
         return sortAsc ? valA - valB : valB - valA;
       });
   }, [states, search, sortBy, sortAsc]);
@@ -103,7 +103,9 @@ export default function StateIntelligenceTab() {
           <div>
             <h3 className="mospi-card-title">Pan-India State & Union Territory Intelligence</h3>
             <p className="mospi-card-subtitle">
-              Macro comparison of work volume, financial sanction releases, actual spend, and review workloads across all 36 States & UTs
+              {states.length > 0
+                ? `Macro comparison of work volume, financial sanction releases, actual spend, and review workloads across all ${states.length} States & UTs`
+                : "Macro comparison of work volume, financial sanction releases, actual spend, and review workloads across States & UTs"}
             </p>
           </div>
 
@@ -186,7 +188,7 @@ export default function StateIntelligenceTab() {
                 <tr>
                   <td colSpan={9} style={{ textAlign: "center", padding: "36px" }}>
                     <div className="spinner" />
-                    <p style={{ color: "#64748b", marginTop: "8px", fontSize: "12px" }}>Loading 36 State Intelligence metrics...</p>
+                    <p style={{ color: "#64748b", marginTop: "8px", fontSize: "12px" }}>Loading State Intelligence metrics...</p>
                   </td>
                 </tr>
               ) : filteredStates.length === 0 ? (
@@ -208,22 +210,34 @@ export default function StateIntelligenceTab() {
                           </div>
                         </td>
                         <td style={{ textAlign: "right", fontWeight: 700 }}>
-                          {formatNumber(st.TOTAL_WORKS)}
-                        </td>
-                        <td style={{ textAlign: "right" }}>{formatNumber(st.SANCTIONED_WORKS || 0)}</td>
-                        <td style={{ textAlign: "right" }}>
-                          <span className="mospi-pill blue">{formatNumber(st.ONGOING_WORKS || 0)}</span>
+                          {st.TOTAL_WORKS != null ? formatNumber(st.TOTAL_WORKS) : "—"}
                         </td>
                         <td style={{ textAlign: "right" }}>
-                          <span className="mospi-pill emerald">{formatNumber(st.COMPLETED_WORKS || 0)}</span>
+                          {st.SANCTIONED_WORKS != null ? formatNumber(st.SANCTIONED_WORKS) : "—"}
                         </td>
-                        <td style={{ textAlign: "right", fontWeight: 600 }}>{formatCrores(st.SANCTION_AMOUNT || 0)}</td>
-                        <td style={{ textAlign: "right", fontWeight: 600 }}>{formatCrores(st.ACTUAL_AMOUNT || 0)}</td>
+                        <td style={{ textAlign: "right" }}>
+                          <span className="mospi-pill blue">
+                            {st.ONGOING_WORKS != null ? formatNumber(st.ONGOING_WORKS) : "—"}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: "right" }}>
+                          <span className="mospi-pill emerald">
+                            {st.COMPLETED_WORKS != null ? formatNumber(st.COMPLETED_WORKS) : "—"}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: "right", fontWeight: 600 }}>
+                          {st.SANCTION_AMOUNT != null ? formatCrores(st.SANCTION_AMOUNT) : "—"}
+                        </td>
+                        <td style={{ textAlign: "right", fontWeight: 600 }}>
+                          {st.ACTUAL_AMOUNT != null ? formatCrores(st.ACTUAL_AMOUNT) : "—"}
+                        </td>
                         <td style={{ textAlign: "center" }}>
-                          {st.REVIEW_REQUIRED > 0 ? (
+                          {st.REVIEW_REQUIRED != null && st.REVIEW_REQUIRED > 0 ? (
                             <span className="mospi-pill rose">{formatNumber(st.REVIEW_REQUIRED)}</span>
-                          ) : (
+                          ) : st.REVIEW_REQUIRED === 0 ? (
                             <span className="mospi-pill gray">0</span>
+                          ) : (
+                            <span className="mospi-pill gray">—</span>
                           )}
                         </td>
                         <td style={{ textAlign: "center" }}>

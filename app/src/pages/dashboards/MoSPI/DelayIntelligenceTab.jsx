@@ -11,10 +11,10 @@ import { API_BASE, formatNumber } from "../../../constants";
 
 export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
   const delayInfo = analytics?.delay_buckets || {};
-  const u45 = delayInfo.under_45 ?? 22856;
-  const d46_90 = delayInfo.from_46_to_90 ?? 20580;
-  const d91_180 = delayInfo.from_91_to_180 ?? 21357;
-  const o180 = delayInfo.over_180 ?? 12824;
+  const u45 = delayInfo.under_45 ?? 0;
+  const d46_90 = delayInfo.from_46_to_90 ?? 0;
+  const d91_180 = delayInfo.from_91_to_180 ?? 0;
+  const o180 = delayInfo.over_180 ?? 0;
   const totalSanctioned = u45 + d46_90 + d91_180 + o180;
 
   const delayBucketTabs = [
@@ -71,7 +71,9 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">National Avg Sanction Delay</span>
             <Clock size={15} color="#d97706" />
           </div>
-          <div className="mospi-kpi-value">{delayInfo.avg_sanction_delay || 105.7}d</div>
+          <div className="mospi-kpi-value">
+            {delayInfo.avg_sanction_delay != null ? `${delayInfo.avg_sanction_delay}d` : "—"}
+          </div>
           <div className="mospi-kpi-sub">Prescribed guideline: 45 days</div>
         </div>
 
@@ -80,7 +82,9 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Avg Execution Duration</span>
             <Calendar size={15} color="#0284c7" />
           </div>
-          <div className="mospi-kpi-value">{delayInfo.avg_completion_duration || 174.5}d</div>
+          <div className="mospi-kpi-value">
+            {delayInfo.avg_completion_duration != null ? `${delayInfo.avg_completion_duration}d` : "—"}
+          </div>
           <div className="mospi-kpi-sub">From administrative sanction to completion</div>
         </div>
 
@@ -89,8 +93,14 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Over 45-Day Guideline</span>
             <AlertTriangle size={15} color="#e11d48" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(delayInfo.over_statutory_count || 54761)}</div>
-          <div className="mospi-kpi-sub">70.6% of sanctioned works took &gt;45d</div>
+          <div className="mospi-kpi-value">
+            {delayInfo.over_statutory_count != null ? formatNumber(delayInfo.over_statutory_count) : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {totalSanctioned > 0 && delayInfo.over_statutory_count != null
+              ? `${((delayInfo.over_statutory_count / totalSanctioned) * 100).toFixed(1)}% of sanctioned works took >45d`
+              : "Works exceeding 45d limit"}
+          </div>
         </div>
 
         <div className="mospi-card">
@@ -98,8 +108,14 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
             <span className="mospi-kpi-title">Compliant Under 45d</span>
             <CheckCircle2 size={15} color="#0d9488" />
           </div>
-          <div className="mospi-kpi-value">{formatNumber(delayInfo.under_45 || 22856)}</div>
-          <div className="mospi-kpi-sub">29.4% strictly adhered to 45d limit</div>
+          <div className="mospi-kpi-value">
+            {delayInfo.under_45 != null ? formatNumber(delayInfo.under_45) : "—"}
+          </div>
+          <div className="mospi-kpi-sub">
+            {totalSanctioned > 0 && delayInfo.under_45 != null
+              ? `${((delayInfo.under_45 / totalSanctioned) * 100).toFixed(1)}% adhered to 45d SLA`
+              : "Adhered to 45d SLA"}
+          </div>
         </div>
       </div>
 
@@ -109,7 +125,9 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
           <div>
             <h3 className="mospi-card-title">National Sanction Delay Distribution</h3>
             <p className="mospi-card-subtitle">
-              Breakdown of 77,617 sanctioned works into official duration intervals
+              {totalSanctioned > 0
+                ? `Breakdown of ${formatNumber(totalSanctioned)} sanctioned works into official duration intervals`
+                : "Breakdown of sanctioned works into official duration intervals"}
             </p>
           </div>
         </div>
@@ -118,33 +136,41 @@ export default function DelayIntelligenceTab({ analytics, onSelectWork }) {
           <div style={{ padding: "10px 12px", backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "6px" }}>
             <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#166534", textTransform: "uppercase" }}>≤ 45 Days</div>
             <div style={{ fontSize: "20px", fontWeight: 800, color: "#15803d", marginTop: "2px" }}>
-              {formatNumber(delayInfo.under_45 || 22856)}
+              {delayInfo.under_45 != null ? formatNumber(delayInfo.under_45) : "—"}
             </div>
-            <div style={{ fontSize: "10.5px", color: "#166534", marginTop: "1px" }}>Compliant with SLA (29.4%)</div>
+            <div style={{ fontSize: "10.5px", color: "#166534", marginTop: "1px" }}>
+              {totalSanctioned > 0 ? `Compliant with SLA (${((u45 / totalSanctioned) * 100).toFixed(1)}%)` : "Compliant with SLA"}
+            </div>
           </div>
 
           <div style={{ padding: "10px 12px", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px" }}>
             <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>46 – 90 Days</div>
             <div style={{ fontSize: "20px", fontWeight: 800, color: "#334155", marginTop: "2px" }}>
-              {formatNumber(delayInfo.from_46_to_90 || 20580)}
+              {delayInfo.from_46_to_90 != null ? formatNumber(delayInfo.from_46_to_90) : "—"}
             </div>
-            <div style={{ fontSize: "10.5px", color: "#64748b", marginTop: "1px" }}>Moderate Delay (26.5%)</div>
+            <div style={{ fontSize: "10.5px", color: "#64748b", marginTop: "1px" }}>
+              {totalSanctioned > 0 ? `Moderate Delay (${((d46_90 / totalSanctioned) * 100).toFixed(1)}%)` : "Moderate Delay"}
+            </div>
           </div>
 
           <div style={{ padding: "10px 12px", backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "6px" }}>
             <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#b45309", textTransform: "uppercase" }}>91 – 180 Days</div>
             <div style={{ fontSize: "20px", fontWeight: 800, color: "#d97706", marginTop: "2px" }}>
-              {formatNumber(delayInfo.from_91_to_180 || 21357)}
+              {delayInfo.from_91_to_180 != null ? formatNumber(delayInfo.from_91_to_180) : "—"}
             </div>
-            <div style={{ fontSize: "10.5px", color: "#b45309", marginTop: "1px" }}>Significant Delay (27.5%)</div>
+            <div style={{ fontSize: "10.5px", color: "#b45309", marginTop: "1px" }}>
+              {totalSanctioned > 0 ? `Significant Delay (${((d91_180 / totalSanctioned) * 100).toFixed(1)}%)` : "Significant Delay"}
+            </div>
           </div>
 
           <div style={{ padding: "10px 12px", backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px" }}>
             <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#991b1b", textTransform: "uppercase" }}>&gt; 180 Days</div>
             <div style={{ fontSize: "20px", fontWeight: 800, color: "#b91c1c", marginTop: "2px" }}>
-              {formatNumber(delayInfo.over_180 || 12824)}
+              {delayInfo.over_180 != null ? formatNumber(delayInfo.over_180) : "—"}
             </div>
-            <div style={{ fontSize: "10.5px", color: "#991b1b", marginTop: "1px" }}>Critical Overrun (16.5%)</div>
+            <div style={{ fontSize: "10.5px", color: "#991b1b", marginTop: "1px" }}>
+              {totalSanctioned > 0 ? `Critical Overrun (${((o180 / totalSanctioned) * 100).toFixed(1)}%)` : "Critical Overrun"}
+            </div>
           </div>
         </div>
       </div>
