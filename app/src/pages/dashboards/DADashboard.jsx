@@ -23,6 +23,7 @@ import {
   TrendingUp,
   Coins,
   Building2,
+  AlertCircle,
   FileCheck,
   Bell,
   Filter,
@@ -39,6 +40,9 @@ import {
 import WorkDetailDrawer from "../../components/WorkDetailDrawer";
 import { getRequests, getRequestCounts } from "../../services/workflowService";
 import RequestTable from "../../components/workflow/RequestTable";
+import { getConcerns } from "../../services/concernService";
+import ConcernListTable from "../../components/workflow/ConcernListTable";
+import ConcernDetailModal from "../../components/workflow/ConcernDetailModal";
 import "./DADashboard.css";
 
 // 11 Specific District Authority Navigation Modules
@@ -54,6 +58,7 @@ const DA_MODULES = [
   { id: "evidence", label: "Evidence Verification", icon: FileCheck },
   { id: "geo-photo", label: "Geo-Photo Verification", icon: Camera },
   { id: "alerts-queue", label: "Alerts & Queue", icon: Bell },
+  { id: "concerns", label: "Work Concerns & Actions", icon: AlertCircle },
 ];
 
 function LayoutDashboardIcon(props) {
@@ -115,7 +120,34 @@ export default function DADashboard({ summary, onSelectWork }) {
   // Incoming cross-role workflow requests
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [incomingRequestsLoading, setIncomingRequestsLoading] = useState(false);
-  const [requestCounts, setRequestCounts] = useState(null);
+  const [workflowCounts, setWorkflowCounts] = useState(null);
+
+  // DA Concerns Workflow State
+  const [daConcerns, setDaConcerns] = useState([]);
+  const [daConcernsLoading, setDaConcernsLoading] = useState(false);
+  const [selectedConcernId, setSelectedConcernId] = useState(null);
+
+  const loadDAConcerns = async () => {
+    setDaConcernsLoading(true);
+    try {
+      const params = {};
+      if (selectedIDA && selectedIDA !== "ALL") {
+        params.daId = selectedIDA;
+      }
+      const data = await getConcerns(params);
+      setDaConcerns(data.concerns || []);
+    } catch (err) {
+      console.error("Failed to load DA concerns:", err);
+    } finally {
+      setDaConcernsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentTab === "concerns") {
+      loadDAConcerns();
+    }
+  }, [currentTab, selectedIDA]);
 
   const fetchIncomingRequests = async () => {
     setIncomingRequestsLoading(true);
@@ -1957,6 +1989,76 @@ export default function DADashboard({ summary, onSelectWork }) {
             </div>
           )}
         </>
+      )}
+
+      {/* TAB 12: WORK CONCERNS & ACTIONS CENTER */}
+      {currentTab === "concerns" && (
+        <div style={{ marginBottom: "20px" }}>
+          <div className="da-module-banner">
+            <div className="da-module-banner-left">
+              <div className="da-module-banner-eyebrow">
+                <AlertCircle size={13} />
+                <span>District Magistrate & Collectorate Work Concerns Center</span>
+              </div>
+              <h2 className="da-module-banner-title">Parliamentary Concerns & Statutory Directives</h2>
+              <p className="da-module-banner-desc">
+                Review concerns raised by Hon'ble MPs under jurisdiction, issue directives to Implementing Agencies,
+                request clarification, record administrative actions, and verify ground rectification.
+              </p>
+            </div>
+            <div className="da-module-banner-right">
+              <div className="da-intel-stats">
+                <div className="da-intel-stat-item">
+                  <span className="da-intel-stat-label">Total Concerns</span>
+                  <div className="da-intel-stat-val" style={{ color: "#005a9c" }}>
+                    {daConcerns.length}
+                  </div>
+                </div>
+                <div className="da-intel-stat-item">
+                  <span className="da-intel-stat-label">Needs DA Action</span>
+                  <div className="da-intel-stat-val text-amber-700">
+                    {daConcerns.filter((c) => ["SUBMITTED", "RECEIVED", "UNDER_REVIEW", "EVIDENCE_SUBMITTED"].includes((c.status || "").toUpperCase())).length}
+                  </div>
+                </div>
+                <div className="da-intel-stat-item">
+                  <span className="da-intel-stat-label">Assigned to IA</span>
+                  <div className="da-intel-stat-val" style={{ color: "#6b21a8" }}>
+                    {daConcerns.filter((c) => ["ACTION_ASSIGNED", "ACTION_IN_PROGRESS"].includes((c.status || "").toUpperCase())).length}
+                  </div>
+                </div>
+                <div className="da-intel-stat-item">
+                  <span className="da-intel-stat-label">Resolved</span>
+                  <div className="da-intel-stat-val text-emerald-700">
+                    {daConcerns.filter((c) => ["RESOLVED", "CLOSED"].includes((c.status || "").toUpperCase())).length}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ConcernListTable
+            concerns={daConcerns}
+            loading={daConcernsLoading}
+            title="Jurisdiction Work Concerns Register"
+            subtitle={`Statutory oversight for ${selectedIDA === "ALL" ? "All District Authorities" : selectedIDA}`}
+            role="DISTRICT_AUTHORITY"
+            onSelectConcern={(id) => setSelectedConcernId(id)}
+            onOpenWork={(workId) => onSelectWork ? onSelectWork(workId, "actions") : handleSelectWork(workId, "actions")}
+            emptyMessage="No concerns currently logged for this District Authority jurisdiction."
+          />
+        </div>
+      )}
+
+      {/* Concern Detail & Action Timeline Modal */}
+      {selectedConcernId && (
+        <ConcernDetailModal
+          concernId={selectedConcernId}
+          currentRole="DISTRICT_AUTHORITY"
+          currentUser={selectedIDA}
+          onClose={() => setSelectedConcernId(null)}
+          onActionComplete={loadDAConcerns}
+          onOpenWork={(workId) => onSelectWork ? onSelectWork(workId, "actions") : handleSelectWork(workId, "actions")}
+        />
       )}
 
       {/* 4. Focused Works Register Table (Present in every tab, filtered for that specific view) */}

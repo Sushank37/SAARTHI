@@ -20,6 +20,7 @@ import {
   Eye,
   RefreshCw,
   AlertTriangle,
+  AlertCircle,
   TrendingUp,
   ExternalLink,
   FileText,
@@ -41,6 +42,9 @@ import {
 import WorkDetailDrawer from "../../components/WorkDetailDrawer";
 import { getRequests } from "../../services/workflowService";
 import RequestTable from "../../components/workflow/RequestTable";
+import { getConcerns } from "../../services/concernService";
+import ConcernListTable from "../../components/workflow/ConcernListTable";
+import ConcernDetailModal from "../../components/workflow/ConcernDetailModal";
 import "./IADashboard.css";
 
 // 10 Standard Implementing Agency Sections requested by user
@@ -55,6 +59,7 @@ const IA_MODULES = [
   { id: "missing-evidence", label: "Missing Evidence", icon: AlertTriangle, desc: "Required evidence not uploaded" },
   { id: "completion", label: "Completion", icon: CheckCircle2, desc: "Works ready to mark complete" },
   { id: "ai-alerts", label: "AI Alerts", icon: Sparkles, desc: "Inconsistencies requiring correction" },
+  { id: "assigned-concerns", label: "Assigned Concerns", icon: AlertCircle, desc: "Parliamentary concerns assigned for rectification" },
 ];
 
 // Helper to format clean, human-readable agency titles
@@ -138,6 +143,33 @@ export default function IADashboard({ summary, onSelectWork }) {
 
   // Works registry table state
   const [works, setWorks] = useState([]);
+
+  // IA Concerns State
+  const [iaConcerns, setIaConcerns] = useState([]);
+  const [iaConcernsLoading, setIaConcernsLoading] = useState(false);
+  const [selectedConcernId, setSelectedConcernId] = useState(null);
+
+  const loadIAConcerns = async () => {
+    setIaConcernsLoading(true);
+    try {
+      const params = {};
+      if (selectedIDA && selectedIDA !== "ALL") {
+        params.iaId = selectedIDA;
+      }
+      const data = await getConcerns(params);
+      setIaConcerns(data.concerns || []);
+    } catch (err) {
+      console.error("Failed to load IA concerns:", err);
+    } finally {
+      setIaConcernsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentTab === "assigned-concerns") {
+      loadIAConcerns();
+    }
+  }, [currentTab, selectedIDA]);
   const [worksTotal, setWorksTotal] = useState(0);
   const [worksPage, setWorksPage] = useState(1);
   const [worksLimit] = useState(15);
@@ -2189,6 +2221,76 @@ export default function IADashboard({ summary, onSelectWork }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* TAB 11: ASSIGNED WORK CONCERNS & DIRECTIVES */}
+      {currentTab === "assigned-concerns" && (
+        <div style={{ marginBottom: "20px" }}>
+          <div className="ia-module-banner">
+            <div className="ia-module-banner-left">
+              <div className="ia-module-banner-eyebrow">
+                <AlertCircle size={13} />
+                <span>Executing Agency Action Requirements</span>
+              </div>
+              <h2 className="ia-module-banner-title">Assigned Work Concerns & Rectification Directives</h2>
+              <p className="ia-module-banner-desc">
+                Concerns referred by District Magistrate or Hon'ble MP requiring on-site verification,
+                formal progress explanations, or corrective photographic evidence.
+              </p>
+            </div>
+            <div className="ia-module-banner-right">
+              <div className="ia-intel-stats">
+                <div className="ia-intel-stat-item">
+                  <span className="ia-intel-stat-label">Assigned Directives</span>
+                  <div className="ia-intel-stat-val" style={{ color: "#005a9c" }}>
+                    {iaConcerns.length}
+                  </div>
+                </div>
+                <div className="ia-intel-stat-item">
+                  <span className="ia-intel-stat-label">Needs Response</span>
+                  <div className="ia-intel-stat-val text-amber-700">
+                    {iaConcerns.filter((c) => ["ACTION_ASSIGNED", "SUBMITTED"].includes((c.status || "").toUpperCase())).length}
+                  </div>
+                </div>
+                <div className="ia-intel-stat-item">
+                  <span className="ia-intel-stat-label">Evidence Submitted</span>
+                  <div className="ia-intel-stat-val text-teal-700">
+                    {iaConcerns.filter((c) => (c.status || "").toUpperCase() === "EVIDENCE_SUBMITTED").length}
+                  </div>
+                </div>
+                <div className="ia-intel-stat-item">
+                  <span className="ia-intel-stat-label">Cleared / Resolved</span>
+                  <div className="ia-intel-stat-val text-emerald-700">
+                    {iaConcerns.filter((c) => ["RESOLVED", "CLOSED"].includes((c.status || "").toUpperCase())).length}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ConcernListTable
+            concerns={iaConcerns}
+            loading={iaConcernsLoading}
+            title="Assigned Rectification & Explanation Tasks"
+            subtitle={`Agency Execution Scope: ${cleanAgencyName(selectedIDA)}`}
+            role="IMPLEMENTING_AGENCY"
+            onSelectConcern={(id) => setSelectedConcernId(id)}
+            onOpenWork={(workId) => onSelectWork ? onSelectWork(workId, "actions") : handleSelectWork(workId, "actions")}
+            emptyMessage="No concerns currently assigned to this Implementing Agency."
+          />
+        </div>
+      )}
+
+      {/* Concern Detail & Action Timeline Modal */}
+      {selectedConcernId && (
+        <ConcernDetailModal
+          concernId={selectedConcernId}
+          currentRole="IMPLEMENTING_AGENCY"
+          currentUser={selectedIDA}
+          onClose={() => setSelectedConcernId(null)}
+          onActionComplete={loadIAConcerns}
+          onOpenWork={(workId) => onSelectWork ? onSelectWork(workId, "actions") : handleSelectWork(workId, "actions")}
+        />
       )}
 
       {/* Fallback Drawer Container if not handled at App root */}

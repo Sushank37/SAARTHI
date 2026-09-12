@@ -42,6 +42,7 @@ import {
 import RequestStatusBadge from "./workflow/RequestStatusBadge";
 import RequestPriorityBadge from "./workflow/RequestPriorityBadge";
 import RequestComposerModal from "./workflow/RequestComposerModal";
+import WorkConcernSection from "./workflow/WorkConcernSection";
 import "./WorkDetailDrawer.css";
 
 // Authority-specific tabs for the dossier
@@ -57,7 +58,7 @@ const getAuthorityTabs = (authority) => {
         { id: "risk", label: "5. National Risk & Forensic Anomalies" },
         { id: "ia", label: "6. IA National Benchmarking" },
         { id: "evidence", label: "7. Evidence & EXIF Forensic Audit" },
-        { id: "actions", label: "8. MoSPI Central Directives & CVC" },
+        { id: "actions", label: "8. National Concerns & Central Directives" },
       ];
     case "IMPLEMENTING_AGENCY":
       return [
@@ -68,7 +69,7 @@ const getAuthorityTabs = (authority) => {
         { id: "geo-photo", label: "4. Geo-Tagged Photos & Site Uploads" },
         { id: "compliance-45d", label: "5. Deadlines & Extension (EOT)" },
         { id: "risk", label: "6. Site Quality & Rectification Log" },
-        { id: "actions", label: "7. IA Execution & Billing Directives" },
+        { id: "actions", label: "7. Assigned Concerns & IA Directives" },
       ];
     case "MP":
       return [
@@ -79,7 +80,7 @@ const getAuthorityTabs = (authority) => {
         { id: "financials", label: "4. Constituency Fund Release & Balance" },
         { id: "geo-photo", label: "5. Asset Photos for Public Dedication" },
         { id: "risk", label: "6. Grievances & Constituency Delay Flags" },
-        { id: "actions", label: "7. Parliamentary Directives & Inquiries" },
+        { id: "actions", label: "7. Parliamentary Concerns & Directives" },
       ];
     case "CITIZEN":
       return [
@@ -88,7 +89,7 @@ const getAuthorityTabs = (authority) => {
         { id: "financials", label: "2. Public Fund Utilization Breakdown" },
         { id: "completion", label: "3. Delivery Status & Public Opening" },
         { id: "geo-photo", label: "4. Before & After Photo Gallery" },
-        { id: "actions", label: "5. Citizen Social Audit & Verification" },
+        { id: "actions", label: "5. Citizen Concerns & Social Audit" },
       ];
     case "DISTRICT_AUTHORITY":
     default:
@@ -104,7 +105,7 @@ const getAuthorityTabs = (authority) => {
         { id: "ia", label: "8. Executing Agency (IA)" },
         { id: "evidence", label: "9. Ground Evidence" },
         { id: "geo-photo", label: "10. Geo-Photo & Site (Sec 3.16)" },
-        { id: "actions", label: "11. Collector Clearance Directives" },
+        { id: "actions", label: "11. Work Concerns & Collector Directives" },
       ];
   }
 };
@@ -1317,6 +1318,13 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                   <span>{actionFeedback}</span>
                 </div>
               )}
+
+              {/* Official Work Concern, Action & Response Thread */}
+              <WorkConcernSection
+                work={work}
+                canonicalWorkId={canonicalWorkId}
+                currentRole={activeAuthority}
+              />
 
               {/* Active Workflow Requests on this Work */}
               <div

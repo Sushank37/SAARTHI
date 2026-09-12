@@ -44,6 +44,9 @@ import "./MPDashboard.css";
 import ConstituencyMap from "../../components/ConstituencyMap";
 import { getRequests } from "../../services/workflowService";
 import RequestTable from "../../components/workflow/RequestTable";
+import { getConcerns } from "../../services/concernService";
+import ConcernListTable from "../../components/workflow/ConcernListTable";
+import ConcernDetailModal from "../../components/workflow/ConcernDetailModal";
 
 // Helper: Calculate stage-based milestone progress in simple words
 const getMilestoneProgress = (stage) => {
@@ -130,6 +133,30 @@ export default function MPDashboard(props) {
   const [stageFilter, setStageFilter] = useState(() => searchParams.get("stage") || "All");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // MP Concerns State
+  const [mpConcerns, setMpConcerns] = useState([]);
+  const [mpConcernsLoading, setMpConcernsLoading] = useState(false);
+  const [selectedConcernId, setSelectedConcernId] = useState(null);
+
+  const loadMPConcerns = async () => {
+    if (!selectedMP) return;
+    setMpConcernsLoading(true);
+    try {
+      const data = await getConcerns({ mpName: selectedMP });
+      setMpConcerns(data.concerns || []);
+    } catch (err) {
+      console.error("Failed to load MP concerns:", err);
+    } finally {
+      setMpConcernsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (section === "concerns") {
+      loadMPConcerns();
+    }
+  }, [section, selectedMP]);
 
   // Sync stage filter when URL search params change
   useEffect(() => {
@@ -1456,6 +1483,69 @@ export default function MPDashboard(props) {
             />
           </div>
         </div>
+      )}
+
+      {/* ============================================================
+          PAGE 10: MY CONCERNS & ACTION UPDATES
+          ============================================================ */}
+      {section === "concerns" && (
+        <div className="gov-mp-section-wrap">
+          {/* KPI Summary Cards */}
+          <div className="gov-mp-kpi-grid" style={{ marginBottom: "16px" }}>
+            <div className="gov-mp-kpi-card" style={{ borderTop: "3.5px solid #005a9c" }}>
+              <span className="gov-mp-kpi-title">TOTAL CONCERNS RAISED</span>
+              <strong className="gov-mp-kpi-value" style={{ color: "#005a9c" }}>
+                {mpConcerns.length}
+              </strong>
+              <span className="gov-mp-kpi-sub">Constituency Works Flagged</span>
+            </div>
+            <div className="gov-mp-kpi-card" style={{ borderTop: "3.5px solid #d97706" }}>
+              <span className="gov-mp-kpi-title">UNDER ACTIVE ACTION</span>
+              <strong className="gov-mp-kpi-value" style={{ color: "#d97706" }}>
+                {mpConcerns.filter((c) => !["RESOLVED", "CLOSED"].includes((c.status || "").toUpperCase())).length}
+              </strong>
+              <span className="gov-mp-kpi-sub">DA Review / IA Execution</span>
+            </div>
+            <div className="gov-mp-kpi-card" style={{ borderTop: "3.5px solid #0284c7" }}>
+              <span className="gov-mp-kpi-title">EVIDENCE SUBMITTED</span>
+              <strong className="gov-mp-kpi-value" style={{ color: "#0284c7" }}>
+                {mpConcerns.filter((c) => (c.status || "").toUpperCase() === "EVIDENCE_SUBMITTED").length}
+              </strong>
+              <span className="gov-mp-kpi-sub">Rectification Proof Uploaded</span>
+            </div>
+            <div className="gov-mp-kpi-card" style={{ borderTop: "3.5px solid #16a34a" }}>
+              <span className="gov-mp-kpi-title">RESOLVED & VERIFIED</span>
+              <strong className="gov-mp-kpi-value" style={{ color: "#16a34a" }}>
+                {mpConcerns.filter((c) => ["RESOLVED", "CLOSED"].includes((c.status || "").toUpperCase())).length}
+              </strong>
+              <span className="gov-mp-kpi-sub">Cleared by Collectorate</span>
+            </div>
+          </div>
+
+          {/* Concerns Table */}
+          <ConcernListTable
+            concerns={mpConcerns}
+            loading={mpConcernsLoading}
+            title="Constituency Work Concerns & Directives"
+            subtitle={`Official track records submitted by Hon'ble MP ${selectedMP}`}
+            role="MP"
+            onSelectConcern={(id) => setSelectedConcernId(id)}
+            onOpenWork={(workId) => onSelectWork && onSelectWork(workId, "actions")}
+            emptyMessage="No constituency concerns currently registered. Click any work in 'My Works' or 'Work Progress' to inspect its official dossier and raise a formal concern."
+          />
+        </div>
+      )}
+
+      {/* Concern Detail & Action Timeline Modal */}
+      {selectedConcernId && (
+        <ConcernDetailModal
+          concernId={selectedConcernId}
+          currentRole="MP"
+          currentUser={selectedMP}
+          onClose={() => setSelectedConcernId(null)}
+          onActionComplete={loadMPConcerns}
+          onOpenWork={(workId) => onSelectWork && onSelectWork(workId, "actions")}
+        />
       )}
     </div>
   );
