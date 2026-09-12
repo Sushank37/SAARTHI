@@ -202,41 +202,36 @@
    4. HORIZONTAL TOP MODULE NAVIGATION (12 Modules)
    ============================================================ */
 
-.mospi-nav-bar {
+.mospi-pills-list {
   display: flex;
   align-items: center;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 4px 6px;
-  gap: 4px;
+  gap: 5px;
   overflow-x: auto;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
   -webkit-overflow-scrolling: touch;
 }
 
-.mospi-nav-bar::-webkit-scrollbar {
+.mospi-pills-list::-webkit-scrollbar {
   height: 4px;
 }
 
-.mospi-nav-bar::-webkit-scrollbar-thumb {
+.mospi-pills-list::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
 }
 
-.mospi-nav-btn {
+.mospi-pill-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  font-size: 12px;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
   font-weight: 600;
   color: #475569;
-  border: 1px solid transparent;
-  background: transparent;
-  border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.12s ease;
@@ -244,36 +239,37 @@
   flex-shrink: 0;
 }
 
-.mospi-nav-btn:hover {
+.mospi-pill-btn:hover {
   background: #f1f5f9;
   color: #0f172a;
+  border-color: #94a3b8;
 }
 
-.mospi-nav-btn:focus-visible {
+.mospi-pill-btn:focus-visible {
   outline: 2px solid #0284c7;
   outline-offset: 1px;
 }
 
-.mospi-nav-btn.active {
-  background: #005A9C;
-  color: #ffffff;
-  font-weight: 700;
+.mospi-pill-btn.active {
+  background: #eff6ff;
   border-color: #005A9C;
-  box-shadow: 0 1px 2px rgba(0, 90, 156, 0.2);
+  color: #005A9C;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 90, 156, 0.08);
 }
 
-.mospi-tab-count {
+.mospi-pill-count {
   font-size: 10px;
   font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
   padding: 1px 5px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.06);
-  color: inherit;
+  border-radius: 4px;
 }
 
-.mospi-nav-btn.active .mospi-tab-count {
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
+.mospi-pill-btn.active .mospi-pill-count {
+  background: #bfdbfe;
+  color: #0369a1;
 }
 
 /* ============================================================
@@ -639,6 +635,26 @@
 .mospi-dossier-btn.mospi-dossier-risk:hover {
   background: #c2410c;
   color: #ffffff;
+}
+
+/* 
+ * ============================================================
+ * MOSPI SIDEBAR OVERRIDES (Match MP Reference Style)
+ * ============================================================
+ */
+.gov-sidebar-compact a[href^="/mospi"] {
+  background: transparent !important;
+  border-left: 3px solid transparent !important;
+}
+
+.gov-sidebar-compact a[href^="/mospi"].active {
+  background: #eff6ff !important;
+  border-left-color: #005A9C !important;
+  color: #0369a1 !important;
+}
+
+.gov-sidebar-compact a[href^="/mospi"].active .nav-icon {
+  color: #005A9C !important;
 }
 
 /* ============================================================

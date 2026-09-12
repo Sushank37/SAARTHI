@@ -778,7 +778,7 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
               <NavLink
                 key={item.id}
                 to={`/mospi?tab=${item.tab}`}
-                className={`nav-item-compact ${isTabActive ? "active" : ""}`}
+                className={() => `nav-item-compact ${isTabActive ? "active" : ""}`}
                 title={item.label}
                 onClick={() => {
                   setActiveMospiTab(item.tab);
@@ -888,7 +888,7 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
               <NavLink
                 key={item.id}
                 to={item.path}
-                className={`nav-item-compact ${isActive ? "active" : ""}`}
+                className={() => `nav-item-compact ${isActive ? "active" : ""}`}
               >
                 <div className="nav-label-wrap">
                   <Icon size={16} className="nav-icon" />
