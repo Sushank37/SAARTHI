@@ -394,7 +394,7 @@ export default function IADashboard({ summary, onSelectWork }) {
               </span>
             </div>
             <h1 className="ia-page-title">
-              {cleanAgencyName(selectedIDA)} — Execution Portal
+              {cleanAgencyName(selectedIDA)}
             </h1>
             <p className="ia-page-desc">
               Civil execution monitoring, milestone progression, Measurement Book (MB) verification, contractor payment compliance, and site photo evidence.
