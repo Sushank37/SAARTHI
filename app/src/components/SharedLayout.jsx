@@ -80,9 +80,11 @@ export default function SharedLayout() {
         onSelectWork={handleSelectWork}
       />
 
-      {/* Main Two-Column Layout (Sidebar + Content) */}
-      <div className="gov-layout-body">
-        <Sidebar summary={summary} roleConfig={roleConfig} onLogout={handleLogout} />
+      {/* Main Layout (Sidebar only shown for Lok Sabha) */}
+      <div className={`gov-layout-body ${house === "Rajya Sabha" ? "gov-layout-body-rs" : ""}`}>
+        {house !== "Rajya Sabha" && (
+          <Sidebar summary={summary} roleConfig={roleConfig} onLogout={handleLogout} />
+        )}
 
         <main className="gov-content-viewport">
           {/* If Rajya Sabha is selected, show the Phase 2 development / upcoming release notice */}
