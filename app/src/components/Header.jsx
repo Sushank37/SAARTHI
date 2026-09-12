@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, ExternalLink, LogOut, Bell, ShieldAlert } from "lucide-react";
 import { useAuth } from "../context/useAuth";
+import { useLanguage } from "../context/LanguageContext";
 import LanguageSelector from "./LanguageSelector";
 import EarlyWarningCenter from "./EarlyWarningCenter";
 import { API_BASE } from "../constants";
@@ -22,6 +23,7 @@ export default function Header({
 }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [showAlertCenter, setShowAlertCenter] = useState(false);
   const [alertTotal, setAlertTotal] = useState(62918);
@@ -92,10 +94,10 @@ export default function Header({
 
           <div className="header-title-block">
             <div className="brand-title-line">
-              <span className="ministry-title">MoSPI · Government of India</span>
-              <span className="saarthi-pill">AUDIT EXTENSION</span>
+              <span className="ministry-title">{t("MoSPI · Government of India")}</span>
+              <span className="saarthi-pill">{t("AUDIT EXTENSION")}</span>
             </div>
-            <div className="portal-title">MPLADS eSAKSHI Work & Fund Verification System</div>
+            <div className="portal-title">{t("MPLADS eSAKSHI Work & Fund Verification System")}</div>
           </div>
         </div>
 
@@ -106,13 +108,13 @@ export default function Header({
               className={`house-btn ${house === "Lok Sabha" ? "active" : ""}`}
               onClick={() => setHouse("Lok Sabha")}
             >
-              18th / 17th Lok Sabha
+              {t("18th / 17th Lok Sabha")}
             </button>
             <button
               className={`house-btn ${house === "Rajya Sabha" ? "active" : ""}`}
               onClick={() => setHouse("Rajya Sabha")}
             >
-              Rajya Sabha
+              {t("Rajya Sabha")}
             </button>
           </div>
 
@@ -122,7 +124,7 @@ export default function Header({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search Work ID, MP, Constituency..."
+              placeholder={t("Search Work ID, MP, Constituency...")}
             />
           </form>
         </div>
@@ -132,12 +134,12 @@ export default function Header({
           {roleConfig ? (
             <div className="header-active-persona" title={`Active Persona: ${roleConfig.displayName}`}>
               <span className="persona-icon">{roleConfig.icon}</span>
-              <span className="persona-name">{roleConfig.shortName}</span>
+              <span className="persona-name">{t(roleConfig.shortName)}</span>
             </div>
           ) : (
             setRole && (
               <div className="stakeholder-role-dropdown" title="Simulate Stakeholder Persona">
-                <span className="role-label">Persona:</span>
+                <span className="role-label">{t("Persona:")}</span>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
@@ -163,49 +165,45 @@ export default function Header({
           >
             <span className="header-early-alert-pulse" />
             <Bell size={14} className="header-early-alert-icon" />
-            <span>Early Alerts</span>
+            <span>{t("Early Alerts")}</span>
             <span className="header-early-alert-badge">
               {alertTotal ? (alertTotal > 1000 ? `${(alertTotal / 1000).toFixed(1)}k` : alertTotal) : "..."}
             </span>
           </button>
 
           <div
-            className={`live-status-tag ${
-              backendStatus === "connected"
+            className={`live-status-tag ${backendStatus === "connected"
                 ? "connected"
                 : backendStatus === "connecting"
-                ? "connecting"
-                : "offline"
-            }`}
+                  ? "connecting"
+                  : "offline"
+              }`}
             title={
               backendStatus === "connected"
-                ? `Connected to FastAPI Backend · ${
-                    totalWorks ? totalWorks.toLocaleString("en-IN") : "102,703"
-                  } works loaded`
+                ? `Connected to FastAPI Backend · ${totalWorks ? totalWorks.toLocaleString("en-IN") : "102,703"
+                } works loaded`
                 : "Backend Disconnected. Click to retry connection."
             }
             onClick={backendStatus !== "connected" ? onReconnect : undefined}
             style={{ cursor: backendStatus !== "connected" ? "pointer" : "default" }}
           >
             <span
-              className={`live-dot ${
-                backendStatus === "connected"
+              className={`live-dot ${backendStatus === "connected"
                   ? "green"
                   : backendStatus === "connecting"
-                  ? "yellow"
-                  : "red"
-              }`}
+                    ? "yellow"
+                    : "red"
+                }`}
             />
             <span>
               {backendStatus === "connected"
-                ? `Live: ${
-                    totalWorks
-                      ? totalWorks.toLocaleString("en-IN")
-                      : "102,703"
-                  } Works`
+                ? `${t("Live:")} ${totalWorks
+                  ? totalWorks.toLocaleString("en-IN")
+                  : "102,703"
+                } ${t("Works")}`
                 : backendStatus === "connecting"
-                ? "Connecting..."
-                : "Offline (Retry)"}
+                  ? "Connecting..."
+                  : "Offline (Retry)"}
             </span>
           </div>
           <LanguageSelector />
@@ -228,7 +226,7 @@ export default function Header({
             title="Sign out of current session"
           >
             <LogOut size={13} />
-            <span>Logout</span>
+            <span>{t("Logout")}</span>
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate, useOutletContext } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import { useLanguage } from "../context/LanguageContext";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import WorkDetailDrawer from "./WorkDetailDrawer";
@@ -13,6 +14,7 @@ export function RouteConsumer({ Component, extraProps = {} }) {
 
 export default function SharedLayout() {
   const { role, roleConfig, logout } = useAuth();
+  const { currentLang, t } = useLanguage();
   const navigate = useNavigate();
 
   const [house, setHouse] = useState("Lok Sabha");

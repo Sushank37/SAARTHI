@@ -30,11 +30,13 @@ import {
 import { API_BASE, formatNumber } from "../constants";
 import { ROLE_IDS } from "../data/roles";
 import { useAuth } from "../context/useAuth";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function Sidebar({ summary, roleConfig, onLogout }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
 
   const handleLogout = () => {
@@ -842,7 +844,7 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
            ===================================================== */
         <div className="sidebar-nav-list">
           <div className="sidebar-section-title">
-            Section
+            {t("Section")}
           </div>
 
           {daNavLinks.map((item) => {
@@ -854,11 +856,11 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
                 key={item.id}
                 to={`/da?tab=${item.tab}`}
                 className={`nav-item-compact ${isTabActive ? "active" : ""}`}
-                title={item.label}
+                title={t(item.label)}
               >
                 <div className="nav-label-wrap">
                   <Icon size={16} className="nav-icon" />
-                  <span className="nav-label">{item.label}</span>
+                  <span className="nav-label">{t(item.label)}</span>
                 </div>
 
                 {item.badge !== null && item.badge !== undefined && (
@@ -945,7 +947,7 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
 
       <div className="sidebar-bottom-section">
         <div className="sidebar-mini-footer">
-          <div className="footer-label">Synchronized Works</div>
+          <div className="footer-label">{t("Synchronized Works")}</div>
           <div className="footer-value">
             {summary?.total_works !== undefined && summary?.total_works !== null
               ? formatNumber(summary.total_works)
