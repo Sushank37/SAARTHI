@@ -96,6 +96,7 @@ export default function DADashboard({ summary, onSelectWork }) {
   // Telemetry state
   const [analytics, setAnalytics] = useState(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [analyticsError, setAnalyticsError] = useState(null);
 
   // Works registry table state
   const [works, setWorks] = useState([]);
@@ -103,6 +104,7 @@ export default function DADashboard({ summary, onSelectWork }) {
   const [worksPage, setWorksPage] = useState(1);
   const [worksLimit] = useState(15);
   const [worksLoading, setWorksLoading] = useState(false);
+  const [worksError, setWorksError] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
   const [selectedStage, setSelectedStage] = useState("All");
   const [filterFlaggedOnly, setFilterFlaggedOnly] = useState(false);
@@ -110,6 +112,7 @@ export default function DADashboard({ summary, onSelectWork }) {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeKpiFilter, setActiveKpiFilter] = useState(null);
   const [localSelectedWork, setLocalSelectedWork] = useState(null);
+  const [backendRetryKey, setBackendRetryKey] = useState(0);
 
   // Map active module tab to dossier audit section
   const getAuditSectionForTab = (tab) => {
@@ -192,10 +195,14 @@ export default function DADashboard({ summary, onSelectWork }) {
       const data = await res.json();
       if (!signal?.aborted) {
         setAnalytics(data);
+        setAnalyticsError(null);
       }
     } catch (err) {
       if (err.name !== "AbortError") {
         console.error("Error fetching District Authority analytics:", err);
+        if (!signal?.aborted) {
+          setAnalyticsError("Unable to connect to the backend. Please try again.");
+        }
       }
     } finally {
       if (!signal?.aborted) {
@@ -211,7 +218,7 @@ export default function DADashboard({ summary, onSelectWork }) {
     setActiveKpiFilter(null);
 
     return () => controller.abort();
-  }, [selectedIDA]);
+  }, [selectedIDA, backendRetryKey]);
 
   // Helper to build active filter query parameters for works register and CSV export
   const getFilterParams = () => {
@@ -264,6 +271,7 @@ export default function DADashboard({ summary, onSelectWork }) {
       if (!signal?.aborted) {
         setWorks(data.data || []);
         setWorksTotal(data.total || 0);
+        setWorksError(null);
       }
     } catch (err) {
       if (err.name !== "AbortError") {
@@ -271,6 +279,7 @@ export default function DADashboard({ summary, onSelectWork }) {
         if (!signal?.aborted) {
           setWorks([]);
           setWorksTotal(0);
+          setWorksError("Unable to connect to the backend. Please try again.");
         }
       }
     } finally {
@@ -294,6 +303,7 @@ export default function DADashboard({ summary, onSelectWork }) {
     filterFlaggedOnly,
     activeKpiFilter,
     debouncedSearch,
+    backendRetryKey,
   ]);
 
   // Filtered IDA list for selector dropdown
@@ -381,8 +391,66 @@ export default function DADashboard({ summary, onSelectWork }) {
     setWorksPage(1);
   };
 
+  const handleBackendRetry = () => {
+    setAnalyticsError(null);
+    setWorksError(null);
+    setBackendRetryKey((key) => key + 1);
+  };
+
   return (
     <div className="da-dashboard-container">
+      {(analyticsError || worksError) && (
+        <div
+          role="alert"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+            padding: "12px 16px",
+            marginBottom: "16px",
+            border: "1px solid #fecaca",
+            borderRadius: "10px",
+            background: "#fef2f2",
+            color: "#991b1b",
+          }}
+        >
+          <div>
+            <strong style={{ display: "block", marginBottom: "2px" }}>
+              Backend connection unavailable
+            </strong>
+            <span style={{ fontSize: "13px" }}>
+              Some dashboard data could not be loaded. Your current filters are preserved.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleBackendRetry}
+            disabled={analyticsLoading || worksLoading}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "7px 12px",
+              border: "1px solid #fecaca",
+              borderRadius: "7px",
+              background: "#ffffff",
+              color: "#991b1b",
+              fontWeight: 600,
+              cursor: analyticsLoading || worksLoading ? "not-allowed" : "pointer",
+              opacity: analyticsLoading || worksLoading ? 0.6 : 1,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <RefreshCw
+              size={14}
+              className={analyticsLoading || worksLoading ? "animate-spin" : ""}
+            />
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* 1. Official Persona Identity & District Jurisdiction Header */}
       <div className="da-official-header-card">
         <div className="da-header-inner">
