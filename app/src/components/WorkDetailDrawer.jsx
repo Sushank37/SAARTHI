@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import {
@@ -402,7 +403,15 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
     }
   }, [activeAuthority]);
 
-  return (
+  // Lock body scroll while drawer is open to prevent page jump
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  return createPortal(
     <div className="drawer-overlay" onClick={onClose}>
       <aside className="gov-detail-drawer" onClick={(e) => e.stopPropagation()}>
         {/* 1. Official Government Dossier Header */}
@@ -1827,6 +1836,7 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
           />
         )}
       </aside>
-    </div>
+    </div>,
+    document.body
   );
 }

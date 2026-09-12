@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   Building2,
   Search,
@@ -8,8 +9,44 @@ import {
   TrendingUp,
   Filter,
   Eye,
+  X,
+  ArrowLeft,
+  ShieldAlert,
+  Clock,
+  IndianRupee,
+  FileCheck,
+  ExternalLink,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import { API_BASE, formatNumber } from "../../../constants";
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function formatCurrencyINR(val) {
+  const n = Number(val);
+  if (!n || isNaN(n)) return "—";
+  if (n >= 1e7) return `₹${(n / 1e7).toFixed(2)} Cr`;
+  if (n >= 1e5) return `₹${(n / 1e5).toFixed(2)} L`;
+  return `₹${n.toLocaleString("en-IN")}`;
+}
+
+function RiskBadge({ level }) {
+  const l = String(level || "LOW").toUpperCase();
+  const style =
+    l === "HIGH"
+      ? { background: "#fee2e2", color: "#991b1b", border: "1px solid #fecaca" }
+      : l === "MEDIUM"
+      ? { background: "#fef3c7", color: "#92400e", border: "1px solid #fde68a" }
+      : { background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0" };
+  return (
+    <span style={{ ...style, padding: "2px 7px", borderRadius: 4, fontSize: 11, fontWeight: 700 }}>
+      {l}
+    </span>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function DistrictIntelligenceTab({ onSelectWork }) {
   const [idas, setIdas] = useState([]);
@@ -20,11 +57,52 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
   const [sortField, setSortField] = useState("total_works");
   const [sortAsc, setSortAsc] = useState(false);
 
-  // Selected IDA works for instant inspection
-  const [selectedIdaName, setSelectedIdaName] = useState(null);
+  // ── Single overlay state machine ──────────────────────────────────────────
+  // activeOverlay: null | "inspect" | "dossier"
+  const [activeOverlay, setActiveOverlay] = useState(null);
+  const [inspectIdaName, setInspectIdaName] = useState(null);
   const [idaWorks, setIdaWorks] = useState([]);
   const [loadingWorks, setLoadingWorks] = useState(false);
+  const [dossierWork, setDossierWork] = useState(null);
 
+  // ── Derived ──────────────────────────────────────────────────────────────
+  const selectedAuthority = idas.find((item) => item.IDA_NAME === inspectIdaName);
+
+  // ── Body scroll lock + Esc key (covers both overlays) ─────────────────────
+  useEffect(() => {
+    if (!activeOverlay) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (activeOverlay === "dossier") {
+          // Esc from dossier → return to inspect
+          setActiveOverlay("inspect");
+          setDossierWork(null);
+        } else {
+          // Esc from inspect → close everything
+          closeAll();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeOverlay]);
+
+  const closeAll = useCallback(() => {
+    setActiveOverlay(null);
+    setInspectIdaName(null);
+    setIdaWorks([]);
+    setDossierWork(null);
+  }, []);
+
+  // ── Data loading ──────────────────────────────────────────────────────────
   useEffect(() => {
     async function loadData() {
       setLoading(true);
@@ -47,7 +125,9 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
         }
         if (stateRes.ok) {
           const stateData = await stateRes.json();
-          const rawStates = stateData.data || (stateData.states || []).map((s) => ({ STATE_NAME: s, state: s }));
+          const rawStates =
+            stateData.data ||
+            (stateData.states || []).map((s) => ({ STATE_NAME: s, state: s }));
           setStates(rawStates);
         }
       } catch (err) {
@@ -59,12 +139,16 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
     loadData();
   }, []);
 
-  // Filter and sort IDAs
+  // ── Filter and sort ───────────────────────────────────────────────────────
   const filteredIdas = idas.filter((ida) => {
     const name = (ida.IDA_NAME || "").toLowerCase();
     const st = ida.STATE_NAME || "";
-    const matchesSearch = !search || name.includes(search.toLowerCase()) || st.toLowerCase().includes(search.toLowerCase());
-    const matchesState = selectedState === "ALL" || st === selectedState;
+    const matchesSearch =
+      !search ||
+      name.includes(search.toLowerCase()) ||
+      st.toLowerCase().includes(search.toLowerCase());
+    const matchesState =
+      selectedState === "ALL" || st === selectedState;
     return matchesSearch && matchesState;
   });
 
@@ -92,12 +176,17 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
     }
   };
 
-  // Inspect specific IDA works
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
   const handleInspectIda = async (idaName) => {
-    setSelectedIdaName(idaName);
+    setInspectIdaName(idaName);
+    setActiveOverlay("inspect");
+    setDossierWork(null);
     setLoadingWorks(true);
     try {
-      const res = await fetch(`${API_BASE}/api/works?ida_name=${encodeURIComponent(idaName)}&limit=15`);
+      const res = await fetch(
+        `${API_BASE}/api/works?ida_name=${encodeURIComponent(idaName)}&limit=15`
+      );
       if (res.ok) {
         const d = await res.json();
         setIdaWorks(d.data || []);
@@ -109,23 +198,80 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
     }
   };
 
+  /**
+   * Open District Dossier — REPLACES Inspect in the same modal portal.
+   * Does NOT call onSelectWork (that would open the side drawer).
+   */
+  const handleOpenDossier = (work) => {
+    setDossierWork(work);
+    setActiveOverlay("dossier");
+  };
+
+  /**
+   * Back from Dossier → return to Inspect for the same IDA.
+   */
+  const handleBackToInspect = () => {
+    setDossierWork(null);
+    setActiveOverlay("inspect");
+  };
+
+  /**
+   * "Open Full Dossier" — close modal entirely, hand off to SharedLayout drawer.
+   * Used only when the user explicitly wants the full 78-field WorkDetailDrawer.
+   */
+  const handleOpenFullDossier = (work) => {
+    closeAll();
+    if (typeof onSelectWork === "function") {
+      // Small timeout lets the modal unmount cleanly before the drawer mounts
+      setTimeout(() => {
+        onSelectWork({ ...work, __initialSection: "overview", __authority: "MOSPI" });
+      }, 50);
+    }
+  };
+
+  // ── Loading state ─────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="mospi-card" style={{ textAlign: "center", padding: "40px" }}>
         <div className="spinner" />
-        <p style={{ color: "#64748b", marginTop: "8px", fontSize: "12px" }}>Loading national district intelligence...</p>
+        <p style={{ color: "#64748b", marginTop: "8px", fontSize: "12px" }}>
+          Loading national district intelligence...
+        </p>
       </div>
     );
   }
 
   const topIda = idas[0] || {};
-  const totalWorksAcrossIdas = idas.reduce((sum, item) => sum + (Number(item.total_works) || 0), 0);
-  const avgPerDistrict = idas.length > 0 ? Math.round(totalWorksAcrossIdas / idas.length) : null;
+  const totalWorksAcrossIdas = idas.reduce(
+    (sum, item) => sum + (Number(item.total_works) || 0),
+    0
+  );
+  const avgPerDistrict =
+    idas.length > 0 ? Math.round(totalWorksAcrossIdas / idas.length) : null;
 
+  // ── Dossier work derived values ───────────────────────────────────────────
+  const dw = dossierWork || {};
+  const dwRiskLevel = String(dw.RISK_LEVEL || "LOW").toUpperCase();
+  const dwDelayDays =
+    dw.SANCTION_DELAY_DAYS != null ? Math.round(Number(dw.SANCTION_DELAY_DAYS)) : null;
+  const dwSancAmount = Number(dw.SANCTION_AMOUNT) || 0;
+  const dwActAmount = Number(dw.ACTUAL_AMOUNT) || 0;
+  const dwDisbPct =
+    dwSancAmount > 0 ? ((dwActAmount / dwSancAmount) * 100).toFixed(1) : "0.0";
+  const dwIsOverdue45 = dwDelayDays != null && dwDelayDays > 45;
+  const dwStage = dw.WORK_STAGE || "—";
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="mospi-panel">
       {/* 1. Top Summary Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+          gap: "10px",
+        }}
+      >
         <div className="mospi-card">
           <div className="mospi-kpi-header">
             <span className="mospi-kpi-title">Implementing Authorities</span>
@@ -135,7 +281,9 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
             {idas.length > 0 ? formatNumber(idas.length) : "—"}
           </div>
           <div className="mospi-kpi-sub">
-            {states.length > 0 ? `Across ${states.length} States & Union Territories` : "Across States & Union Territories"}
+            {states.length > 0
+              ? `Across ${states.length} States & Union Territories`
+              : "Across States & Union Territories"}
           </div>
         </div>
 
@@ -144,11 +292,16 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
             <span className="mospi-kpi-title">Highest Volume District</span>
             <Layers size={15} color="#0d9488" />
           </div>
-          <div className="mospi-kpi-value" style={{ fontSize: "17px", wordBreak: "break-word" }}>
+          <div
+            className="mospi-kpi-value"
+            style={{ fontSize: "17px", wordBreak: "break-word" }}
+          >
             {topIda.IDA_NAME ? topIda.IDA_NAME.split("(")[0] : "—"}
           </div>
           <div className="mospi-kpi-sub">
-            {topIda.total_works != null ? `${formatNumber(topIda.total_works)} parliamentary works` : "—"}
+            {topIda.total_works != null
+              ? `${formatNumber(topIda.total_works)} parliamentary works`
+              : "—"}
           </div>
         </div>
 
@@ -179,9 +332,12 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
       <div className="mospi-card">
         <div className="mospi-card-header">
           <div>
-            <h3 className="mospi-card-title">District & Implementing Authority Comparison</h3>
+            <h3 className="mospi-card-title">
+              District & Implementing Authority Comparison
+            </h3>
             <p className="mospi-card-subtitle">
-              Comparative monitoring across {idas.length} registered District Authorities and Collectorates
+              Comparative monitoring across {idas.length} registered District
+              Authorities and Collectorates
             </p>
           </div>
           <span className="mospi-pill blue">
@@ -220,25 +376,45 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
         </div>
 
         {/* Table */}
-        <div className="mospi-table-wrapper" style={{ maxHeight: "480px", overflowY: "auto" }}>
+        <div
+          className="mospi-table-wrapper"
+          style={{ maxHeight: "480px", overflowY: "auto" }}
+        >
           <table className="mospi-data-table">
             <thead>
               <tr>
                 <th style={{ width: "40px" }}>#</th>
-                <th className="sortable" onClick={() => handleSort("IDA_NAME")}>
+                <th
+                  className="sortable"
+                  onClick={() => handleSort("IDA_NAME")}
+                >
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                     <span>Implementing Authority / District</span>
                     <ArrowUpDown size={11} />
                   </div>
                 </th>
-                <th className="sortable" onClick={() => handleSort("STATE_NAME")}>
+                <th
+                  className="sortable"
+                  onClick={() => handleSort("STATE_NAME")}
+                >
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                     <span>State / UT</span>
                     <ArrowUpDown size={11} />
                   </div>
                 </th>
-                <th className="sortable" onClick={() => handleSort("total_works")} style={{ textAlign: "right" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
+                <th
+                  className="sortable"
+                  onClick={() => handleSort("total_works")}
+                  style={{ textAlign: "right" }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "flex-end",
+                      gap: "4px",
+                    }}
+                  >
                     <span>Total Works</span>
                     <ArrowUpDown size={11} />
                   </div>
@@ -249,13 +425,20 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
             <tbody>
               {sortedIdas.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
+                  <td
+                    colSpan={5}
+                    style={{
+                      textAlign: "center",
+                      padding: "30px",
+                      color: "#64748b",
+                    }}
+                  >
                     No District Authorities found matching "{search}"
                   </td>
                 </tr>
               ) : (
                 sortedIdas.slice(0, 100).map((ida, idx) => {
-                  const isSelected = selectedIdaName === ida.IDA_NAME;
+                  const isSelected = inspectIdaName === ida.IDA_NAME;
                   return (
                     <tr
                       key={ida.IDA_NAME || idx}
@@ -263,14 +446,19 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                         backgroundColor: isSelected ? "#f0f9ff" : "transparent",
                       }}
                     >
-                      <td style={{ color: "#64748b", fontWeight: 600 }}>{idx + 1}</td>
+                      <td style={{ color: "#64748b", fontWeight: 600 }}>
+                        {idx + 1}
+                      </td>
                       <td>
                         <span style={{ fontWeight: 600, color: "#0f172a" }}>
                           {ida.IDA_NAME || "—"}
                         </span>
                       </td>
                       <td>
-                        <span className="mospi-pill neutral" style={{ fontSize: "10.5px" }}>
+                        <span
+                          className="mospi-pill neutral"
+                          style={{ fontSize: "10.5px" }}
+                        >
                           {ida.STATE_NAME || "—"}
                         </span>
                       </td>
@@ -283,13 +471,14 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                           className="mospi-page-btn"
                           onClick={() => handleInspectIda(ida.IDA_NAME)}
                           title="Inspect active works for this authority"
-                          style={{
-                            fontSize: "11px",
-                            padding: "2px 7px",
-                          }}
+                          style={{ fontSize: "11px", padding: "2px 7px" }}
                         >
                           <Eye size={11} />
-                          <span>{isSelected ? "Inspecting" : "Inspect"}</span>
+                          <span>
+                            {isSelected && activeOverlay
+                              ? "Inspecting"
+                              : "Inspect"}
+                          </span>
                         </button>
                       </td>
                     </tr>
@@ -300,91 +489,481 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
           </table>
         </div>
         {sortedIdas.length > 100 && (
-          <div style={{ padding: "6px 12px", fontSize: "11px", color: "#64748b", borderTop: "1px solid #e2e8f0" }}>
-            Showing top 100 of {formatNumber(sortedIdas.length)} authorities. Use search to find specific district.
+          <div
+            style={{
+              padding: "6px 12px",
+              fontSize: "11px",
+              color: "#64748b",
+              borderTop: "1px solid #e2e8f0",
+            }}
+          >
+            Showing top 100 of {formatNumber(sortedIdas.length)} authorities.
+            Use search to find specific district.
           </div>
         )}
       </div>
 
-      {/* 3. Selected District Works Sub-Panel */}
-      {selectedIdaName && (
-        <div className="mospi-card" style={{ borderLeft: "4px solid #005A9C" }}>
-          <div className="mospi-card-header">
-            <div>
-              <h3 className="mospi-card-title">
-                Active Works for {selectedIdaName}
-              </h3>
-              <p className="mospi-card-subtitle">
-                Sampling of registered works with full 78-field canonical record link
-              </p>
-            </div>
-            <button
-              type="button"
-              className="mospi-pill neutral"
-              onClick={() => setSelectedIdaName(null)}
-              style={{ cursor: "pointer" }}
+      {/* ═══════════════════════════════════════════════════════════════════
+          OVERLAY PORTAL — Single portal, content switches based on activeOverlay
+          Never both "inspect" and "dossier" at the same time.
+          ═══════════════════════════════════════════════════════════════════ */}
+      {activeOverlay &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="mospi-modal-backdrop"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                if (activeOverlay === "dossier") {
+                  handleBackToInspect();
+                } else {
+                  closeAll();
+                }
+              }
+            }}
+          >
+            <div
+              className="mospi-modal-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="district-overlay-title"
             >
-              Close Panel
-            </button>
-          </div>
+              {/* ── INSPECT CONTENT ── */}
+              {activeOverlay === "inspect" && (
+                <>
+                  {/* Header */}
+                  <div className="mospi-modal-header">
+                    <div className="mospi-modal-title-box">
+                      <div className="mospi-modal-title-row">
+                        <h3
+                          id="district-overlay-title"
+                          className="mospi-modal-title"
+                        >
+                          Active Works Inspection: {inspectIdaName}
+                        </h3>
+                        {selectedAuthority?.STATE_NAME && (
+                          <span
+                            className="mospi-pill neutral"
+                            style={{ fontSize: "11px" }}
+                          >
+                            {selectedAuthority.STATE_NAME}
+                          </span>
+                        )}
+                        {selectedAuthority?.total_works != null && (
+                          <span
+                            className="mospi-pill blue"
+                            style={{ fontSize: "11px" }}
+                          >
+                            {formatNumber(selectedAuthority.total_works)} Works
+                            Registered
+                          </span>
+                        )}
+                      </div>
+                      <p className="mospi-modal-subtitle">
+                        Sampling of registered works — click{" "}
+                        <strong>District Dossier</strong> to open a work's
+                        central record
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="mospi-modal-close-btn"
+                      onClick={closeAll}
+                      title="Close (Esc)"
+                      aria-label="Close"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
 
-          {loadingWorks ? (
-            <div style={{ textAlign: "center", padding: "20px" }}>
-              <div className="spinner" />
-              <p style={{ color: "#64748b", marginTop: "6px", fontSize: "12px" }}>Loading works for {selectedIdaName}...</p>
-            </div>
-          ) : idaWorks.length === 0 ? (
-            <div style={{ padding: "16px", textAlign: "center", color: "#64748b", fontSize: "12px" }}>
-              No detailed works returned for this authority.
-            </div>
-          ) : (
-            <div className="mospi-table-wrapper">
-              <table className="mospi-data-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: "90px" }}>Work ID</th>
-                    <th>Description</th>
-                    <th>Stage</th>
-                    <th style={{ textAlign: "right" }}>Sanction Amount</th>
-                    <th style={{ textAlign: "center", width: "130px" }}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {idaWorks.map((w) => (
-                    <tr key={w.WORK_RECOMMENDATION_DTL_ID || w.WORK_ID}>
-                      <td style={{ fontWeight: 700, color: "#005A9C" }}>
-                        #{w.WORK_ID || w.WORK_RECOMMENDATION_DTL_ID}
-                      </td>
-                      <td style={{ maxWidth: "320px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={w.WORK_DESCRIPTION}>
-                        {w.WORK_DESCRIPTION || "—"}
-                      </td>
-                      <td>
-                        <span className="mospi-pill neutral">
-                          {w.WORK_STAGE || "Unspecified"}
+                  {/* Body */}
+                  <div className="mospi-modal-body">
+                    {loadingWorks ? (
+                      <div style={{ textAlign: "center", padding: "40px" }}>
+                        <div className="spinner" />
+                        <p
+                          style={{
+                            color: "#64748b",
+                            marginTop: "10px",
+                            fontSize: "12px",
+                          }}
+                        >
+                          Loading works for {inspectIdaName}...
+                        </p>
+                      </div>
+                    ) : idaWorks.length === 0 ? (
+                      <div
+                        style={{
+                          padding: "32px",
+                          textAlign: "center",
+                          color: "#64748b",
+                          fontSize: "13px",
+                        }}
+                      >
+                        No detailed works returned for this authority.
+                      </div>
+                    ) : (
+                      <div
+                        className="mospi-table-wrapper"
+                        style={{ margin: 0 }}
+                      >
+                        <table className="mospi-data-table">
+                          <thead>
+                            <tr>
+                              <th style={{ width: "90px" }}>Work ID</th>
+                              <th>Description</th>
+                              <th>Stage</th>
+                              <th style={{ textAlign: "right" }}>
+                                Sanction Amount
+                              </th>
+                              <th
+                                style={{ textAlign: "center", width: "150px" }}
+                              >
+                                Action
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {idaWorks.map((w) => (
+                              <tr
+                                key={
+                                  w.WORK_RECOMMENDATION_DTL_ID || w.WORK_ID
+                                }
+                              >
+                                <td
+                                  style={{
+                                    fontWeight: 700,
+                                    color: "#005A9C",
+                                  }}
+                                >
+                                  #{w.WORK_ID || w.WORK_RECOMMENDATION_DTL_ID}
+                                </td>
+                                <td
+                                  style={{
+                                    maxWidth: "300px",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                  title={w.WORK_DESCRIPTION}
+                                >
+                                  {w.WORK_DESCRIPTION || "—"}
+                                </td>
+                                <td>
+                                  <span className="mospi-pill neutral">
+                                    {w.WORK_STAGE || "Unspecified"}
+                                  </span>
+                                </td>
+                                <td
+                                  style={{
+                                    textAlign: "right",
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {w.SANCTION_AMOUNT
+                                    ? formatCurrencyINR(w.SANCTION_AMOUNT)
+                                    : "—"}
+                                </td>
+                                <td style={{ textAlign: "center" }}>
+                                  {/* District Dossier → replaces Inspect in THIS portal */}
+                                  <button
+                                    type="button"
+                                    className="mospi-dossier-btn mospi-dossier-district"
+                                    onClick={() => handleOpenDossier(w)}
+                                    title="View District Central Registry Dossier"
+                                  >
+                                    <Building2 size={11} />
+                                    <span>District Dossier</span>
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="mospi-modal-footer">
+                    <span className="mospi-modal-footer-meta">
+                      Showing {idaWorks.length} sample works for{" "}
+                      {inspectIdaName}
+                    </span>
+                    <button
+                      type="button"
+                      className="mospi-action-btn secondary"
+                      onClick={closeAll}
+                      style={{ fontSize: "12px", padding: "5px 14px" }}
+                    >
+                      Close Inspection
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* ── DISTRICT DOSSIER CONTENT ── */}
+              {activeOverlay === "dossier" && dossierWork && (
+                <>
+                  {/* Header */}
+                  <div className="mospi-modal-header">
+                    <div className="mospi-modal-title-box">
+                      {/* Back navigation */}
+                      <button
+                        type="button"
+                        className="mospi-back-btn"
+                        onClick={handleBackToInspect}
+                        title="Return to inspection list"
+                      >
+                        <ArrowLeft size={13} />
+                        <span>Back to Inspect · {inspectIdaName}</span>
+                      </button>
+                      <div
+                        className="mospi-modal-title-row"
+                        style={{ marginTop: "4px" }}
+                      >
+                        <h3
+                          id="district-overlay-title"
+                          className="mospi-modal-title"
+                        >
+                          District Dossier — Work #
+                          {dw.WORK_ID || dw.WORK_RECOMMENDATION_DTL_ID}
+                        </h3>
+                        <RiskBadge level={dwRiskLevel} />
+                        <span
+                          className="mospi-pill neutral"
+                          style={{ fontSize: "11px" }}
+                        >
+                          {dwStage}
                         </span>
-                      </td>
-                      <td style={{ textAlign: "right", fontWeight: 600 }}>
-                        {w.SANCTION_AMOUNT ? `₹ ${Number(w.SANCTION_AMOUNT).toLocaleString("en-IN")}` : "—"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
+                      </div>
+                      <p className="mospi-modal-subtitle">
+                        Central Registry Audit Record · MoSPI National
+                        Surveillance Desk
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="mospi-modal-close-btn"
+                      onClick={closeAll}
+                      title="Close (Esc)"
+                      aria-label="Close"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+
+                  {/* Body — Work Summary */}
+                  <div className="mospi-modal-body">
+                    {/* Description */}
+                    {dw.WORK_DESCRIPTION && (
+                      <div className="mospi-dossier-desc-box">
+                        <div className="mospi-dossier-desc-label">
+                          Official Work Description
+                        </div>
+                        <div className="mospi-dossier-desc-body">
+                          {dw.WORK_DESCRIPTION}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Key fields grid */}
+                    <div className="mospi-dossier-summary-grid">
+                      {/* Location */}
+                      <div className="mospi-dossier-work-field">
+                        <div className="mospi-dossier-field-label">
+                          <MapPin size={12} />
+                          State / Constituency
+                        </div>
+                        <div className="mospi-dossier-field-val">
+                          {dw.STATE_NAME || "—"}{" "}
+                          {dw.CONSTITUENCY ? `· ${dw.CONSTITUENCY}` : ""}
+                        </div>
+                      </div>
+
+                      {/* Implementing Agency */}
+                      <div className="mospi-dossier-work-field">
+                        <div className="mospi-dossier-field-label">
+                          <Building2 size={12} />
+                          Implementing Agency
+                        </div>
+                        <div className="mospi-dossier-field-val">
+                          {dw.IDA_NAME || inspectIdaName || "—"}
+                        </div>
+                      </div>
+
+                      {/* Sanction Amount */}
+                      <div className="mospi-dossier-work-field highlight-blue">
+                        <div className="mospi-dossier-field-label">
+                          <IndianRupee size={12} />
+                          Sanctioned Amount
+                        </div>
+                        <div className="mospi-dossier-field-val">
+                          {dwSancAmount > 0
+                            ? formatCurrencyINR(dwSancAmount)
+                            : "Pending Sanction"}
+                        </div>
+                      </div>
+
+                      {/* Disbursed */}
+                      <div className="mospi-dossier-work-field highlight-blue">
+                        <div className="mospi-dossier-field-label">
+                          <FileCheck size={12} />
+                          Disbursed ({dwDisbPct}%)
+                        </div>
+                        <div className="mospi-dossier-field-val">
+                          {dwActAmount > 0
+                            ? formatCurrencyINR(dwActAmount)
+                            : "—"}
+                        </div>
+                      </div>
+
+                      {/* Delay status */}
+                      <div
+                        className={`mospi-dossier-work-field ${
+                          dwIsOverdue45 ? "highlight-danger" : ""
+                        }`}
+                      >
+                        <div className="mospi-dossier-field-label">
+                          <Clock size={12} />
+                          Sanction Delay
+                        </div>
+                        <div className="mospi-dossier-field-val">
+                          {dwDelayDays != null ? (
+                            <>
+                              {dwDelayDays}d{" "}
+                              {dwIsOverdue45 ? (
+                                <span
+                                  style={{ color: "#b91c1c", fontSize: "11px" }}
+                                >
+                                  ⚠ Exceeded 45-day limit
+                                </span>
+                              ) : (
+                                <span
+                                  style={{ color: "#166534", fontSize: "11px" }}
+                                >
+                                  ✓ Compliant
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            "—"
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Risk level */}
+                      <div
+                        className={`mospi-dossier-work-field ${
+                          dwRiskLevel === "HIGH" ? "highlight-danger" : ""
+                        }`}
+                      >
+                        <div className="mospi-dossier-field-label">
+                          <ShieldAlert size={12} />
+                          AI Risk Level
+                        </div>
+                        <div className="mospi-dossier-field-val">
+                          <RiskBadge level={dwRiskLevel} />
+                          {dw.RISK_SCORE != null && (
+                            <span
+                              style={{
+                                marginLeft: "6px",
+                                fontSize: "11px",
+                                color: "#64748b",
+                              }}
+                            >
+                              Score: {Number(dw.RISK_SCORE).toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Risk reason */}
+                      {dw.RISK_REASON && (
+                        <div
+                          className="mospi-dossier-work-field full-span highlight-danger"
+                        >
+                          <div className="mospi-dossier-field-label">
+                            <AlertTriangle size={12} />
+                            Risk Rationale
+                          </div>
+                          <div
+                            className="mospi-dossier-field-val"
+                            style={{ fontSize: "12px", lineHeight: 1.5 }}
+                          >
+                            {dw.RISK_REASON}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Work category */}
+                      {dw.WORK_CATEGORY && (
+                        <div className="mospi-dossier-work-field">
+                          <div className="mospi-dossier-field-label">
+                            <Layers size={12} />
+                            Category
+                          </div>
+                          <div className="mospi-dossier-field-val">
+                            {dw.WORK_CATEGORY}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* MP */}
+                      {dw.MP_NAME && (
+                        <div className="mospi-dossier-work-field">
+                          <div className="mospi-dossier-field-label">
+                            <CheckCircle2 size={12} />
+                            Recommending MP
+                          </div>
+                          <div className="mospi-dossier-field-val">
+                            {dw.MP_NAME}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="mospi-modal-footer">
+                    <button
+                      type="button"
+                      className="mospi-back-btn"
+                      onClick={handleBackToInspect}
+                      style={{ fontSize: "12px" }}
+                    >
+                      <ArrowLeft size={13} />
+                      Back to Inspection List
+                    </button>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      {typeof onSelectWork === "function" && (
                         <button
                           type="button"
-                          className="mospi-dossier-btn mospi-dossier-district"
-                          onClick={() => onSelectWork && onSelectWork({ ...w, __initialSection: "overview", __authority: "MOSPI" })}
-                          title="Inspect District Central Registry Dossier"
+                          className="mospi-action-btn primary"
+                          onClick={() => handleOpenFullDossier(dossierWork)}
+                          style={{ fontSize: "12px", padding: "5px 14px" }}
+                          title="Open the complete 78-field audit dossier"
                         >
-                          <Building2 size={11} />
-                          <span>District Dossier →</span>
+                          <ExternalLink size={12} />
+                          Open Full Dossier
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      )}
+                      <button
+                        type="button"
+                        className="mospi-action-btn secondary"
+                        onClick={closeAll}
+                        style={{ fontSize: "12px", padding: "5px 14px" }}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
-          )}
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
