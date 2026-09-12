@@ -4,6 +4,7 @@ import { useAuth } from "../context/useAuth";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import WorkDetailDrawer from "./WorkDetailDrawer";
+import RajyaSabhaNotice from "./RajyaSabhaNotice";
 import { API_BASE } from "../constants";
 
 export function RouteConsumer({ Component, extraProps = {} }) {
@@ -84,16 +85,20 @@ export default function SharedLayout() {
         <Sidebar summary={summary} roleConfig={roleConfig} onLogout={handleLogout} />
 
         <main className="gov-content-viewport">
-          {/* Child Route Viewport */}
-          <Outlet
-            context={{
-              summary,
-              house,
-              selectedWork,
-              setSelectedWork: handleSelectWork,
-              onSelectWork: handleSelectWork,
-            }}
-          />
+          {/* If Rajya Sabha is selected, show the Phase 2 development / upcoming release notice */}
+          {house === "Rajya Sabha" ? (
+            <RajyaSabhaNotice onSwitchToLokSabha={() => setHouse("Lok Sabha")} />
+          ) : (
+            <Outlet
+              context={{
+                summary,
+                house,
+                selectedWork,
+                setSelectedWork: handleSelectWork,
+                onSelectWork: handleSelectWork,
+              }}
+            />
+          )}
 
           {/* Official Government Footer */}
           <footer className="gov-official-footer">

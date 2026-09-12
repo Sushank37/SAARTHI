@@ -128,8 +128,10 @@ export default function Header({
             <button
               className={`house-btn ${house === "Rajya Sabha" ? "active" : ""}`}
               onClick={() => setHouse("Rajya Sabha")}
+              title="Rajya Sabha (Council of States) — Whole-State Module in Active Development"
             >
-              Rajya Sabha
+              <span>Rajya Sabha</span>
+              <span className="house-upcoming-pill">Phase 2</span>
             </button>
           </div>
 
