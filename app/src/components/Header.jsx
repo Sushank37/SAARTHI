@@ -26,7 +26,7 @@ export default function Header({
   const { logout, role: authRole, roleConfig: authRoleConfig } = useAuth() || {};
   const [searchQuery, setSearchQuery] = useState("");
   const [showAlertCenter, setShowAlertCenter] = useState(false);
-  const [alertTotal, setAlertTotal] = useState(62918);
+  const [alertTotal, setAlertTotal] = useState(null);
 
   // Early alerts are strictly restricted to MP, DA, and MoSPI only
   const isEarlyAlertAuthorized = useMemo(() => {
@@ -50,7 +50,7 @@ export default function Header({
         const res = await fetch(`${API_BASE}/api/alerts/early-warning?limit=1`);
         if (res.ok) {
           const data = await res.json();
-          if (isMounted && data.total) {
+          if (isMounted && data.total != null) {
             setAlertTotal(data.total);
           }
         }
@@ -183,7 +183,9 @@ export default function Header({
               <Bell size={14} className="header-early-alert-icon" />
               <span>Early Alerts</span>
               <span className="header-early-alert-badge">
-                {alertTotal ? (alertTotal > 1000 ? `${(alertTotal / 1000).toFixed(1)}k` : alertTotal) : "..."}
+                {alertTotal != null
+                  ? (alertTotal >= 1000 ? `${(alertTotal / 1000).toFixed(1)}k` : alertTotal.toLocaleString("en-IN"))
+                  : "..."}
               </span>
             </button>
           )}
@@ -222,6 +224,7 @@ export default function Header({
           isOpen={showAlertCenter}
           onClose={() => setShowAlertCenter(false)}
           onSelectWork={onSelectWork}
+          roleConfig={roleConfig || authRoleConfig}
         />
       )}
     </header>

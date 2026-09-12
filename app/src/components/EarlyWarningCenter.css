@@ -59,9 +59,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  background: linear-gradient(135deg, #0a2540 0%, #1e3a8a 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
   color: #ffffff;
-  border-bottom: 2px solid #3b82f6;
+  border-bottom: 3px solid #ea580c;
   gap: 16px;
 }
 
@@ -717,7 +717,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #0a2540;
+  background: #1e3a8a;
   border: none;
   color: #ffffff;
   padding: 5px 12px;
@@ -729,7 +729,7 @@
 }
 
 .ew-inspect-btn:hover {
-  background: #1e3a8a;
+  background: #172554;
   transform: translateX(2px);
 }
 
@@ -859,48 +859,45 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  border: 1px solid #334155;
-  color: #ffffff;
-  padding: 5px 11px;
-  border-radius: 7px;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  color: #1e3a8a;
+  padding: 5px 12px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 2px rgba(30, 58, 138, 0.08);
 }
 
 .header-early-alert-btn:hover {
-  background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
-  border-color: #ef4444;
+  background: #dbeafe;
+  border-color: #3b82f6;
+  color: #172554;
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18);
 }
 
 .header-early-alert-icon {
-  color: #f87171;
+  color: #dc2626;
   animation: bellSwing 2.5s infinite ease-in-out;
 }
 
 @keyframes bellSwing {
-
   0%,
   100% {
     transform: rotate(0);
   }
-
   10%,
   30% {
     transform: rotate(-12deg);
   }
-
   20%,
   40% {
     transform: rotate(12deg);
   }
-
   50% {
     transform: rotate(0);
   }
@@ -914,18 +911,18 @@
   padding: 1px 6px;
   border-radius: 10px;
   letter-spacing: 0.02em;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.35);
 }
 
 .header-early-alert-pulse {
   position: absolute;
   top: -3px;
   right: -3px;
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #ef4444;
-  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8);
+  background: #dc2626;
+  box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.8);
   animation: ewPulse 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
 }
 

@@ -3695,33 +3695,33 @@ def mospi_national_analytics():
 _early_alerts_cache = None
 
 def compute_early_alerts():
-    # 1. Unusual Patterns
+    # 1. Unusual Patterns & Outliers
     mask_unusual = pd.Series(False, index=df.index)
     if column_exists("SUSPICION_LEVEL"):
         mask_unusual |= (df["SUSPICION_LEVEL"].fillna("").astype(str).str.upper() == "HIGH")
     if column_exists("TOTAL_LIFECYCLE_DAYS"):
-        mask_unusual |= (df["TOTAL_LIFECYCLE_DAYS"] > 500)
+        mask_unusual |= (df["TOTAL_LIFECYCLE_DAYS"] > 600)
     if column_exists("COMPLETION_VS_PEER"):
         mask_unusual |= (df["COMPLETION_VS_PEER"] > 2.5)
 
-    # 2. Delays (Section 3.12 statutory limit)
+    # 2. Delays (Actionable Section 3.12 statutory breach >90 days, >2x legal limit & peer lag)
     mask_delays = pd.Series(False, index=df.index)
     if column_exists("SANCTION_DELAY_DAYS"):
-        mask_delays |= (df["SANCTION_DELAY_DAYS"] > 45)
+        mask_delays |= ((df["SANCTION_DELAY_DAYS"] > 90) & (df["SANCTION_DELAY_VS_PEER"].fillna(1) > 1.2))
 
-    # 3. Cost Overruns & Escalations
+    # 3. Cost Overruns & Escalations (>2.5x peer median with significant sanction amount)
     mask_cost = pd.Series(False, index=df.index)
     if column_exists("COST_VS_PEER"):
-        mask_cost |= (df["COST_VS_PEER"] > 2.0)
-    if column_exists("COST_VARIANCE"):
-        mask_cost |= (df["COST_VARIANCE"] > 0)
+        mask_cost |= ((df["COST_VS_PEER"] > 2.5) & (df["SANCTION_AMOUNT"].fillna(0) > 500000))
 
-    # 4. Duplicate Works
+    # 4. Duplicate Works (High duplicate risk / high cluster suspicion)
     mask_duplicates = pd.Series(False, index=df.index)
-    if column_exists("CLUSTER_ID"):
-        mask_duplicates |= df["CLUSTER_ID"].notna()
+    if column_exists("DUPLICATE_RISK"):
+        mask_duplicates |= (df["DUPLICATE_RISK"].fillna("").astype(str).str.upper() == "HIGH")
+    if column_exists("CLUSTER_SUSPICION_SCORE"):
+        mask_duplicates |= (df["CLUSTER_SUSPICION_SCORE"] > 80)
 
-    # 5. Potential Misuse of Funds
+    # 5. Potential Misuse of Funds (Requires audit review / high financial risk / unverified large spend)
     mask_misuse = pd.Series(False, index=df.index)
     if column_exists("REQUIRES_REVIEW"):
         mask_misuse |= boolean_series(df["REQUIRES_REVIEW"])
@@ -3799,6 +3799,9 @@ def get_early_warning_alerts(
     severity: str | None = None,
     q: str | None = None,
     state: str | None = None,
+    mp_name: str | None = None,
+    ida_name: str | None = None,
+    constituency: str | None = None,
     limit: int = 30,
     page: int = 1
 ):
@@ -3806,7 +3809,7 @@ def get_early_warning_alerts(
     if _early_alerts_cache is None:
         _early_alerts_cache = compute_early_alerts()
 
-    summary = _early_alerts_cache["summary"]
+    base_summary = _early_alerts_cache["summary"]
     masks = _early_alerts_cache["masks"]
 
     if category == "unusual_patterns":
@@ -3823,7 +3826,26 @@ def get_early_warning_alerts(
         # Combined alerts with priority ordering: fund_misuse, duplicate_works, cost_overruns, unusual_patterns, delays
         sub_mask = masks["fund_misuse"] | masks["duplicate_works"] | masks["cost_overruns"] | masks["unusual_patterns"] | masks["delays"]
 
-    filtered_df = df[sub_mask]
+    # Role and scope filtering
+    scope_mask = pd.Series(True, index=df.index)
+    if state and state.strip() and state.lower() != "all":
+        scope_mask &= (df["STATE_NAME"].fillna("").astype(str).str.lower() == state.strip().lower())
+    if mp_name and mp_name.strip():
+        scope_mask &= (df["MP_NAME"].fillna("").astype(str).str.lower() == mp_name.strip().lower())
+    if ida_name and ida_name.strip():
+        scope_mask &= (df["IDA_NAME"].fillna("").astype(str).str.lower() == ida_name.strip().lower())
+    if constituency and constituency.strip():
+        scope_mask &= (df["CONSTITUENCY"].fillna("").astype(str).str.lower() == constituency.strip().lower())
+
+    filtered_df = df[sub_mask & scope_mask]
+
+    # Dynamically update summary if scoped
+    summary = {}
+    for cat_k, cat_data in base_summary.items():
+        summary[cat_k] = {
+            **cat_data,
+            "count": int((masks[cat_k] & scope_mask).sum())
+        }
 
     # Keyword search
     if q and q.strip():
@@ -3838,8 +3860,25 @@ def get_early_warning_alerts(
             text_matches |= filtered_df["WORK_RECOMMENDATION_DTL_ID"].fillna("").astype(str).str.contains(search_term, na=False)
         filtered_df = filtered_df[text_matches]
 
-    if state and state.strip() and state.lower() != "all":
-        filtered_df = filtered_df[filtered_df["STATE_NAME"].fillna("").astype(str).str.lower() == state.strip().lower()]
+    # Pre-compute severity filter if requested
+    if severity and severity.upper() in ["CRITICAL", "HIGH", "MEDIUM"]:
+        target_sev = severity.upper()
+        if target_sev == "CRITICAL":
+            crit_mask = (
+                masks["fund_misuse"] |
+                (masks["cost_overruns"] & (df["COST_VS_PEER"].fillna(1) > 3.0)) |
+                (masks["delays"] & (df["SANCTION_DELAY_DAYS"].fillna(0) > 120)) |
+                (masks["duplicate_works"] & (df["CLUSTER_SUSPICION_SCORE"].fillna(0) > 85))
+            )
+            filtered_df = filtered_df[crit_mask]
+        elif target_sev == "HIGH":
+            high_mask = (
+                masks["delays"] |
+                masks["unusual_patterns"] |
+                masks["duplicate_works"] |
+                masks["cost_overruns"]
+            )
+            filtered_df = filtered_df[high_mask]
 
     total_matched = len(filtered_df)
     total_pages = max(1, math.ceil(total_matched / limit))
@@ -3918,10 +3957,6 @@ def get_early_warning_alerts(
         r["metric_value"] = metric
         r["audit_section"] = sec
         enriched_alerts.append(r)
-
-    # Optional severity filter
-    if severity and severity.upper() in ["CRITICAL", "HIGH", "MEDIUM"]:
-        enriched_alerts = [a for a in enriched_alerts if a.get("severity") == severity.upper()]
 
     return {
         "total": total_matched,
