@@ -17,12 +17,85 @@ import {
   formatCurrency,
   exportToCSV,
 } from "../constants";
+import { useAuth } from "../context/useAuth";
 
 export default function WorkExplorer({ onSelectWork }) {
+  const { role, roleConfig } = useAuth() || {};
+  const currentAuthority = (roleConfig?.id || role || "DISTRICT_AUTHORITY").toUpperCase();
+
   const [params, setParams] = useSearchParams();
   const [result, setResult] = useState({ data: [], total: 0, pages: 0 });
   const [states, setStates] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const getDossierAction = (item) => {
+    const dupLvl = String(item.DUPLICATE_RISK || "NONE").toUpperCase();
+    const riskLvl = String(item.RISK_LEVEL || "LOW").toUpperCase();
+    const stage = String(item.WORK_STAGE || "").toLowerCase();
+    const delayDays = Number(item.SANCTION_DELAY_DAYS || 0);
+
+    if (dupLvl === "HIGH" || item.CLUSTER_ID) {
+      return {
+        label: "Duplicate Dossier →",
+        title: "Inspect Duplicate Cluster & Cross-Constituency Matches",
+        section: "duplicates",
+      };
+    }
+    if (riskLvl === "HIGH" || item.REQUIRES_REVIEW) {
+      return {
+        label: "Risk Audit Dossier →",
+        title: "Inspect AI Anomaly & Forensic Risk Evidence",
+        section: "risk",
+      };
+    }
+    if (delayDays > 45 || stage.includes("pending")) {
+      return {
+        label: "Sanction SLA Dossier →",
+        title: "Inspect Statutory Sanction Timeline & 45-Day SLA",
+        section: "sanction",
+      };
+    }
+    if (stage.includes("complete")) {
+      return {
+        label: "Completion Dossier →",
+        title: "Inspect Physical Completion & Handover Certification",
+        section: "completion",
+      };
+    }
+    if (currentAuthority === "MP") {
+      return {
+        label: "MP Constituency Brief →",
+        title: "Inspect Hon'ble MP Parliamentary Project Record",
+        section: "overview",
+      };
+    }
+    if (currentAuthority === "IMPLEMENTING_AGENCY") {
+      return {
+        label: "Work Order Dossier →",
+        title: "Inspect Executing Agency Work Order & MB Recordings",
+        section: "overview",
+      };
+    }
+    if (currentAuthority === "MOSPI") {
+      return {
+        label: "Central Audit Dossier →",
+        title: "Inspect Central MoSPI Surveillance Record",
+        section: "overview",
+      };
+    }
+    if (currentAuthority === "CITIZEN") {
+      return {
+        label: "Public Factsheet →",
+        title: "Inspect Public Community Development Factsheet",
+        section: "overview",
+      };
+    }
+    return {
+      label: "Collector Dossier →",
+      title: "Inspect District Magistrate Official Sanction Record",
+      section: "overview",
+    };
+  };
 
   const q = params.get("q") || "";
   const state = params.get("state") || "";
@@ -323,13 +396,26 @@ export default function WorkExplorer({ onSelectWork }) {
                         {item.WORK_STAGE || "Sanctioned"}
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          className="gov-redirect-link-btn"
-                          onClick={() => onSelectWork && onSelectWork(item)}
-                        >
-                          Inspect Dossier →
-                        </button>
+                        {(() => {
+                          const action = getDossierAction(item);
+                          return (
+                            <button
+                              type="button"
+                              className="gov-redirect-link-btn"
+                              title={action.title}
+                              onClick={() =>
+                                onSelectWork &&
+                                onSelectWork({
+                                  ...item,
+                                  __initialSection: action.section,
+                                  __authority: currentAuthority,
+                                })
+                              }
+                            >
+                              {action.label}
+                            </button>
+                          );
+                        })()}
                       </td>
                     </tr>
                   );

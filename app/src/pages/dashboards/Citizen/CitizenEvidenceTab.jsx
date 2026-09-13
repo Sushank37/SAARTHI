@@ -124,11 +124,22 @@ export default function CitizenEvidenceTab({ onSelectWork, onReportWork }) {
                 <button
                   type="button"
                   className="gov-redirect-link-btn"
-                  onClick={() => onSelectWork && onSelectWork({ WORK_ID: item.id, WORK_DESCRIPTION: item.title, CONSTITUENCY: item.constituency, STATE_NAME: item.state })}
+                  onClick={() =>
+                    onSelectWork &&
+                    onSelectWork({
+                      WORK_ID: item.id,
+                      WORK_DESCRIPTION: item.title,
+                      CONSTITUENCY: item.constituency,
+                      STATE_NAME: item.state,
+                      __initialSection: "geo-photo",
+                      __authority: "CITIZEN",
+                    })
+                  }
+                  title="Inspect Public Site Evidence & Photo Gallery Dossier"
                   style={{ cursor: "pointer" }}
                 >
                   <Eye size={12} />
-                  <span>Full Dossier</span>
+                  <span>Public Evidence Dossier →</span>
                 </button>
 
                 <button

@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Clock,
   Briefcase,
+  AlertCircle,
   FileCheck,
 } from "lucide-react";
 import { API_BASE, formatNumber, formatCrores, exportToCSV } from "../../../constants";
@@ -31,6 +32,7 @@ import IAPerformanceTab from "./IAPerformanceTab";
 import EvidenceIntelligenceTab from "./EvidenceIntelligenceTab";
 import TrendAnalysisTab from "./TrendAnalysisTab";
 import PriorityCasesTab from "./PriorityCasesTab";
+import NationalConcernsTab from "./NationalConcernsTab";
 
 import "./MoSPIDashboard.css";
 
@@ -73,6 +75,9 @@ const TAB_MAP = {
   "priority-cases": "priority-cases",
   review: "priority-cases",
   "review-cases": "priority-cases",
+  concerns: "national-concerns",
+  "national-concerns": "national-concerns",
+  oversight: "national-concerns",
 };
 
 const MOSPI_MODULES = [
@@ -88,6 +93,7 @@ const MOSPI_MODULES = [
   { id: "evidence-intelligence", label: "Evidence Intelligence", icon: FileCheck },
   { id: "trend-analysis", label: "Trend Analysis", icon: TrendingUp },
   { id: "priority-cases", label: "Priority Cases", icon: ClipboardCheck },
+  { id: "national-concerns", label: "National Work Concerns", icon: AlertCircle },
 ];
 
 export default function MoSPIDashboard({ onSelectWork }) {
@@ -428,6 +434,10 @@ export default function MoSPIDashboard({ onSelectWork }) {
 
       {currentTab === "priority-cases" && (
         <PriorityCasesTab onSelectWork={onSelectWork} />
+      )}
+
+      {currentTab === "national-concerns" && (
+        <NationalConcernsTab onSelectWork={onSelectWork} />
       )}
     </div>
   );

@@ -1,0 +1,344 @@
+/* ConcernDetailModal.css - Parliamentary & Executive Government Aesthetic */
+
+.concern-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.concern-modal-container {
+  background: #ffffff;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 860px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(15, 23, 42, 0.1);
+  overflow: hidden;
+  border-top: 4px solid #005a9c;
+}
+
+.concern-modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+}
+
+.concern-modal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.concern-modal-id {
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 800;
+  color: #005a9c;
+  background: #eff6ff;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid #bfdbfe;
+}
+
+.concern-modal-category {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  background: #e2e8f0;
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.concern-modal-close-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.concern-modal-close-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.concern-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.concern-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.concern-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.concern-summary-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.4px;
+}
+
+.concern-summary-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.concern-detail-card {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.concern-detail-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.concern-detail-desc {
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+}
+
+.concern-highlight-box {
+  background: #f1f5f9;
+  border-left: 3.5px solid #005a9c;
+  padding: 10px 12px;
+  border-radius: 0 4px 4px 0;
+  font-size: 12.5px;
+  color: #1e293b;
+  margin-top: 8px;
+}
+
+.concern-timeline-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.concern-timeline-heading {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #475569;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.concern-timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 2px solid #cbd5e1;
+  padding-left: 16px;
+  margin-left: 6px;
+}
+
+.concern-timeline-item {
+  position: relative;
+}
+
+.concern-timeline-dot {
+  position: absolute;
+  left: -21px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #005a9c;
+  border: 2px solid #ffffff;
+}
+
+.concern-timeline-meta {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.concern-timeline-actor {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.concern-timeline-action {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.concern-timeline-desc {
+  font-size: 12px;
+  color: #334155;
+  margin-top: 3px;
+  background: #f8fafc;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #f1f5f9;
+}
+
+.concern-action-box {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.concern-action-box.da-theme {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+}
+
+.concern-action-box.ia-theme {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+}
+
+.concern-action-box.mospi-theme {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.concern-action-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.concern-action-textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.concern-action-input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  font-family: inherit;
+}
+
+.concern-action-btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.concern-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.concern-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.concern-btn-primary {
+  background: #005a9c;
+  color: #ffffff;
+}
+
+.concern-btn-primary:hover:not(:disabled) {
+  background: #004477;
+}
+
+.concern-btn-success {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.concern-btn-success:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.concern-btn-warning {
+  background: #d97706;
+  color: #ffffff;
+}
+
+.concern-btn-warning:hover:not(:disabled) {
+  background: #b45309;
+}
+
+.concern-btn-danger {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.concern-btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.concern-btn-outline {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+.concern-btn-outline:hover:not(:disabled) {
+  background: #f1f5f9;
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import {
@@ -42,6 +43,7 @@ import RequestStatusBadge from "./workflow/RequestStatusBadge";
 import RequestPriorityBadge from "./workflow/RequestPriorityBadge";
 import RequestComposerModal from "./workflow/RequestComposerModal";
 import { useLanguage } from "../context/LanguageContext";
+import WorkConcernSection from "./workflow/WorkConcernSection";
 import "./WorkDetailDrawer.css";
 
 // Authority-specific tabs for the dossier
@@ -57,7 +59,7 @@ const getAuthorityTabs = (authority) => {
         { id: "risk", label: "5. National Risk & Forensic Anomalies" },
         { id: "ia", label: "6. IA National Benchmarking" },
         { id: "evidence", label: "7. Evidence & EXIF Forensic Audit" },
-        { id: "actions", label: "8. MoSPI Central Directives & CVC" },
+        { id: "actions", label: "8. National Concerns & Central Directives" },
       ];
     case "IMPLEMENTING_AGENCY":
       return [
@@ -68,7 +70,7 @@ const getAuthorityTabs = (authority) => {
         { id: "geo-photo", label: "4. Geo-Tagged Photos & Site Uploads" },
         { id: "compliance-45d", label: "5. Deadlines & Extension (EOT)" },
         { id: "risk", label: "6. Site Quality & Rectification Log" },
-        { id: "actions", label: "7. IA Execution & Billing Directives" },
+        { id: "actions", label: "7. Assigned Concerns & IA Directives" },
       ];
     case "MP":
       return [
@@ -79,7 +81,7 @@ const getAuthorityTabs = (authority) => {
         { id: "financials", label: "4. Constituency Fund Release & Balance" },
         { id: "geo-photo", label: "5. Asset Photos for Public Dedication" },
         { id: "risk", label: "6. Grievances & Constituency Delay Flags" },
-        { id: "actions", label: "7. Parliamentary Directives & Inquiries" },
+        { id: "actions", label: "7. Parliamentary Concerns & Directives" },
       ];
     case "CITIZEN":
       return [
@@ -88,7 +90,7 @@ const getAuthorityTabs = (authority) => {
         { id: "financials", label: "2. Public Fund Utilization Breakdown" },
         { id: "completion", label: "3. Delivery Status & Public Opening" },
         { id: "geo-photo", label: "4. Before & After Photo Gallery" },
-        { id: "actions", label: "5. Citizen Social Audit & Verification" },
+        { id: "actions", label: "5. Citizen Concerns & Social Audit" },
       ];
     case "DISTRICT_AUTHORITY":
     default:
@@ -104,7 +106,7 @@ const getAuthorityTabs = (authority) => {
         { id: "ia", label: "8. Executing Agency (IA)" },
         { id: "evidence", label: "9. Ground Evidence" },
         { id: "geo-photo", label: "10. Geo-Photo & Site (Sec 3.16)" },
-        { id: "actions", label: "11. Collector Clearance Directives" },
+        { id: "actions", label: "11. Work Concerns & Collector Directives" },
       ];
   }
 };
@@ -221,13 +223,13 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
   const [citizenAuditVerified, setCitizenAuditVerified] = useState(false);
   const [grievanceReported, setGrievanceReported] = useState(false);
 
-  const [activeSection, setActiveSection] = useState(initialSection || "all");
+  const effectiveInitialSection = work?.__initialSection || initialSection || "all";
+  const [activeSection, setActiveSection] = useState(effectiveInitialSection);
 
   // Synchronize initial section if prop updates
   useEffect(() => {
-    if (initialSection) {
-      setActiveSection(initialSection);
-    }
+    const nextSection = work?.__initialSection || initialSection || "all";
+    setActiveSection(nextSection);
   }, [initialSection, work]);
 
   // Persistent cross-role workflow requests attached to this work
@@ -404,7 +406,15 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
     }
   }, [activeAuthority]);
 
-  return (
+  // Lock body scroll while drawer is open to prevent page jump
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  return createPortal(
     <div className="drawer-overlay" onClick={onClose}>
       <aside className="gov-detail-drawer" onClick={(e) => e.stopPropagation()}>
         {/* 1. Official Government Dossier Header */}
@@ -1311,6 +1321,13 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                 </div>
               )}
 
+              {/* Official Work Concern, Action & Response Thread */}
+              <WorkConcernSection
+                work={work}
+                canonicalWorkId={canonicalWorkId}
+                currentRole={activeAuthority}
+              />
+
               {/* Active Workflow Requests on this Work */}
               <div
                 style={{
@@ -1829,6 +1846,7 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
           />
         )}
       </aside>
-    </div>
+    </div>,
+    document.body
   );
 }

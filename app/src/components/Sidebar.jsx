@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Activity,
+  AlertCircle,
   AlertTriangle,
   Bell,
   Building2,
@@ -341,6 +342,15 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
             : null,
       badgeType: "danger",
     },
+    {
+      id: "concerns",
+      label: "Work Concerns & Actions",
+      subtitle: "MP concerns & statutory responses",
+      tab: "concerns",
+      icon: AlertCircle,
+      badge: "Concerns",
+      badgeType: "warning",
+    },
   ];
 
   /* =========================================================
@@ -427,6 +437,14 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
       icon: Sparkles,
       badge: iaBadges?.ai_alerts ? formatNumber(iaBadges.ai_alerts) : null,
       badgeType: "danger",
+    },
+    {
+      id: "assigned-concerns",
+      label: "Assigned Concerns",
+      tab: "assigned-concerns",
+      icon: AlertCircle,
+      badge: "Actions",
+      badgeType: "warning",
     },
   ];
 
@@ -531,6 +549,14 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
       badge: summary?.review_required ? formatNumber(summary.review_required) : "4,384",
       badgeType: "highlight",
     },
+    {
+      id: "national-concerns",
+      label: "National Work Concerns",
+      tab: "national-concerns",
+      icon: AlertCircle,
+      badge: "Oversight",
+      badgeType: "danger",
+    },
   ];
 
   /* =========================================================
@@ -598,6 +624,13 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
       icon: Map,
       badge: "GIS",
       badgeType: "highlight",
+    },
+    {
+      label: "My Concerns & Actions",
+      path: "/mp/concerns",
+      icon: AlertCircle,
+      badge: "Live",
+      badgeType: "warning",
     },
   ];
 

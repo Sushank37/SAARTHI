@@ -20,8 +20,12 @@ import {
   formatCurrency,
   exportToCSV,
 } from "../constants";
+import { useAuth } from "../context/useAuth";
 
 export default function DuplicateIntelligence({ onSelectWork }) {
+  const { role, roleConfig } = useAuth() || {};
+  const currentAuthority = (roleConfig?.id || role || "DISTRICT_AUTHORITY").toUpperCase();
+
   const [clusters, setClusters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [level, setLevel] = useState("ALL");
@@ -346,7 +350,12 @@ export default function DuplicateIntelligence({ onSelectWork }) {
                         className="cluster-work-card"
                         onClick={() => {
                           setSelectedClusterId(null);
-                          onSelectWork && onSelectWork(w);
+                          onSelectWork &&
+                            onSelectWork({
+                              ...w,
+                              __initialSection: "duplicates",
+                              __authority: currentAuthority,
+                            });
                         }}
                       >
                         <div className="card-top">
@@ -363,7 +372,7 @@ export default function DuplicateIntelligence({ onSelectWork }) {
                           <span>
                             <MapPin size={12} /> {w.CONSTITUENCY}, {w.STATE_NAME}
                           </span>
-                          <span className="click-hint">Inspect Full Dossier →</span>
+                          <span className="click-hint">Inspect Duplicate Cluster Dossier →</span>
                         </div>
                       </div>
                     ))}

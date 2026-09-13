@@ -225,6 +225,18 @@ except ImportError:
 
 workflow_engine = WorkflowEngine(df)
 print("[WorkflowEngine] Initialized with master dataset.")
+
+# ============================================================
+# WORK CONCERN & ACCOUNTABILITY DATABASE ENGINE
+# ============================================================
+
+try:
+    from backend.concerns_db import ConcernsDB
+except ImportError:
+    from concerns_db import ConcernsDB
+
+concerns_db = ConcernsDB(dataset_df=df)
+print("[ConcernsDB] Initialized with master dataset and SQLite persistence.")
 print()
 
 
@@ -5061,6 +5073,274 @@ def verify_public_work(work_id: str):
         "location_status": "Verified on official locality grid" if geo_info else "Site registered under official sanction; GPS telemetry not captured in legacy record",
         "risk_level": str(clean_value(row.get("RISK_LEVEL") or "LOW"))
     }
+
+
+# ============================================================
+# WORK CONCERN, ACTION, RESPONSE, AND ACCOUNTABILITY APIS
+# ============================================================
+
+@app.post("/api/concerns")
+def create_work_concern(payload: dict = Body(...)):
+    """
+    Raise a formal concern against a canonical work record.
+    Supported roles: MP, DISTRICT_AUTHORITY, MOSPI, CITIZEN.
+    """
+    try:
+        work_id = payload.get("work_id")
+        if not work_id:
+            raise HTTPException(status_code=422, detail="work_id is required")
+
+        title = payload.get("title")
+        if not title or not str(title).strip():
+            raise HTTPException(status_code=422, detail="title is required")
+
+        description = payload.get("description")
+        if not description or not str(description).strip():
+            raise HTTPException(status_code=422, detail="description is required")
+
+        raised_by_role = payload.get("raised_by_role") or "MP"
+        mp_name = payload.get("mp_name") or ""
+        category = payload.get("category") or "Work Progress Issue"
+        requested_action = payload.get("requested_action")
+        priority = payload.get("priority") or "MEDIUM"
+        evidence_attachment = payload.get("evidence_attachment") or payload.get("evidence_url")
+        due_at = payload.get("due_at")
+        raised_by_user_id = payload.get("raised_by_user_id")
+
+        concern = concerns_db.create_concern(
+            work_id=work_id,
+            raised_by_role=raised_by_role,
+            mp_name=mp_name,
+            category=category,
+            title=title,
+            description=description,
+            requested_action=requested_action,
+            priority=priority,
+            evidence_attachment=evidence_attachment,
+            due_at=due_at,
+            raised_by_user_id=raised_by_user_id,
+        )
+
+        return {
+            "success": True,
+            "concern_id": concern["concern_id"],
+            "message": f"Concern {concern['concern_id']} successfully registered against Work #{concern['work_id']} and routed to District Authority.",
+            "concern": concern
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to register concern: {str(e)}")
+
+
+@app.get("/api/concerns")
+def list_work_concerns(
+    role: Optional[str] = Query(None),
+    mp_name: Optional[str] = Query(None),
+    da_id: Optional[str] = Query(None),
+    ia_id: Optional[str] = Query(None),
+    work_id: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    priority: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
+    q: Optional[str] = Query(None),
+    limit: int = Query(100, ge=1, le=1000),
+    offset: int = Query(0, ge=0),
+):
+    """
+    Query concerns with role-based jurisdiction filtering and search.
+    """
+    res = concerns_db.query_concerns(
+        role=role,
+        mp_name=mp_name,
+        da_id=da_id,
+        ia_id=ia_id,
+        work_id=work_id,
+        status=status,
+        priority=priority,
+        category=category,
+        search_query=q,
+        limit=limit,
+        offset=offset,
+    )
+    return res
+
+
+@app.get("/api/concerns/metrics")
+def get_concern_metrics(
+    role: Optional[str] = Query(None),
+    mp_name: Optional[str] = Query(None),
+    da_id: Optional[str] = Query(None),
+    ia_id: Optional[str] = Query(None),
+):
+    """
+    Live KPI metrics for MoSPI National Oversight, DA, IA, and MP dashboards.
+    """
+    return concerns_db.get_metrics(
+        role=role,
+        mp_name=mp_name,
+        da_id=da_id,
+        ia_id=ia_id,
+    )
+
+
+@app.get("/api/concerns/{concern_id}")
+def get_concern_details(concern_id: str):
+    """
+    Retrieve full concern record with actions, responses, attachments, and immutable timeline.
+    """
+    concern = concerns_db.get_concern_by_id(concern_id)
+    if not concern:
+        raise HTTPException(status_code=404, detail=f"Concern '{concern_id}' not found.")
+    return concern
+
+
+@app.patch("/api/concerns/{concern_id}")
+def update_concern_status(concern_id: str, payload: dict = Body(...)):
+    """
+    Update concern status or assign officer with strict role permission checks.
+    """
+    try:
+        actor_role = payload.get("role") or payload.get("actor_role")
+        if not actor_role:
+            raise HTTPException(status_code=422, detail="'role' is required for authorization.")
+
+        new_status = payload.get("status") or payload.get("new_status")
+        note = payload.get("note") or payload.get("description") or f"Status updated to {new_status}"
+        assigned_to = payload.get("assigned_to")
+        evidence_url = payload.get("evidence_url")
+        actor_user_id = payload.get("actor_user_id")
+
+        updated = concerns_db.record_action(
+            concern_id=concern_id,
+            actor_role=actor_role,
+            action_type="STATUS_UPDATE",
+            action_description=note,
+            new_status=new_status,
+            assigned_to=assigned_to,
+            evidence_url=evidence_url,
+            actor_user_id=actor_user_id,
+        )
+        return {
+            "success": True,
+            "concern_id": concern_id,
+            "message": f"Concern status updated to {updated['status']}.",
+            "concern": updated
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except PermissionError as pe:
+        raise HTTPException(status_code=403, detail=str(pe))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update concern: {str(e)}")
+
+
+@app.post("/api/concerns/{concern_id}/actions")
+def record_concern_action(concern_id: str, payload: dict = Body(...)):
+    """
+    Record an official action taken by DA, IA, or MoSPI (e.g. Acknowledge, Assign IA, Rectify, Resolve).
+    """
+    try:
+        actor_role = payload.get("role") or payload.get("actor_role")
+        if not actor_role:
+            raise HTTPException(status_code=422, detail="'role' is required for authorization.")
+
+        action_type = payload.get("action_type")
+        if not action_type:
+            raise HTTPException(status_code=422, detail="'action_type' is required.")
+
+        action_description = payload.get("action_description") or payload.get("description") or "Action logged"
+        new_status = payload.get("new_status")
+        assigned_to = payload.get("assigned_to")
+        evidence_url = payload.get("evidence_url")
+        actor_user_id = payload.get("actor_user_id")
+
+        updated = concerns_db.record_action(
+            concern_id=concern_id,
+            actor_role=actor_role,
+            action_type=action_type,
+            action_description=action_description,
+            new_status=new_status,
+            assigned_to=assigned_to,
+            evidence_url=evidence_url,
+            actor_user_id=actor_user_id,
+        )
+        return {
+            "success": True,
+            "concern_id": concern_id,
+            "message": f"Action '{action_type}' recorded successfully.",
+            "concern": updated
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except PermissionError as pe:
+        raise HTTPException(status_code=403, detail=str(pe))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to record action: {str(e)}")
+
+
+@app.post("/api/concerns/{concern_id}/responses")
+def submit_concern_response(concern_id: str, payload: dict = Body(...)):
+    """
+    Submit two-way response or clarification thread entry (MP, IA, DA).
+    """
+    try:
+        responder_role = payload.get("role") or payload.get("responder_role") or payload.get("actor_role")
+        if not responder_role:
+            raise HTTPException(status_code=422, detail="'role' or 'actor_role' is required.")
+
+        response_text = payload.get("response_text") or payload.get("text")
+        if not response_text or not str(response_text).strip():
+            raise HTTPException(status_code=422, detail="'response_text' is required.")
+
+        response_type = payload.get("response_type") or "EXPLANATION"
+        evidence_url = payload.get("evidence_url")
+        responder_user_id = payload.get("responder_user_id") or payload.get("actor_id") or payload.get("user_id")
+
+        updated = concerns_db.submit_response(
+            concern_id=concern_id,
+            responder_role=responder_role,
+            response_text=response_text,
+            response_type=response_type,
+            evidence_url=evidence_url,
+            responder_user_id=responder_user_id,
+        )
+        return {
+            "success": True,
+            "concern_id": concern_id,
+            "message": "Response submitted successfully.",
+            "concern": updated
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to submit response: {str(e)}")
+
+
+@app.get("/api/concerns/{concern_id}/timeline")
+def get_concern_timeline(concern_id: str):
+    """
+    Retrieve immutable audit log and action history for a concern.
+    """
+    concern = concerns_db.get_concern_by_id(concern_id)
+    if not concern:
+        raise HTTPException(status_code=404, detail=f"Concern '{concern_id}' not found.")
+    return {
+        "concern_id": concern_id,
+        "timeline": concern.get("timeline", []),
+        "actions": concern.get("actions", []),
+        "responses": concern.get("responses", []),
+    }
+
+
+@app.get("/api/works/{work_id}/concerns")
+def get_work_concerns(work_id: str):
+    """
+    Retrieve all concerns, complaints, and accountability records attached to a canonical work.
+    """
+    clean_w = str(work_id).strip().replace(".0", "")
+    res = concerns_db.query_concerns(work_id=clean_w, limit=100)
+    return res
 
 
 # ============================================================

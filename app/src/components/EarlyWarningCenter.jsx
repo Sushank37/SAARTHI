@@ -177,12 +177,56 @@ export default function EarlyWarningCenter({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const currentAuthority = (roleConfig?.id || authRole || "DISTRICT_AUTHORITY").toUpperCase();
+
+  const getAlertDossierInfo = (alert) => {
+    switch (alert?.alert_category) {
+      case "delays":
+        return {
+          section: "compliance-45d",
+          label: "Inspect Delay SLA Dossier",
+          title: "Inspect Section 3.12 45-day statutory delay breach dossier",
+        };
+      case "cost_overruns":
+        return {
+          section: "financials",
+          label: "Inspect Fund Flow Dossier",
+          title: "Inspect SNA treasury disbursal and cost escalation dossier",
+        };
+      case "duplicate_works":
+        return {
+          section: "duplicates",
+          label: "Inspect Duplicate Cluster Dossier",
+          title: "Inspect multi-constituency duplicate cluster dossier",
+        };
+      case "unusual_patterns":
+        return {
+          section: "risk",
+          label: "Inspect AI Anomaly Dossier",
+          title: "Inspect machine learning anomaly detection forensic dossier",
+        };
+      case "fund_misuse":
+        return {
+          section: "risk",
+          label: "Inspect Vigilance Dossier",
+          title: "Inspect fiscal integrity & vigilance inquiry dossier",
+        };
+      default:
+        return {
+          section: "actions",
+          label: "Inspect Alert Resolution Dossier",
+          title: "Open statutory authority resolution dossier",
+        };
+    }
+  };
+
   const handleInspectWork = (work) => {
     if (onSelectWork) {
-      // Pass the audit section so WorkDetailDrawer can pre-select the appropriate tab
+      const info = getAlertDossierInfo(work);
       const enrichedWork = {
         ...work,
-        __initialSection: work.audit_section || "overview",
+        __initialSection: work.__initialSection || work.audit_section || info.section,
+        __authority: work.__authority || currentAuthority,
       };
       onSelectWork(enrichedWork);
       onClose();
@@ -588,17 +632,23 @@ export default function EarlyWarningCenter({
                       <div className="ew-card-footer-tip">
                         Clicking card opens full 78-field canonical record &amp; authority resolution dossier.
                       </div>
-                      <button
-                        className="ew-inspect-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleInspectWork(alert);
-                        }}
-                      >
-                        <FileSearch size={14} />
-                        <span>Inspect Dossier</span>
-                        <ArrowRight size={13} />
-                      </button>
+                      {(() => {
+                        const dInfo = getAlertDossierInfo(alert);
+                        return (
+                          <button
+                            className="ew-inspect-btn"
+                            title={dInfo.title}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleInspectWork(alert);
+                            }}
+                          >
+                            <FileSearch size={14} />
+                            <span>{dInfo.label}</span>
+                            <ArrowRight size={13} />
+                          </button>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
