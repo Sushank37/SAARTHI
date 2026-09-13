@@ -103,6 +103,7 @@ export default function DADashboard({ summary, onSelectWork }) {
   // Telemetry state
   const [analytics, setAnalytics] = useState(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [analyticsError, setAnalyticsError] = useState(null);
 
   // Works registry table state
   const [works, setWorks] = useState([]);
@@ -110,12 +111,15 @@ export default function DADashboard({ summary, onSelectWork }) {
   const [worksPage, setWorksPage] = useState(1);
   const [worksLimit] = useState(15);
   const [worksLoading, setWorksLoading] = useState(false);
+  const [worksError, setWorksError] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
   const [selectedStage, setSelectedStage] = useState("All");
   const [filterFlaggedOnly, setFilterFlaggedOnly] = useState(false);
   const [workSearchQuery, setWorkSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeKpiFilter, setActiveKpiFilter] = useState(null);
   const [localSelectedWork, setLocalSelectedWork] = useState(null);
+  const [backendRetryKey, setBackendRetryKey] = useState(0);
 
   // Incoming cross-role workflow requests
   const [incomingRequests, setIncomingRequests] = useState([]);
@@ -233,80 +237,120 @@ export default function DADashboard({ summary, onSelectWork }) {
   }, [workSearchQuery]);
 
   // Load DA Analytics
-  const loadDAAnalytics = async (idaName) => {
+  const loadDAAnalytics = async (idaName, signal) => {
     setAnalyticsLoading(true);
     try {
       let url = `${API_BASE}/api/analytics/da`;
       if (idaName && idaName !== "ALL") {
         url += `?ida_name=${encodeURIComponent(idaName)}`;
       }
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        signal,
+        cache: "no-store",
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setAnalytics(data);
+      if (!signal?.aborted) {
+        setAnalytics(data);
+        setAnalyticsError(null);
+      }
     } catch (err) {
-      console.error("Error fetching District Authority analytics:", err);
+      if (err.name !== "AbortError") {
+        console.error("Error fetching District Authority analytics:", err);
+        if (!signal?.aborted) {
+          setAnalyticsError("Unable to connect to the backend. Please try again.");
+        }
+      }
     } finally {
-      setAnalyticsLoading(false);
+      if (!signal?.aborted) {
+        setAnalyticsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    loadDAAnalytics(selectedIDA);
+    const controller = new AbortController();
+    loadDAAnalytics(selectedIDA, controller.signal);
     setWorksPage(1);
     setActiveKpiFilter(null);
-  }, [selectedIDA]);
+
+    return () => controller.abort();
+  }, [selectedIDA, backendRetryKey]);
+
+  // Helper to build active filter query parameters for works register and CSV export
+  const getFilterParams = () => {
+    const params = new URLSearchParams();
+
+    if (selectedIDA && selectedIDA !== "ALL") {
+      params.set("ida_name", selectedIDA);
+    }
+
+    // Pass current active module tab to backend
+    if (currentTab && currentTab !== "overview") {
+      params.set("tab", currentTab);
+    }
+
+    // Pass subfilter if active
+    if (subfilter && subfilter !== "all") {
+      params.set("subfilter", subfilter);
+    }
+
+    if (selectedStage && selectedStage !== "All") {
+      params.set("stage", selectedStage);
+    }
+
+    if (filterFlaggedOnly || activeKpiFilter === "attention") {
+      params.set("requires_review", "true");
+    }
+
+    if (debouncedSearch.trim()) {
+      params.set("q", debouncedSearch.trim());
+    }
+
+    return params;
+  };
 
   // Load District Works from canonical backend
-  const loadDistrictWorks = async () => {
+  const loadDistrictWorks = async (signal) => {
     setWorksLoading(true);
     try {
-      const params = new URLSearchParams();
+      const params = getFilterParams();
       params.set("page", worksPage);
       params.set("limit", worksLimit);
 
-      if (selectedIDA && selectedIDA !== "ALL") {
-        params.set("ida_name", selectedIDA);
-      }
-
-      // Pass current active module tab to backend
-      if (currentTab && currentTab !== "overview") {
-        params.set("tab", currentTab);
-      }
-
-      // Pass subfilter if active
-      if (subfilter && subfilter !== "all") {
-        params.set("subfilter", subfilter);
-      }
-
-      if (selectedStage && selectedStage !== "All") {
-        params.set("stage", selectedStage);
-      }
-
-      if (filterFlaggedOnly || activeKpiFilter === "attention") {
-        params.set("requires_review", "true");
-      }
-
-      if (debouncedSearch.trim()) {
-        params.set("q", debouncedSearch.trim());
-      }
-
-      const res = await fetch(`${API_BASE}/api/works?${params.toString()}`);
+      const res = await fetch(`${API_BASE}/api/works?${params.toString()}`, {
+        signal,
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setWorks(data.data || []);
-      setWorksTotal(data.total || 0);
+
+      // Ignore responses from requests that are no longer current.
+      if (!signal?.aborted) {
+        setWorks(data.data || []);
+        setWorksTotal(data.total || 0);
+        setWorksError(null);
+      }
     } catch (err) {
-      console.error("Error loading district works register:", err);
-      setWorks([]);
-      setWorksTotal(0);
+      if (err.name !== "AbortError") {
+        console.error("Error loading district works register:", err);
+        if (!signal?.aborted) {
+          setWorks([]);
+          setWorksTotal(0);
+          setWorksError("Unable to connect to the backend. Please try again.");
+        }
+      }
     } finally {
-      setWorksLoading(false);
+      if (!signal?.aborted) {
+        setWorksLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    loadDistrictWorks();
+    const controller = new AbortController();
+    loadDistrictWorks(controller.signal);
+
+    return () => controller.abort();
   }, [
     selectedIDA,
     currentTab,
@@ -316,6 +360,7 @@ export default function DADashboard({ summary, onSelectWork }) {
     filterFlaggedOnly,
     activeKpiFilter,
     debouncedSearch,
+    backendRetryKey,
   ]);
 
   // Filtered IDA list for selector dropdown
@@ -348,12 +393,43 @@ export default function DADashboard({ summary, onSelectWork }) {
 
   const totalPages = Math.max(1, Math.ceil(worksTotal / worksLimit));
 
-  // CSV Export handler
-  const handleExportCSV = () => {
-    if (!works.length) return;
+  // CSV Export handler (exports complete filtered district register)
+  const handleExportCSV = async () => {
+    if (!works.length || isExporting) return;
     const safeName = (analytics?.district_name || "District").replace(/\s+/g, "_");
     const filename = `MPLADS_DA_${currentTab}_${safeName}.csv`;
-    exportToCSV(works, filename);
+
+    if (worksTotal <= works.length) {
+      exportToCSV(works, filename);
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const batchSize = 500;
+      const totalBatches = Math.ceil(worksTotal / batchSize);
+      const baseParams = getFilterParams();
+      baseParams.set("limit", batchSize);
+
+      let allWorks = [];
+      for (let p = 1; p <= totalBatches; p++) {
+        const pageParams = new URLSearchParams(baseParams);
+        pageParams.set("page", p);
+        const res = await fetch(`${API_BASE}/api/works?${pageParams.toString()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const batch = data.data || [];
+        allWorks = allWorks.concat(batch);
+        if (batch.length < batchSize) break;
+      }
+
+      exportToCSV(allWorks.length ? allWorks : works, filename);
+    } catch (err) {
+      console.error("Failed to export full dataset, falling back to current view:", err);
+      exportToCSV(works, filename);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Toggle KPI Filters in Overview
@@ -372,8 +448,66 @@ export default function DADashboard({ summary, onSelectWork }) {
     setWorksPage(1);
   };
 
+  const handleBackendRetry = () => {
+    setAnalyticsError(null);
+    setWorksError(null);
+    setBackendRetryKey((key) => key + 1);
+  };
+
   return (
     <div className="da-dashboard-container">
+      {(analyticsError || worksError) && (
+        <div
+          role="alert"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+            padding: "12px 16px",
+            marginBottom: "16px",
+            border: "1px solid #fecaca",
+            borderRadius: "10px",
+            background: "#fef2f2",
+            color: "#991b1b",
+          }}
+        >
+          <div>
+            <strong style={{ display: "block", marginBottom: "2px" }}>
+              Backend connection unavailable
+            </strong>
+            <span style={{ fontSize: "13px" }}>
+              Some dashboard data could not be loaded. Your current filters are preserved.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleBackendRetry}
+            disabled={analyticsLoading || worksLoading}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "7px 12px",
+              border: "1px solid #fecaca",
+              borderRadius: "7px",
+              background: "#ffffff",
+              color: "#991b1b",
+              fontWeight: 600,
+              cursor: analyticsLoading || worksLoading ? "not-allowed" : "pointer",
+              opacity: analyticsLoading || worksLoading ? 0.6 : 1,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <RefreshCw
+              size={14}
+              className={analyticsLoading || worksLoading ? "animate-spin" : ""}
+            />
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* 1. Official Persona Identity & District Jurisdiction Header */}
       <div className="da-official-header-card">
         <div className="da-header-inner">
@@ -485,7 +619,7 @@ export default function DADashboard({ summary, onSelectWork }) {
         {DA_MODULES.map((mod) => {
           const Icon = mod.icon;
           const isActive = currentTab === mod.id;
-          const badgeVal = sidebarBadges[mod.id.replace("-", "_")];
+          const badgeVal = sidebarBadges[mod.id.replaceAll("-", "_")];
           return (
             <button
               key={mod.id}
@@ -679,21 +813,20 @@ export default function DADashboard({ summary, onSelectWork }) {
                 <div className="da-compliance-row">
                   <span className="da-compliance-label">Average Sanction Delay:</span>
                   <span className="da-compliance-val">
-                    {formatDecimal(sanctionMonitoring.avg_sanction_delay_days || 0)} Days
+                    {Number(sanctionMonitoring.avg_sanction_delay_days ?? 0).toFixed(1)} Days
                   </span>
                 </div>
                 <div className="da-compliance-row">
                   <span className="da-compliance-label">Peer District Median:</span>
                   <span className="da-compliance-val">
-                    {formatDecimal(sanctionMonitoring.peer_median_delay_days || 0)} Days
+                    {Number(sanctionMonitoring.peer_median_delay_days ?? 0).toFixed(1)} Days
                   </span>
                 </div>
                 <div className="da-compliance-row">
                   <span className="da-compliance-label">Delayed Beyond Peer Median:</span>
                   <span
-                    className={`da-compliance-val ${
-                      sanctionMonitoring.delayed_past_peer_count > 0 ? "warn" : ""
-                    }`}
+                    className={`da-compliance-val ${sanctionMonitoring.delayed_past_peer_count > 0 ? "warn" : ""
+                      }`}
                   >
                     {formatNumber(sanctionMonitoring.delayed_past_peer_count || 0)} Works
                   </span>
@@ -701,9 +834,8 @@ export default function DADashboard({ summary, onSelectWork }) {
                 <div className="da-compliance-row">
                   <span className="da-compliance-label">Overdue &gt; 12 Mo (Statutory MPLADS):</span>
                   <span
-                    className={`da-compliance-val ${
-                      completionMonitoring.overdue_count > 0 ? "alert" : ""
-                    }`}
+                    className={`da-compliance-val ${completionMonitoring.overdue_count > 0 ? "alert" : ""
+                      }`}
                   >
                     {formatNumber(completionMonitoring.overdue_count || 0)} Works
                   </span>
@@ -835,7 +967,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 <div className="da-intel-stat-item">
                   <span className="da-intel-stat-label">Avg Delay</span>
                   <div className="da-intel-stat-val">
-                    {formatDecimal(sanctionMonitoring.avg_sanction_delay_days || 0)} Days
+                    {Number(sanctionMonitoring.avg_sanction_delay_days ?? 0).toFixed(1)} Days
                   </div>
                 </div>
               </div>
@@ -898,7 +1030,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 <div className="da-spotlight-subline">
                   <span>Category: <strong>{works[0].WORK_CATEGORY || "Civic Infrastructure"}</strong></span>
                   <span>·</span>
-                  <span>Delay: <strong className={works[0].SANCTION_DELAY_DAYS > 45 ? "text-red-700 font-bold" : ""}>{works[0].SANCTION_DELAY_DAYS != null ? `${works[0].SANCTION_DELAY_DAYS} Days` : "Pending Sanction Order"}</strong></span>
+                  <span>Delay: <strong className={(Number(works[0].SANCTION_DELAY_DAYS) || 0) > 45 ? "text-red-700 font-bold" : ""}>{works[0].SANCTION_DELAY_DAYS != null && !Number.isNaN(Number(works[0].SANCTION_DELAY_DAYS)) ? `${Number(works[0].SANCTION_DELAY_DAYS)} Days` : "Pending Sanction Order"}</strong></span>
                 </div>
               </div>
               <div className="da-spotlight-right">
@@ -1014,16 +1146,16 @@ export default function DADashboard({ summary, onSelectWork }) {
                 <div className="da-spotlight-title-line">
                   <span className="da-spotlight-work-id">#{works[0].WORK_ID || works[0].WORK_RECOMMENDATION_DTL_ID}</span>
                   <span className="text-xs text-red-700 font-bold">
-                    {works[0].SANCTION_DELAY_DAYS > 45
-                      ? `(+${works[0].SANCTION_DELAY_DAYS - 45} Days Past Statutory 45-Day Window)`
-                      : `(${works[0].SANCTION_DELAY_DAYS || 0} Days Elapsed)`}
+                    {(Number(works[0].SANCTION_DELAY_DAYS) || 0) > 45
+                      ? `(+${(Number(works[0].SANCTION_DELAY_DAYS) || 0) - 45} Days Past Statutory 45-Day Window)`
+                      : `(${Number(works[0].SANCTION_DELAY_DAYS) || 0} Days Elapsed)`}
                   </span>
                 </div>
                 <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || "Statutory Delay Proposal"}</div>
                 <div className="da-spotlight-subline">
                   <span>Hon'ble MP: <strong>{works[0].MP_NAME || "—"}</strong></span>
                   <span>·</span>
-                  <span>Peer Median Delay: <strong>{works[0].PEER_MEDIAN_SANCTION_DELAY != null ? `${formatDecimal(works[0].PEER_MEDIAN_SANCTION_DELAY)} Days` : "36 Days"}</strong></span>
+                  <span>Peer Median Delay: <strong>{works[0].PEER_MEDIAN_SANCTION_DELAY != null && !Number.isNaN(Number(works[0].PEER_MEDIAN_SANCTION_DELAY)) ? `${formatDecimal(works[0].PEER_MEDIAN_SANCTION_DELAY)} Days` : "36 Days"}</strong></span>
                 </div>
               </div>
               <div className="da-spotlight-right">
@@ -1563,9 +1695,8 @@ export default function DADashboard({ summary, onSelectWork }) {
                         <td className="cell-amount">{formatCrores(ia.actual_amount)}</td>
                         <td>
                           <span
-                            className={`badge-stage ${
-                              ia.completion_rate > 50 ? "stage-completed" : "stage-pending"
-                            }`}
+                            className={`badge-stage ${ia.completion_rate > 50 ? "stage-completed" : "stage-pending"
+                              }`}
                           >
                             {ia.completion_rate}%
                           </span>
@@ -1776,7 +1907,7 @@ export default function DADashboard({ summary, onSelectWork }) {
               <span className="da-subfilter-count">
                 {formatNumber(
                   (completionMonitoring.physical_inspection_count || 0) +
-                    (completionMonitoring.completed_count || 0)
+                  (completionMonitoring.completed_count || 0)
                 )}
               </span>
             </button>
@@ -1950,11 +2081,11 @@ export default function DADashboard({ summary, onSelectWork }) {
                           <span>
                             Category: <strong>{c.WORK_CATEGORY || "Infrastructure"}</strong>
                           </span>
-                          {c.SANCTION_DELAY_DAYS !== undefined && c.SANCTION_DELAY_DAYS !== null && (
+                          {c.SANCTION_DELAY_DAYS !== undefined && c.SANCTION_DELAY_DAYS !== null && !Number.isNaN(Number(c.SANCTION_DELAY_DAYS)) && (
                             <>
                               <span>·</span>
                               <span>
-                                Delay: <strong>{c.SANCTION_DELAY_DAYS} days</strong>
+                                Delay: <strong>{Number(c.SANCTION_DELAY_DAYS)} days</strong>
                               </span>
                             </>
                           )}
@@ -2102,11 +2233,11 @@ export default function DADashboard({ summary, onSelectWork }) {
               type="button"
               className="da-pagination-btn"
               onClick={handleExportCSV}
-              disabled={!works.length}
+              disabled={!works.length || isExporting}
               title="Export filtered records to CSV"
             >
-              <Download size={13} />
-              <span>Export CSV</span>
+              <Download size={13} className={isExporting ? "animate-spin" : ""} />
+              <span>{isExporting ? "Exporting..." : "Export CSV"}</span>
             </button>
 
             <button
@@ -2213,15 +2344,14 @@ export default function DADashboard({ summary, onSelectWork }) {
                       </td>
                       <td>
                         <span
-                          className={`badge-stage ${
-                            stage === "Work Completed"
+                          className={`badge-stage ${stage === "Work Completed"
                               ? "stage-completed"
                               : stage === "Sanction"
-                              ? "stage-sanction"
-                              : stage === "Pending Sanction"
-                              ? "stage-pending"
-                              : "stage-inspection"
-                          }`}
+                                ? "stage-sanction"
+                                : stage === "Pending Sanction"
+                                  ? "stage-pending"
+                                  : "stage-inspection"
+                            }`}
                         >
                           {stage}
                         </span>
@@ -2230,13 +2360,12 @@ export default function DADashboard({ summary, onSelectWork }) {
                       {/* Custom column for 45-Day Compliance */}
                       {currentTab === "compliance-45d" && (
                         <td>
-                          {delayDays !== undefined && delayDays !== null ? (
+                          {delayDays !== undefined && delayDays !== null && !Number.isNaN(Number(delayDays)) ? (
                             <span
-                              className={`da-compliance-val ${
-                                delayDays > 45 ? "alert font-bold" : delayDays >= 30 ? "warn" : ""
-                              }`}
+                              className={`da-compliance-val ${Number(delayDays) > 45 ? "alert font-bold" : Number(delayDays) >= 30 ? "warn" : ""
+                                }`}
                             >
-                              {delayDays} Days {delayDays > 45 ? "(+Overdue)" : ""}
+                              {Number(delayDays)} Days {Number(delayDays) > 45 ? "(+Overdue)" : ""}
                             </span>
                           ) : (
                             "—"
@@ -2248,15 +2377,14 @@ export default function DADashboard({ summary, onSelectWork }) {
                       {currentTab === "completion" && (
                         <td>
                           <span
-                            className={`da-compliance-val ${
-                              work.COMPLETION_DURATION_DAYS > 365 ? "alert font-bold" : ""
-                            }`}
+                            className={`da-compliance-val ${work.COMPLETION_DURATION_DAYS > 365 ? "alert font-bold" : ""
+                              }`}
                           >
                             {work.COMPLETION_DURATION_DAYS != null
                               ? `${work.COMPLETION_DURATION_DAYS} Days`
                               : stage === "Work Completed"
-                              ? "Completed"
-                              : "In Execution"}
+                                ? "Completed"
+                                : "In Execution"}
                             {work.COMPLETION_DURATION_DAYS > 365 ? " (+Overdue)" : ""}
                           </span>
                         </td>
@@ -2273,9 +2401,8 @@ export default function DADashboard({ summary, onSelectWork }) {
                       {currentTab === "risk-cases" && (
                         <td>
                           <span
-                            className={`badge-review ${
-                              riskLevel === "HIGH" ? "alert-duplicate" : "alert-review"
-                            }`}
+                            className={`badge-review ${riskLevel === "HIGH" ? "alert-duplicate" : "alert-review"
+                              }`}
                           >
                             {riskLevel} RISK ({formatDecimal(work.RISK_SCORE || 0)})
                           </span>
@@ -2316,11 +2443,10 @@ export default function DADashboard({ summary, onSelectWork }) {
                                 Score: {work.EVIDENCE_SCORE}
                               </span>
                               <span
-                                className={`badge-review ml-1 ${
-                                  work.SUSPICION_LEVEL === "HIGH SUSPICION"
+                                className={`badge-review ml-1 ${work.SUSPICION_LEVEL === "HIGH SUSPICION"
                                     ? "alert-duplicate"
                                     : "verified"
-                                }`}
+                                  }`}
                               >
                                 {work.SUSPICION_LEVEL || "NORMAL"}
                               </span>
@@ -2335,9 +2461,8 @@ export default function DADashboard({ summary, onSelectWork }) {
                       {currentTab === "geo-photo" && (
                         <td>
                           <span
-                            className={`badge-stage ${
-                              stage === "Work Completed" ? "stage-completed" : "stage-inspection"
-                            }`}
+                            className={`badge-stage ${stage === "Work Completed" ? "stage-completed" : "stage-inspection"
+                              }`}
                           >
                             {stage === "Work Completed" ? "Handover Photo Required" : "Site Photo Logged"}
                           </span>
