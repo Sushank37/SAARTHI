@@ -1,11 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   ShieldAlert,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Send,
-  Building2,
   RefreshCw,
 } from "lucide-react";
 import { getConcerns, getConcernMetrics } from "../../../services/concernService";
@@ -21,7 +16,6 @@ export default function NationalConcernsTab({ onSelectWork }) {
   const [stateFilter, setStateFilter] = useState("ALL");
 
   const loadData = async () => {
-    setLoading(true);
     try {
       const [cData, mData] = await Promise.all([
         getConcerns(stateFilter !== "ALL" ? { state: stateFilter } : {}),
@@ -37,7 +31,27 @@ export default function NationalConcernsTab({ onSelectWork }) {
   };
 
   useEffect(() => {
-    loadData();
+    let isMounted = true;
+    async function fetchData() {
+      try {
+        const [cData, mData] = await Promise.all([
+          getConcerns(stateFilter !== "ALL" ? { state: stateFilter } : {}),
+          getConcernMetrics(),
+        ]);
+        if (isMounted) {
+          setConcerns(cData.concerns || []);
+          setMetrics(mData);
+        }
+      } catch (err) {
+        console.error("Failed to load national concerns data:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    fetchData();
+    return () => {
+      isMounted = false;
+    };
   }, [stateFilter]);
 
   const uniqueStates = Array.from(new Set((concerns || []).map((c) => c.state).filter(Boolean))).sort();

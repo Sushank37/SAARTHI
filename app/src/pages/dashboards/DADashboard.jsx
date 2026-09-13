@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { useAuth } from "../../context/useAuth";
 import {
   Scale,
-  ShieldCheck,
   AlertTriangle,
   Clock,
   CheckCircle2,
@@ -26,8 +24,6 @@ import {
   AlertCircle,
   FileCheck,
   Bell,
-  Filter,
-  AlertOctagon,
 } from "lucide-react";
 import {
   API_BASE,
@@ -38,7 +34,7 @@ import {
   exportToCSV,
 } from "../../constants";
 import WorkDetailDrawer from "../../components/WorkDetailDrawer";
-import { getRequests, getRequestCounts } from "../../services/workflowService";
+import { getRequests } from "../../services/workflowService";
 import RequestTable from "../../components/workflow/RequestTable";
 import { getConcerns } from "../../services/concernService";
 import ConcernListTable from "../../components/workflow/ConcernListTable";
@@ -83,8 +79,7 @@ function LayoutDashboardIcon(props) {
   );
 }
 
-export default function DADashboard({ summary, onSelectWork }) {
-  const { roleConfig } = useAuth();
+export default function DADashboard({ onSelectWork }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Active module tab from URL query param: e.g. /da?tab=compliance-45d
@@ -124,7 +119,6 @@ export default function DADashboard({ summary, onSelectWork }) {
   // Incoming cross-role workflow requests
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [incomingRequestsLoading, setIncomingRequestsLoading] = useState(false);
-  const [workflowCounts, setWorkflowCounts] = useState(null);
 
   // DA Concerns Workflow State
   const [daConcerns, setDaConcerns] = useState([]);
@@ -148,9 +142,28 @@ export default function DADashboard({ summary, onSelectWork }) {
   };
 
   useEffect(() => {
-    if (currentTab === "concerns") {
-      loadDAConcerns();
-    }
+    if (currentTab !== "concerns") return;
+    let isMounted = true;
+    const fetchConcerns = async () => {
+      try {
+        const params = {};
+        if (selectedIDA && selectedIDA !== "ALL") {
+          params.daId = selectedIDA;
+        }
+        const data = await getConcerns(params);
+        if (isMounted) {
+          setDaConcerns(data.concerns || []);
+          setDaConcernsLoading(false);
+        }
+      } catch (err) {
+        console.error("Failed to load DA concerns:", err);
+        if (isMounted) setDaConcernsLoading(false);
+      }
+    };
+    fetchConcerns();
+    return () => {
+      isMounted = false;
+    };
   }, [currentTab, selectedIDA]);
 
   const fetchIncomingRequests = async () => {
@@ -158,8 +171,6 @@ export default function DADashboard({ summary, onSelectWork }) {
     try {
       const data = await getRequests({ targetRole: "DISTRICT_AUTHORITY" });
       setIncomingRequests(data.requests || []);
-      const counts = await getRequestCounts("DISTRICT_AUTHORITY");
-      setRequestCounts(counts);
     } catch (err) {
       console.error("Failed to load incoming requests:", err);
     } finally {
@@ -168,7 +179,23 @@ export default function DADashboard({ summary, onSelectWork }) {
   };
 
   useEffect(() => {
-    fetchIncomingRequests();
+    let isMounted = true;
+    const fetchRequests = async () => {
+      try {
+        const data = await getRequests({ targetRole: "DISTRICT_AUTHORITY" });
+        if (isMounted) {
+          setIncomingRequests(data.requests || []);
+          setIncomingRequestsLoading(false);
+        }
+      } catch (err) {
+        console.error("Failed to load incoming requests:", err);
+        if (isMounted) setIncomingRequestsLoading(false);
+      }
+    };
+    fetchRequests();
+    return () => {
+      isMounted = false;
+    };
   }, [selectedIDA]);
 
   // Map active module tab to dossier audit section
@@ -236,49 +263,51 @@ export default function DADashboard({ summary, onSelectWork }) {
     return () => clearTimeout(handler);
   }, [workSearchQuery]);
 
-  // Load DA Analytics
-  const loadDAAnalytics = async (idaName, signal) => {
-    setAnalyticsLoading(true);
-    try {
-      let url = `${API_BASE}/api/analytics/da`;
-      if (idaName && idaName !== "ALL") {
-        url += `?ida_name=${encodeURIComponent(idaName)}`;
-      }
-      const res = await fetch(url, {
-        signal,
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (!signal?.aborted) {
-        setAnalytics(data);
-        setAnalyticsError(null);
-      }
-    } catch (err) {
-      if (err.name !== "AbortError") {
-        console.error("Error fetching District Authority analytics:", err);
-        if (!signal?.aborted) {
-          setAnalyticsError("Unable to connect to the backend. Please try again.");
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    async function initAnalytics() {
+      try {
+        let url = `${API_BASE}/api/analytics/da`;
+        if (selectedIDA && selectedIDA !== "ALL") {
+          url += `?ida_name=${encodeURIComponent(selectedIDA)}`;
+        }
+        const res = await fetch(url, {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!cancelled && !controller.signal.aborted) {
+          setAnalytics(data);
+          setAnalyticsError(null);
+          setAnalyticsLoading(false);
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Error fetching District Authority analytics:", err);
+          if (!cancelled && !controller.signal.aborted) {
+            setAnalyticsError("Unable to connect to the backend. Please try again.");
+            setAnalyticsLoading(false);
+          }
         }
       }
-    } finally {
-      if (!signal?.aborted) {
-        setAnalyticsLoading(false);
-      }
     }
-  };
+    initAnalytics();
+    const timer = setTimeout(() => {
+      setWorksPage(1);
+      setActiveKpiFilter(null);
+    }, 0);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    loadDAAnalytics(selectedIDA, controller.signal);
-    setWorksPage(1);
-    setActiveKpiFilter(null);
-
-    return () => controller.abort();
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearTimeout(timer);
+    };
   }, [selectedIDA, backendRetryKey]);
 
   // Helper to build active filter query parameters for works register and CSV export
-  const getFilterParams = () => {
+  const getFilterParams = useCallback(() => {
     const params = new URLSearchParams();
 
     if (selectedIDA && selectedIDA !== "ALL") {
@@ -308,7 +337,15 @@ export default function DADashboard({ summary, onSelectWork }) {
     }
 
     return params;
-  };
+  }, [
+    selectedIDA,
+    currentTab,
+    subfilter,
+    selectedStage,
+    filterFlaggedOnly,
+    activeKpiFilter,
+    debouncedSearch,
+  ]);
 
   // Load District Works from canonical backend
   const loadDistrictWorks = async (signal) => {
@@ -347,19 +384,48 @@ export default function DADashboard({ summary, onSelectWork }) {
   };
 
   useEffect(() => {
+    let cancelled = false;
     const controller = new AbortController();
-    loadDistrictWorks(controller.signal);
+    async function fetchWorks() {
+      try {
+        const params = getFilterParams();
+        params.set("page", worksPage);
+        params.set("limit", worksLimit);
 
-    return () => controller.abort();
+        const res = await fetch(`${API_BASE}/api/works?${params.toString()}`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        if (!cancelled && !controller.signal.aborted) {
+          setWorks(data.data || []);
+          setWorksTotal(data.total || 0);
+          setWorksError(null);
+          setWorksLoading(false);
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Error loading district works register:", err);
+          if (!cancelled && !controller.signal.aborted) {
+            setWorks([]);
+            setWorksTotal(0);
+            setWorksError("Unable to connect to the backend. Please try again.");
+            setWorksLoading(false);
+          }
+        }
+      }
+    }
+    fetchWorks();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [
-    selectedIDA,
-    currentTab,
-    subfilter,
+    getFilterParams,
     worksPage,
-    selectedStage,
-    filterFlaggedOnly,
-    activeKpiFilter,
-    debouncedSearch,
+    worksLimit,
     backendRetryKey,
   ]);
 

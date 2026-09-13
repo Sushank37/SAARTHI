@@ -42,10 +42,11 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
     const risk = (item.DUPLICATE_RISK || "").toUpperCase();
     const desc = (item.WORK_DESCRIPTION || "").toLowerCase();
     const state = (item.STATE_NAME || "").toLowerCase();
+    const evidence = (item.EVIDENCE || "").toLowerCase();
     const q = search.toLowerCase();
 
     const matchesRisk = filterRisk === "ALL" || risk === filterRisk;
-    const matchesSearch = !q || desc.includes(q) || state.includes(q) || String(item.CLUSTER_ID).includes(q) || String(item.WORK_ID).includes(q);
+    const matchesSearch = !q || desc.includes(q) || evidence.includes(q) || state.includes(q) || String(item.CLUSTER_ID).includes(q) || String(item.WORK_ID || item.REPRESENTATIVE_WORK_ID).includes(q);
 
     return matchesRisk && matchesSearch;
   });
@@ -153,7 +154,7 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
 
         {/* Table */}
         <div className="mospi-table-wrapper">
-          <table className="mospi-data-table">
+          <table className="mospi-data-table mospi-table-duplicate">
             <thead>
               <tr>
                 <th style={{ width: "90px" }}>Work ID</th>
@@ -188,24 +189,31 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
                     : null;
 
                   return (
-                    <tr key={item.WORK_RECOMMENDATION_DTL_ID || item.WORK_ID}>
+                    <tr key={item.CLUSTER_ID || item.WORK_ID}>
                       <td style={{ fontWeight: 700, color: "#005A9C" }}>
-                        #{item.WORK_ID || item.WORK_RECOMMENDATION_DTL_ID}
+                        #{item.WORK_ID || item.REPRESENTATIVE_WORK_ID || "—"}
                       </td>
                       <td>
-                        <span className="mospi-pill neutral" style={{ fontWeight: 600 }}>
-                          #{item.CLUSTER_ID || "—"}
-                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span className="mospi-pill neutral" style={{ fontWeight: 600 }}>
+                            #{item.CLUSTER_ID || "—"}
+                          </span>
+                          {item.CLUSTER_SIZE > 1 && (
+                            <span style={{ fontSize: "10px", color: "#64748b", fontWeight: 600 }}>
+                              ({item.CLUSTER_SIZE} linked)
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td>
                         <div style={{ fontWeight: 600, color: "#0f172a" }}>{item.STATE_NAME || "—"}</div>
                         <div style={{ fontSize: "11px", color: "#64748b" }}>{item.CONSTITUENCY || "—"}</div>
                       </td>
-                      <td style={{ maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={item.WORK_DESCRIPTION}>
-                        {item.WORK_DESCRIPTION || "—"}
+                      <td style={{ maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={item.WORK_DESCRIPTION || item.EVIDENCE}>
+                        {item.WORK_DESCRIPTION || item.EVIDENCE || "Cross-constituency duplicate cluster candidate"}
                       </td>
                       <td style={{ textAlign: "right", fontWeight: 600 }}>
-                        {item.SANCTION_AMOUNT ? `₹ ${Number(item.SANCTION_AMOUNT).toLocaleString("en-IN")}` : "—"}
+                        {item.SANCTION_AMOUNT ? `₹ ${Number(item.SANCTION_AMOUNT).toLocaleString("en-IN")}` : (item.TOTAL_SANCTION_AMOUNT ? `₹ ${Number(item.TOTAL_SANCTION_AMOUNT).toLocaleString("en-IN")}` : "—")}
                       </td>
                       <td style={{ textAlign: "center" }}>
                         <span className={`mospi-pill ${isHigh ? "rose" : "amber"}`}>
@@ -219,7 +227,12 @@ export default function DuplicateIntelligenceTab({ analytics, onSelectWork }) {
                         <button
                           type="button"
                           className="mospi-dossier-btn mospi-dossier-duplicate"
-                          onClick={() => onSelectWork && onSelectWork({ ...item, __initialSection: "duplicates", __authority: "MOSPI" })}
+                          onClick={() => onSelectWork && onSelectWork({
+                            ...item,
+                            WORK_ID: item.REPRESENTATIVE_WORK_ID || item.WORK_ID,
+                            __initialSection: "duplicates",
+                            __authority: "MOSPI"
+                          })}
                           title="Inspect Cross-Jurisdiction Duplicate Cluster Dossier"
                         >
                           <Copy size={11} />

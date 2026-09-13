@@ -1,14 +1,9 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   ClipboardCheck,
   Search,
   Download,
-  Printer,
-  ShieldAlert,
-  GitBranch,
-  FileCheck,
   RefreshCw,
-  ArrowRight,
 } from "lucide-react";
 import {
   API_BASE,
@@ -53,7 +48,31 @@ export default function ReviewQueue({ onSelectWork }) {
   };
 
   useEffect(() => {
-    loadCases(1);
+    let isMounted = true;
+    const fetchCases = async () => {
+      try {
+        const params = new URLSearchParams({
+          page: "1",
+          limit: String(PAGE_SIZE),
+        });
+        const res = await fetch(`${API_BASE}/api/review-cases?${params.toString()}`);
+        const data = await res.json();
+        if (isMounted) {
+          setCases(data.data || []);
+          setTotalCases(data.total || 0);
+          setTotalPages(data.pages || 1);
+          setPage(1);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error(err);
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchCases();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const filteredCases = useMemo(() => {

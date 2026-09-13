@@ -1,106 +1,52 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Camera,
   MapPin,
-  ShieldCheck,
   AlertTriangle,
-  FileCheck,
-  UploadCloud,
   CheckCircle2,
-  XCircle,
   Clock,
   Crosshair,
-  Building,
   Image as ImageIcon,
-  Sparkles,
 } from "lucide-react";
-import { formatCurrency } from "../constants";
-
-const SAMPLE_CASES = [
-  {
-    id: "case-authentic",
-    title: "1. Authentic On-Site Milestone Photo",
-    workId: "#166546",
-    workName: "Construction of CC road and side drain in Guntur",
-    location: "Guntur, Andhra Pradesh",
-    gpsCoordinates: "16.3067° N, 80.4365° E",
-    sanctionedCoords: "16.3072° N, 80.4358° E",
-    geoDistance: "14 meters (Within 50m site geofence)",
-    timestamp: "12 Apr 2024, 11:42 IST",
-    device: "Samsung Galaxy S22 (SM-S901E)",
-    pHashDuplicate: "No duplicate detected across 102,703 project photos",
-    authenticityScore: 98.6,
-    verdict: "PASSED",
-    badge: "authentic",
-    explanation:
-      "GPS coordinates precisely match the approved Guntur work site. Timestamp falls within the tender execution period, and image sensor fingerprint indicates an authentic on-site photograph.",
-  },
-  {
-    id: "case-duplicate",
-    title: "2. Duplicate Photo Reuse Fraud (Ghost Work)",
-    workId: "#144429",
-    workName: "Community pathway and culvert construction",
-    location: "Peddapalle, Telangana",
-    gpsCoordinates: "18.6163° N, 79.3789° E",
-    sanctionedCoords: "18.6150° N, 79.3801° E",
-    geoDistance: "110 meters",
-    timestamp: "28 Feb 2024, 15:10 IST",
-    device: "Redmi Note 11",
-    pHashDuplicate: "CRITICAL: 99.4% perceptual hash match with Work #122141 (Nalgonda, 2023)",
-    authenticityScore: 24.1,
-    verdict: "DUPLICATE_FLAG",
-    badge: "fraud",
-    explanation:
-      "Image Perceptual Hash (pHash) analysis revealed that this identical photograph was already submitted and claimed under Work #122141 in Nalgonda 11 months ago. Flagged as duplicate milestone billing fraud.",
-  },
-  {
-    id: "case-location-mismatch",
-    title: "3. GPS Coordinates Mismatch (Off-Site Photo)",
-    workId: "#158499",
-    workName: "Solar High Mast Lighting and Ground Levelling",
-    location: "Nagarkurnool, Telangana",
-    gpsCoordinates: "19.0760° N, 72.8777° E (Mumbai South, Maharashtra)",
-    sanctionedCoords: "16.4842° N, 78.3188° E (Nagarkurnool, Telangana)",
-    geoDistance: "648 km deviation from sanctioned site",
-    timestamp: "03 May 2024, 09:25 IST",
-    device: "iPhone 13 Pro",
-    pHashDuplicate: "No previous database hash match",
-    authenticityScore: 41.5,
-    verdict: "GEOFENCE_FAIL",
-    badge: "danger",
-    explanation:
-      "Photo EXIF GPS metadata indicates it was captured in Mumbai, Maharashtra (648 km away from Nagarkurnool). Vendor submission rejected for geo-fence failure.",
-  },
-  {
-    id: "case-tampered",
-    title: "4. Digital Tampering / Stock Image Detection",
-    workId: "#181700",
-    workName: "Drinking Water Purification Unit & RO Plant",
-    location: "Viluppuram, Tamil Nadu",
-    gpsCoordinates: "GPS metadata stripped / Missing EXIF header",
-    sanctionedCoords: "11.9401° N, 79.4861° E",
-    geoDistance: "Unknown (No GPS telemetry)",
-    timestamp: "Missing timestamp",
-    device: "Adobe Photoshop CS6 / Synthetic artifacts detected",
-    pHashDuplicate: "Matched known manufacturer marketing catalog image",
-    authenticityScore: 18.2,
-    verdict: "TAMPER_DETECTED",
-    badge: "danger",
-    explanation:
-      "The submitted image contains no hardware camera metadata and matches a commercial manufacturer brochure image rather than actual completed field installation. Payment clearance halted.",
-  },
-];
+import { API_BASE } from "../constants";
 
 export default function GeoPhotoVerifier() {
+  const [cases, setCases] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCaseIdx, setSelectedCaseIdx] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analyzedCase, setAnalyzedCase] = useState(SAMPLE_CASES[0]);
+  const [analyzedCase, setAnalyzedCase] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadEvidenceCases() {
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/evidence/cases`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.cases && data.cases.length > 0) {
+            setCases(data.cases);
+            setAnalyzedCase(data.cases[0]);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load live evidence cases:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    loadEvidenceCases();
+    return () => { isMounted = false; };
+  }, []);
 
   const handleSelectCase = (idx) => {
     setSelectedCaseIdx(idx);
     setIsAnalyzing(true);
     setTimeout(() => {
-      setAnalyzedCase(SAMPLE_CASES[idx]);
+      if (cases[idx]) {
+        setAnalyzedCase(cases[idx]);
+      }
       setIsAnalyzing(false);
     }, 400);
   };
@@ -128,57 +74,79 @@ export default function GeoPhotoVerifier() {
           </div>
 
           <div className="sample-cases-selector">
-            {SAMPLE_CASES.map((c, idx) => (
-              <button
-                key={c.id}
-                type="button"
-                className={`case-select-btn ${selectedCaseIdx === idx ? "active" : ""}`}
-                onClick={() => handleSelectCase(idx)}
-              >
-                <div className="case-title-row">
-                  <strong>{c.title}</strong>
-                  <span className={`mini-status-badge ${c.badge}`}>{c.verdict}</span>
-                </div>
-                <div className="case-meta-row">
-                  <span>Work: {c.workId}</span>
-                  <span>·</span>
-                  <span>{c.location}</span>
-                </div>
-              </button>
-            ))}
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "20px", color: "#64748b" }}>
+                <div className="spinner" />
+                <p style={{ marginTop: "8px", fontSize: "12px" }}>Loading live evidence cases from repository...</p>
+              </div>
+            ) : cases.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "20px", color: "#64748b" }}>
+                No active photo evidence records found.
+              </div>
+            ) : (
+              cases.map((c, idx) => (
+                <button
+                  key={c.id || idx}
+                  type="button"
+                  className={`case-select-btn ${selectedCaseIdx === idx ? "active" : ""}`}
+                  onClick={() => handleSelectCase(idx)}
+                >
+                  <div className="case-title-row">
+                    <strong>{c.title}</strong>
+                    <span className={`mini-status-badge ${c.badge}`}>{c.verdict}</span>
+                  </div>
+                  <div className="case-meta-row">
+                    <span>Work: {c.workId}</span>
+                    <span>·</span>
+                    <span>{c.location}</span>
+                  </div>
+                </button>
+              ))
+            )}
           </div>
 
-          <div className="photo-preview-box mt-3">
-            <div className="preview-top-bar">
-              <span>Simulated Vendor Uploaded Photo:</span>
-              <span className="file-info">{analyzedCase.device}</span>
-            </div>
-            <div className="simulated-image-frame">
-              <div className="image-watermark-overlay">
-                <div className="watermark-tag">
-                  <MapPin size={12} />
-                  <span>{analyzedCase.gpsCoordinates}</span>
+          {analyzedCase && (
+            <div className="photo-preview-box mt-3">
+              <div className="preview-top-bar">
+                <span>Simulated Vendor Uploaded Photo:</span>
+                <span className="file-info">{analyzedCase.device}</span>
+              </div>
+              <div className="simulated-image-frame">
+                <div className="image-watermark-overlay">
+                  <div className="watermark-tag">
+                    <MapPin size={12} />
+                    <span>{analyzedCase.gpsCoordinates}</span>
+                  </div>
+                  <div className="watermark-tag">
+                    <Clock size={12} />
+                    <span>{analyzedCase.timestamp}</span>
+                  </div>
                 </div>
-                <div className="watermark-tag">
-                  <Clock size={12} />
-                  <span>{analyzedCase.timestamp}</span>
+                <div className="photo-placeholder-art">
+                  <ImageIcon size={48} opacity={0.3} />
+                  <p>Project Milestone Photo: {analyzedCase.workName}</p>
+                  <small>eSAKSHI Upload ID: {analyzedCase.workId}-M2</small>
                 </div>
               </div>
-              <div className="photo-placeholder-art">
-                <ImageIcon size={48} opacity={0.3} />
-                <p>Project Milestone Photo: {analyzedCase.workName}</p>
-                <small>eSAKSHI Upload ID: {analyzedCase.workId}-M2</small>
-              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Right: AI Multi-Factor Analysis Results */}
         <div className="validator-results-card">
-          {isAnalyzing ? (
+          {loading ? (
+            <div className="loading-state">
+              <div className="spinner" />
+              <p>Connecting to eSAKSHI field surveillance repository...</p>
+            </div>
+          ) : isAnalyzing ? (
             <div className="loading-state">
               <div className="spinner" />
               <p>Extracting EXIF GPS coordinates & running perceptual image hash...</p>
+            </div>
+          ) : !analyzedCase ? (
+            <div className="loading-state">
+              <p>No verification case selected.</p>
             </div>
           ) : (
             <div className="audit-results-content">

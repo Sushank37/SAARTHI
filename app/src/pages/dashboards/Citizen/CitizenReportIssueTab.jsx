@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Flag,
   AlertCircle,
@@ -6,9 +6,6 @@ import {
   Upload,
   Copy,
   ArrowRight,
-  ShieldCheck,
-  Building2,
-  MapPin,
 } from "lucide-react";
 import { API_BASE } from "../../../constants";
 

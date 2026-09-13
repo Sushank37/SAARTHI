@@ -1,25 +1,17 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   MapPin,
   Filter,
   Search,
-  CheckCircle2,
-  Clock,
-  Building2,
-  Flag,
-  Eye,
-  Layers,
 } from "lucide-react";
 import { API_BASE } from "../../../constants";
 import ConstituencyMap from "../../../components/ConstituencyMap";
 
 export default function CitizenMapTab({
   onSelectWork,
-  onReportWork,
 }) {
   const [constituencyList, setConstituencyList] = useState([]);
   const [selectedConstituency, setSelectedConstituency] = useState("Nizamabad");
-  const [sectorFilter, setSectorFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -39,16 +31,6 @@ export default function CitizenMapTab({
     }
     loadConstituencies();
   }, []);
-
-  const sectors = [
-    { id: "all", label: "All Categories" },
-    { id: "Roads and Bridges", label: "Roads & Bridges" },
-    { id: "Drinking Water", label: "Drinking Water" },
-    { id: "Education", label: "Education & Schools" },
-    { id: "Health and Family Welfare", label: "Healthcare & Clinics" },
-    { id: "Community Infrastructure", label: "Community Halls" },
-    { id: "Electricity", label: "Solar & Electrification" },
-  ];
 
   const statuses = [
     { id: "All", label: "All Statuses" },

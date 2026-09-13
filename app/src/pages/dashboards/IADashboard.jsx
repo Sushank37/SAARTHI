@@ -1,41 +1,29 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { useAuth } from "../../context/useAuth";
 import {
   Building2,
-  ShieldCheck,
   Layers,
-  Bell,
   Activity,
   CheckCircle2,
   IndianRupee,
   Clock,
   FileCheck,
   Camera,
-  ShieldAlert,
   Sparkles,
   Search,
   ChevronDown,
   Download,
   Eye,
-  RefreshCw,
   AlertTriangle,
   AlertCircle,
-  TrendingUp,
-  ExternalLink,
-  FileText,
   Check,
   MapPin,
   Coins,
-  BarChart3,
-  HelpCircle,
-  Filter,
 } from "lucide-react";
 import {
   API_BASE,
   formatNumber,
   formatCrores,
-  formatCurrency,
   formatDecimal,
   exportToCSV,
 } from "../../constants";
@@ -93,8 +81,7 @@ const cleanAgencyName = (raw) => {
   return raw;
 };
 
-export default function IADashboard({ summary, onSelectWork }) {
-  const { roleConfig } = useAuth();
+export default function IADashboard({ onSelectWork }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Active module tab from URL query param: e.g. /ia?tab=upcoming-deadlines
@@ -117,9 +104,10 @@ export default function IADashboard({ summary, onSelectWork }) {
   useEffect(() => {
     const urlIA = searchParams.get("ia");
     if (urlIA && urlIA !== selectedIDA) {
-      setSelectedIDA(urlIA);
+      const timer = setTimeout(() => setSelectedIDA(urlIA), 0);
+      return () => clearTimeout(timer);
     }
-  }, [searchParams]);
+  }, [searchParams, selectedIDA]);
 
   // Handle switching selected IA
   const handleSelectIA = (newIA) => {
@@ -128,7 +116,9 @@ export default function IADashboard({ summary, onSelectWork }) {
     setWorksPage(1);
     try {
       localStorage.setItem("mplads_selected_ia", newIA);
-    } catch (e) {}
+    } catch {
+      // Ignore localStorage availability errors
+    }
 
     const nextParams = new URLSearchParams(searchParams);
     nextParams.set("ia", newIA);
@@ -166,10 +156,30 @@ export default function IADashboard({ summary, onSelectWork }) {
   };
 
   useEffect(() => {
-    if (currentTab === "assigned-concerns") {
-      loadIAConcerns();
-    }
+    if (currentTab !== "assigned-concerns") return;
+    let isMounted = true;
+    const fetchConcerns = async () => {
+      try {
+        const params = {};
+        if (selectedIDA && selectedIDA !== "ALL") {
+          params.iaId = selectedIDA;
+        }
+        const data = await getConcerns(params);
+        if (isMounted) {
+          setIaConcerns(data.concerns || []);
+          setIaConcernsLoading(false);
+        }
+      } catch (err) {
+        console.error("Failed to load IA concerns:", err);
+        if (isMounted) setIaConcernsLoading(false);
+      }
+    };
+    fetchConcerns();
+    return () => {
+      isMounted = false;
+    };
   }, [currentTab, selectedIDA]);
+
   const [worksTotal, setWorksTotal] = useState(0);
   const [worksPage, setWorksPage] = useState(1);
   const [worksLimit] = useState(15);
@@ -198,7 +208,23 @@ export default function IADashboard({ summary, onSelectWork }) {
   };
 
   useEffect(() => {
-    fetchIARequests();
+    let isMounted = true;
+    const fetchRequests = async () => {
+      try {
+        const data = await getRequests({ raisedByRole: "IMPLEMENTING_AGENCY" });
+        if (isMounted) {
+          setIaRequests(data.requests || []);
+          setIaRequestsLoading(false);
+        }
+      } catch (err) {
+        console.error("Failed to load IA requests:", err);
+        if (isMounted) setIaRequestsLoading(false);
+      }
+    };
+    fetchRequests();
+    return () => {
+      isMounted = false;
+    };
   }, [selectedIDA]);
 
   // Close dropdown on outside click
@@ -286,7 +312,6 @@ export default function IADashboard({ summary, onSelectWork }) {
   useEffect(() => {
     let isMounted = true;
     async function fetchAnalytics() {
-      setAnalyticsLoading(true);
       try {
         const idaParam = selectedIDA && selectedIDA !== "ALL" ? `?ida_name=${encodeURIComponent(selectedIDA)}` : "";
         const res = await fetch(`${API_BASE}/api/analytics/ia${idaParam}`);
@@ -310,7 +335,6 @@ export default function IADashboard({ summary, onSelectWork }) {
   useEffect(() => {
     let isMounted = true;
     async function fetchWorks() {
-      setWorksLoading(true);
       try {
         const params = new URLSearchParams();
         params.append("page", worksPage.toString());

@@ -1,18 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Building2,
   IndianRupee,
   CheckCircle2,
   Clock,
-  ShieldCheck,
   AlertTriangle,
   MapPin,
   Search,
-  Camera,
   QrCode,
   ArrowRight,
-  TrendingUp,
-  FileCheck,
   Flag,
   RefreshCw,
   Eye,
@@ -21,7 +17,6 @@ import { API_BASE, formatNumber, formatCrores } from "../../../constants";
 
 export default function CitizenOverviewTab({
   summary,
-  constituencyData,
   onSwitchTab,
   onSelectWork,
 }) {
@@ -46,7 +41,28 @@ export default function CitizenOverviewTab({
   };
 
   useEffect(() => {
-    fetchOverview();
+    let cancelled = false;
+    async function init() {
+      try {
+        const res = await fetch(`${API_BASE}/api/public/overview`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!cancelled) {
+          setOverviewData(data);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("[Public Overview] Load error:", err);
+        if (!cancelled) {
+          setError("Unable to load public transparency data from national server.");
+          setLoading(false);
+        }
+      }
+    }
+    init();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Compute values strictly from real backend responses
@@ -110,10 +126,10 @@ export default function CitizenOverviewTab({
             <IndianRupee size={14} color="#6366f1" />
           </div>
           <div className="kpi-value">
-            {loading && !sanctionedCr ? "..." : `₹ ${formatCrores(sanctionedCr * 1e7)} Cr`}
+            {loading && !sanctionedCr ? "..." : formatCrores(sanctionedCr * 1e7)}
           </div>
           <div className="kpi-sub">
-            Disbursed: ₹ {formatCrores(expenditureCr * 1e7)} Cr
+            Disbursed: {formatCrores(expenditureCr * 1e7)}
           </div>
         </div>
       </div>

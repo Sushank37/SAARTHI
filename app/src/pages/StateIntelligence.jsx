@@ -1,13 +1,10 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Map,
   Search,
   Download,
-  ShieldAlert,
-  ClipboardCheck,
   ChevronRight,
-  TrendingUp,
 } from "lucide-react";
 import { API_BASE, formatNumber, exportToCSV } from "../constants";
 

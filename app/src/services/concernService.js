@@ -4,6 +4,7 @@
  */
 
 import { API_BASE } from "../constants";
+import { getAuthHeaders } from "../utils/auth";
 
 export const CONCERN_CATEGORIES = [
   "Work Progress Issue",
@@ -53,7 +54,7 @@ export const CONCERN_STATUS_META = {
 export async function createConcern(payload) {
   const res = await fetch(`${API_BASE}/api/concerns`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -106,7 +107,7 @@ export async function getConcernById(concernId) {
 export async function updateConcernStatus(concernId, payload) {
   const res = await fetch(`${API_BASE}/api/concerns/${encodeURIComponent(concernId)}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -122,7 +123,7 @@ export async function updateConcernStatus(concernId, payload) {
 export async function recordConcernAction(concernId, payload) {
   const res = await fetch(`${API_BASE}/api/concerns/${encodeURIComponent(concernId)}/actions`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -138,7 +139,7 @@ export async function recordConcernAction(concernId, payload) {
 export async function submitConcernResponse(concernId, payload) {
   const res = await fetch(`${API_BASE}/api/concerns/${encodeURIComponent(concernId)}/responses`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     body: JSON.stringify(payload),
   });
   if (!res.ok) {

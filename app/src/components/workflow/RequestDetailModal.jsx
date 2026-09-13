@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   X,
   ExternalLink,
@@ -6,9 +6,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Send,
-  ShieldAlert,
   FileText,
-  User,
 } from "lucide-react";
 import RequestStatusBadge from "./RequestStatusBadge";
 import RequestPriorityBadge from "./RequestPriorityBadge";
@@ -26,6 +24,25 @@ export default function RequestDetailModal({
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    if (!request) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [request, onClose]);
 
   if (!request) return null;
 
@@ -65,7 +82,7 @@ export default function RequestDetailModal({
   };
 
   return (
-    <div className="workflow-modal-overlay" onClick={onClose}>
+    <div className="workflow-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
       <div
         className="workflow-modal-card"
         onClick={(e) => e.stopPropagation()}

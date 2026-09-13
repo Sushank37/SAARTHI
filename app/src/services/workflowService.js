@@ -4,6 +4,7 @@
  */
 
 import { API_BASE } from "../constants";
+import { getAuthHeaders } from "../utils/auth";
 
 export const REQUEST_STATUSES = {
   SUBMITTED: "SUBMITTED",
@@ -77,7 +78,7 @@ export async function getRequestById(requestId) {
 export async function createRequest(payload) {
   const res = await fetch(`${API_BASE}/api/requests`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -93,7 +94,7 @@ export async function createRequest(payload) {
 export async function updateRequestStatus(requestId, { role, status, note, actorIdentity }) {
   const res = await fetch(`${API_BASE}/api/requests/${encodeURIComponent(requestId)}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     body: JSON.stringify({
       role,
       status,

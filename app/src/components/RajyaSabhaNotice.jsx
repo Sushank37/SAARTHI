@@ -1,13 +1,10 @@
-import React from "react";
 import {
   Building2,
-  Sparkles,
   Clock,
   ArrowRight,
   ShieldCheck,
   Globe2,
   Layers,
-  MapPin,
   CheckCircle2,
   Calendar,
   Compass,

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Outlet, useNavigate, useOutletContext } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { Outlet, useNavigate, useLocation, useOutletContext, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
@@ -15,16 +15,24 @@ export function RouteConsumer({ Component, extraProps = {} }) {
 export default function SharedLayout() {
   const { role, roleConfig, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [house, setHouse] = useState("Lok Sabha");
   const [fontSize, setFontSize] = useState(15);
   const [summary, setSummary] = useState(null);
   const [selectedWork, setSelectedWork] = useState(null);
   const [backendStatus, setBackendStatus] = useState("connecting"); // "connected" | "connecting" | "offline"
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const loadSummary = async () => {
+  // Close mobile sidebar on route transition (BUG-009)
+  useEffect(() => {
+    const timer = setTimeout(() => setMobileMenuOpen(false), 0);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
+  const loadSummary = useCallback(async () => {
     try {
-      setBackendStatus((prev) => (prev === "connected" ? "connected" : "connecting"));
       const res = await fetch(`${API_BASE}/api/summary`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -34,13 +42,55 @@ export default function SharedLayout() {
       console.error("Summary fetch error:", err);
       setBackendStatus("offline");
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadSummary();
-    const interval = setInterval(loadSummary, 30000);
-    return () => clearInterval(interval);
+    let isMounted = true;
+    const fetchSummary = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/summary`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (isMounted) {
+          setSummary(data);
+          setBackendStatus("connected");
+        }
+      } catch (err) {
+        console.error("Summary fetch error:", err);
+        if (isMounted) setBackendStatus("offline");
+      }
+    };
+
+    fetchSummary();
+    const interval = setInterval(fetchSummary, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
+
+  // Synchronize URL search params with Work Detail Drawer (BUG-018)
+  useEffect(() => {
+    const urlWorkId = searchParams.get("workId");
+    if (urlWorkId) {
+      if (!selectedWork || (String(selectedWork.WORK_ID) !== urlWorkId && String(selectedWork.WORK_RECOMMENDATION_DTL_ID) !== urlWorkId)) {
+        const timer = setTimeout(() => {
+          setSelectedWork({
+            WORK_ID: urlWorkId,
+            __initialSection: searchParams.get("section") || "all",
+            __authority: roleConfig?.id?.toUpperCase() || role?.toUpperCase() || "DISTRICT_AUTHORITY",
+          });
+        }, 0);
+        return () => clearTimeout(timer);
+      }
+    } else if (selectedWork) {
+      // User pressed Browser Back button: close drawer cleanly
+      const timer = setTimeout(() => {
+        setSelectedWork(null);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, selectedWork, role, roleConfig]);
 
   const handleLogout = () => {
     logout();
@@ -50,6 +100,12 @@ export default function SharedLayout() {
   const handleSelectWork = (work, section = null) => {
     if (!work) {
       setSelectedWork(null);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("workId");
+        next.delete("section");
+        return next;
+      });
       return;
     }
     const initialSection = section || (typeof work === "object" ? work.__initialSection : null) || "all";
@@ -57,10 +113,25 @@ export default function SharedLayout() {
       ? String(work.__authority).toUpperCase()
       : (roleConfig?.id?.toUpperCase() || role?.toUpperCase() || "DISTRICT_AUTHORITY");
 
-    if (typeof work === "object") {
-      setSelectedWork({ ...work, __initialSection: initialSection, __authority: currentAuthority });
-    } else {
-      setSelectedWork({ WORK_ID: String(work).replace(/\.0$/, ""), __initialSection: initialSection, __authority: currentAuthority });
+    const wObj = typeof work === "object"
+      ? { ...work, __initialSection: initialSection, __authority: currentAuthority }
+      : { WORK_ID: String(work).replace(/\.0$/, ""), __initialSection: initialSection, __authority: currentAuthority };
+
+    setSelectedWork(wObj);
+
+    // Update browser URL so Back/Forward and direct linking work seamlessly
+    const targetId = wObj.WORK_ID || wObj.WORK_RECOMMENDATION_DTL_ID;
+    if (targetId) {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("workId", String(targetId));
+        if (initialSection && initialSection !== "all") {
+          next.set("section", initialSection);
+        } else {
+          next.delete("section");
+        }
+        return next;
+      });
     }
   };
 
@@ -82,12 +153,27 @@ export default function SharedLayout() {
         roleConfig={roleConfig}
         onLogout={handleLogout}
         onSelectWork={handleSelectWork}
+        mobileMenuOpen={mobileMenuOpen}
+        onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
       />
 
       {/* Main Layout (Sidebar only shown for Lok Sabha) */}
       <div className={`gov-layout-body ${house === "Rajya Sabha" ? "gov-layout-body-rs" : ""}`}>
+        {mobileMenuOpen && (
+          <div
+            className="sidebar-mobile-backdrop"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+        )}
         {house !== "Rajya Sabha" && (
-          <Sidebar summary={summary} roleConfig={roleConfig} onLogout={handleLogout} />
+          <Sidebar
+            summary={summary}
+            roleConfig={roleConfig}
+            onLogout={handleLogout}
+            mobileOpen={mobileMenuOpen}
+            onCloseMobile={() => setMobileMenuOpen(false)}
+          />
         )}
 
         <main className="gov-content-viewport">
@@ -141,7 +227,7 @@ export default function SharedLayout() {
       <WorkDetailDrawer
         work={selectedWork}
         initialSection={selectedWork?.__initialSection || "all"}
-        onClose={() => setSelectedWork(null)}
+        onClose={() => handleSelectWork(null)}
       />
     </div>
   );

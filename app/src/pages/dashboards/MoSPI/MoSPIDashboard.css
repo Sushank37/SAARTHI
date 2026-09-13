@@ -325,6 +325,7 @@
 .mospi-table-wrapper {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   background: #ffffff;
@@ -333,10 +334,15 @@
 .mospi-data-table,
 .mospi-table {
   width: 100%;
+  min-width: 860px;
   border-collapse: collapse;
   font-size: 12px;
   text-align: left;
   font-family: inherit;
+}
+
+.mospi-table-duplicate {
+  min-width: 980px;
 }
 
 .mospi-data-table th,
@@ -500,8 +506,8 @@
 .mospi-pill.gray,
 .mospi-pill.neutral {
   background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
+  color: #334155;
+  border: 1px solid #cbd5e1;
 }
 
 .mospi-pill.blue {

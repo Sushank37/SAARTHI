@@ -1,16 +1,11 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   GitBranch,
   Search,
   Filter,
-  Layers,
-  ArrowRight,
-  Eye,
   X,
-  Building,
   User,
   MapPin,
-  FileText,
   Download,
 } from "lucide-react";
 import {
@@ -65,7 +60,34 @@ export default function DuplicateIntelligence({ onSelectWork }) {
   };
 
   useEffect(() => {
-    loadClusters(1);
+    let isMounted = true;
+    const fetchClusters = async () => {
+      try {
+        const params = new URLSearchParams({
+          page: "1",
+          limit: String(PAGE_SIZE),
+        });
+        if (level !== "ALL") {
+          params.append("level", level);
+        }
+        const res = await fetch(`${API_BASE}/api/duplicate-cases?${params.toString()}`);
+        const data = await res.json();
+        if (isMounted) {
+          setClusters(data.data || []);
+          setTotalClusters(data.total || 0);
+          setTotalPages(data.pages || 1);
+          setPage(1);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error(err);
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchClusters();
+    return () => {
+      isMounted = false;
+    };
   }, [level]);
 
   const loadClusterDetails = async (clusterId) => {
@@ -103,6 +125,25 @@ export default function DuplicateIntelligence({ onSelectWork }) {
   const handleExport = () => {
     exportToCSV(clusters, `mplads_duplicate_clusters_page_${page}.csv`);
   };
+
+  useEffect(() => {
+    if (!selectedClusterId) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setSelectedClusterId(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedClusterId]);
 
   return (
     <div className="gov-mp-shell">
@@ -309,11 +350,11 @@ export default function DuplicateIntelligence({ onSelectWork }) {
       {/* Deep Cluster Inspection Modal */}
       {selectedClusterId && (
         <div className="drawer-overlay" onClick={() => setSelectedClusterId(null)}>
-          <div className="gov-modal-dialog" onClick={(e) => e.stopPropagation()}>
+          <div className="gov-modal-dialog" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="cluster-modal-title">
             <div className="modal-header">
               <div>
                 <span className="gov-eyebrow">CLUSTER DEEP AUDIT</span>
-                <h2>Duplicate Cluster #{selectedClusterId}</h2>
+                <h2 id="cluster-modal-title">Duplicate Cluster #{selectedClusterId}</h2>
                 <p>
                   {clusterDetail?.cluster_size || 0} interconnected works sharing high text and
                   financial similarity in {clusterDetail?.state || "same constituency"}.

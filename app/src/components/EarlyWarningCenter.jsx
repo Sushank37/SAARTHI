@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { ROLE_IDS } from "../data/roles";
@@ -13,9 +13,7 @@ import {
   X,
   RefreshCw,
   Download,
-  Filter,
   ArrowRight,
-  ExternalLink,
   ChevronLeft,
   ChevronRight,
   Info,
@@ -117,54 +115,70 @@ export default function EarlyWarningCenter({
   });
   const [copiedId, setCopiedId] = useState(null);
 
+  const [refreshTick, setRefreshTick] = useState(0);
+
   // Sync initialCategory if changed externally
   useEffect(() => {
     if (initialCategory) {
-      setActiveCategory(initialCategory);
+      const timer = setTimeout(() => setActiveCategory(initialCategory), 0);
+      return () => clearTimeout(timer);
     }
   }, [initialCategory]);
 
   // Fetch alerts from backend
-  const fetchAlerts = useCallback(async () => {
+  useEffect(() => {
     if (!isOpen || !isAuthorized) return;
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        category: activeCategory,
-        page: page.toString(),
-        limit: "25",
-      });
-      if (severityFilter !== "ALL") {
-        params.append("severity", severityFilter);
+    let isMounted = true;
+
+    const run = async () => {
+      try {
+        const params = new URLSearchParams({
+          category: activeCategory,
+          page: page.toString(),
+          limit: "25",
+        });
+        if (severityFilter !== "ALL") {
+          params.append("severity", severityFilter);
+        }
+        if (searchQuery.trim()) {
+          params.append("q", searchQuery.trim());
+        }
+
+        const res = await fetch(`${API_BASE}/api/alerts/early-warning?${params.toString()}`);
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+        const json = await res.json();
+        if (isMounted) {
+          setData(json);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("Failed to fetch early warning alerts:", err);
+        if (isMounted) setLoading(false);
       }
-      if (searchQuery.trim()) {
-        params.append("q", searchQuery.trim());
-      }
+    };
 
-      const res = await fetch(`${API_BASE}/api/alerts/early-warning?${params.toString()}`);
-      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-      const json = await res.json();
-      setData(json);
-    } catch (err) {
-      console.error("Failed to fetch early warning alerts:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [isOpen, isAuthorized, activeCategory, severityFilter, searchQuery, page]);
+    run();
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, isAuthorized, activeCategory, severityFilter, searchQuery, page, refreshTick]);
 
+  // Handle escape key & body scroll lock
   useEffect(() => {
-    fetchAlerts();
-  }, [fetchAlerts]);
+    if (!isOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
-  // Handle escape key
-  useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === "Escape" && isOpen) {
+      if (e.key === "Escape") {
         onClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   // Conditional return after all hooks have executed unconditionally
@@ -301,7 +315,10 @@ export default function EarlyWarningCenter({
           <div className="ew-header-actions">
             <button
               className="ew-btn-outline"
-              onClick={fetchAlerts}
+              onClick={() => {
+                setLoading(true);
+                setRefreshTick((t) => t + 1);
+              }}
               title="Refresh telemetry"
               disabled={loading}
             >

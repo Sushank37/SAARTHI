@@ -1,9 +1,7 @@
-import React from "react";
 import { IndianRupee, FileCheck, CheckCircle2, TrendingDown } from "lucide-react";
 import { formatNumber, formatCrores } from "../constants";
 
-export default function ESakshiOfficialCards({ summary, house }) {
-  const isLokSabha = house === "Lok Sabha";
+export default function ESakshiOfficialCards({ summary }) {
 
   // Real-time metrics computed directly from 102,703 works in mplads_final_dataset.csv
   const allocation = summary?.total_fund_allocation || 27150000000;

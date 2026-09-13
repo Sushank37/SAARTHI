@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
-  Filter,
   Eye,
   Flag,
   MapPin,
   Building2,
-  Calendar,
-  IndianRupee,
-  CheckCircle2,
-  Clock,
   Download,
   RefreshCw,
   AlertTriangle,
@@ -21,6 +16,7 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const [selectedConstituency, setSelectedConstituency] = useState("all");
   const [constituencyList, setConstituencyList] = useState([]);
   const [selectedSector, setSelectedSector] = useState("all");
@@ -46,46 +42,55 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
     loadConstituencies();
   }, []);
 
-  const fetchWorks = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      let url = `${API_BASE}/api/works?page=${page}&limit=15`;
-      if (selectedConstituency && selectedConstituency !== "all") {
-        url += `&constituency=${encodeURIComponent(selectedConstituency)}`;
-      }
-      if (selectedSector !== "all") {
-        url += `&category=${encodeURIComponent(selectedSector)}`;
-      }
-      if (selectedStatus !== "all") {
-        url += `&stage=${encodeURIComponent(selectedStatus)}`;
-      }
-      if (searchQuery.trim()) {
-        url += `&q=${encodeURIComponent(searchQuery.trim())}`;
-      }
-
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const list = data.data || data.works || [];
-      setWorks(list);
-      setTotalCount(data.total || 0);
-    } catch (err) {
-      console.error("Failed to load public works:", err);
-      setError("Unable to load public works records from server.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchWorks();
-  }, [page, selectedConstituency, selectedSector, selectedStatus]);
+    let cancelled = false;
+    async function loadWorks() {
+      setLoading(true);
+      setError(null);
+      try {
+        let url = `${API_BASE}/api/works?page=${page}&limit=15`;
+        if (selectedConstituency && selectedConstituency !== "all") {
+          url += `&constituency=${encodeURIComponent(selectedConstituency)}`;
+        }
+        if (selectedSector !== "all") {
+          url += `&category=${encodeURIComponent(selectedSector)}`;
+        }
+        if (selectedStatus !== "all") {
+          url += `&stage=${encodeURIComponent(selectedStatus)}`;
+        }
+        if (submittedQuery) {
+          url += `&q=${encodeURIComponent(submittedQuery)}`;
+        }
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const list = data.data || data.works || [];
+        if (!cancelled) {
+          setWorks(list);
+          setTotalCount(data.total || 0);
+        }
+      } catch (err) {
+        console.error("Failed to load public works:", err);
+        if (!cancelled) {
+          setError("Unable to load public works records from server.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+    loadWorks();
+    return () => {
+      cancelled = true;
+    };
+  }, [page, selectedConstituency, selectedSector, selectedStatus, submittedQuery]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setPage(1);
-    fetchWorks();
+    setSubmittedQuery(searchQuery.trim());
   };
 
   const handleExportCSV = () => {
@@ -295,13 +300,13 @@ export default function CitizenExploreTab({ onSelectWork, onReportWork }) {
 
                       <td style={{ textAlign: "right" }}>
                         <strong style={{ fontSize: "12px", color: "#0f172a" }}>
-                          {sanc > 0 ? (sanc >= 1e7 ? `₹${(sanc / 1e7).toFixed(2)} Cr` : `₹${(sanc / 1e5).toFixed(2)} L`) : "₹0"}
+                          {formatCrores(sanc)}
                         </strong>
                       </td>
 
                       <td style={{ textAlign: "right" }}>
                         <span style={{ fontSize: "12px", color: exp > 0 ? "#0d9488" : "#64748b", fontWeight: "600" }}>
-                          {exp > 0 ? (exp >= 1e7 ? `₹${(exp / 1e7).toFixed(2)} Cr` : `₹${(exp / 1e5).toFixed(2)} L`) : "₹0"}
+                          {formatCrores(exp)}
                         </span>
                       </td>
 

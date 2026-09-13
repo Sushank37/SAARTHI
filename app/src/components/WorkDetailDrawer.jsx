@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
@@ -8,8 +8,6 @@ import {
   AlertTriangle,
   GitBranch,
   Clock,
-  IndianRupee,
-  TrendingUp,
   FileCheck,
   Building,
   Building2,
@@ -21,23 +19,16 @@ import {
   Camera,
   ExternalLink,
   CheckCircle2,
-  AlertCircle,
   Copy,
   Check,
   Bell,
   AlertOctagon,
-  Filter,
-  Star,
-  Download,
   FileText,
-  Hammer,
 } from "lucide-react";
-import { formatNumber, formatDecimal, formatCurrency, formatCrores } from "../constants";
+import { API_BASE, formatDecimal, formatCurrency } from "../constants";
 import {
   getRequests,
   createRequest,
-  REQUEST_TYPES,
-  REQUEST_TYPE_LABELS,
 } from "../services/workflowService";
 import RequestStatusBadge from "./workflow/RequestStatusBadge";
 import RequestPriorityBadge from "./workflow/RequestPriorityBadge";
@@ -111,8 +102,6 @@ const getAuthorityTabs = (authority) => {
 };
 
 export default function WorkDetailDrawer({ work: initialWork, onClose, initialSection = "all" }) {
-  if (!initialWork) return null;
-
   const { role: authRole } = useAuth() || {};
   const location = useLocation();
 
@@ -140,13 +129,17 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
     return { WORK_ID: cleanRaw };
   }, [initialWork]);
 
-  const [hydratedWork, setHydratedWork] = useState(incomingWorkObj);
-
-  useEffect(() => {
-    setHydratedWork(incomingWorkObj);
-  }, [incomingWorkObj]);
-
-  const work = hydratedWork || incomingWorkObj || {};
+  const [fetchedWork, setFetchedWork] = useState(null);
+  const work = useMemo(() => {
+    if (
+      fetchedWork &&
+      (fetchedWork.WORK_ID === incomingWorkObj?.WORK_ID ||
+        fetchedWork.WORK_RECOMMENDATION_DTL_ID === incomingWorkObj?.WORK_RECOMMENDATION_DTL_ID)
+    ) {
+      return { ...(incomingWorkObj || {}), ...fetchedWork };
+    }
+    return incomingWorkObj || {};
+  }, [incomingWorkObj, fetchedWork]);
 
   // Clean IDs
   const workId = work.WORK_ID != null ? String(work.WORK_ID).replace(/\.0$/, "") : null;
@@ -161,21 +154,25 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
   // Auto-hydrate if missing detailed work fields
   useEffect(() => {
     if (!canonicalWorkId) return;
-    const isBare = !work.WORK_DESCRIPTION || work.WORK_DESCRIPTION.length < 5 || !work.STATE_NAME;
+    const isBare = !incomingWorkObj?.WORK_DESCRIPTION || incomingWorkObj.WORK_DESCRIPTION.length < 5 || !incomingWorkObj?.STATE_NAME;
     if (isBare) {
+      let cancelled = false;
       fetch(`${API_BASE}/api/works/${encodeURIComponent(canonicalWorkId)}`)
         .then((res) => {
           if (res.ok) return res.json();
           throw new Error("HTTP error " + res.status);
         })
         .then((data) => {
-          if (data && !data.error) {
-            setHydratedWork((prev) => ({ ...(prev || {}), ...data }));
+          if (!cancelled && data && !data.error) {
+            setFetchedWork(data);
           }
         })
         .catch((err) => console.warn("Failed to auto-hydrate work dossier:", err));
+      return () => {
+        cancelled = true;
+      };
     }
-  }, [canonicalWorkId]);
+  }, [canonicalWorkId, incomingWorkObj?.WORK_DESCRIPTION, incomingWorkObj?.STATE_NAME]);
 
   // Determine active authority persona
   const activeAuthority = useMemo(() => {
@@ -227,7 +224,8 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
   // Synchronize initial section if prop updates
   useEffect(() => {
     const nextSection = work?.__initialSection || initialSection || "all";
-    setActiveSection(nextSection);
+    const timer = setTimeout(() => setActiveSection(nextSection), 0);
+    return () => clearTimeout(timer);
   }, [initialSection, work]);
 
   // Persistent cross-role workflow requests attached to this work
@@ -238,9 +236,8 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
   const [actionLoading, setActionLoading] = useState(false);
   const [actionFeedback, setActionFeedback] = useState("");
 
-  const loadWorkRequests = async () => {
+  const loadWorkRequests = useCallback(async () => {
     if (!canonicalWorkId) return;
-    setRequestsLoading(true);
     try {
       const data = await getRequests({ workId: canonicalWorkId });
       setWorkRequests(data.requests || []);
@@ -249,10 +246,27 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
     } finally {
       setRequestsLoading(false);
     }
-  };
+  }, [canonicalWorkId]);
 
   useEffect(() => {
-    loadWorkRequests();
+    if (!canonicalWorkId) return;
+    let isMounted = true;
+    const fetchRequests = async () => {
+      try {
+        const data = await getRequests({ workId: canonicalWorkId });
+        if (isMounted) {
+          setWorkRequests(data.requests || []);
+          setRequestsLoading(false);
+        }
+      } catch (err) {
+        console.error("Failed to load requests for work:", err);
+        if (isMounted) setRequestsLoading(false);
+      }
+    };
+    fetchRequests();
+    return () => {
+      isMounted = false;
+    };
   }, [canonicalWorkId]);
 
   const handleExecuteWorkflowAction = async (type, defaultTitle, defaultDesc, defaultPriority = "MEDIUM") => {
@@ -404,17 +418,87 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
     }
   }, [activeAuthority]);
 
-  // Lock body scroll while drawer is open to prevent page jump
+  const drawerRef = useRef(null);
+  const closeBtnRef = useRef(null);
+
+  // Lock body scroll while drawer is open to prevent background scrolling (BUG-008)
   useEffect(() => {
+    if (!initialWork) return;
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = originalOverflow || "";
     };
-  }, []);
+  }, [initialWork]);
+
+  // Escape key listener & focus trapping for accessibility (BUG-008 & BUG-014)
+  useEffect(() => {
+    if (!initialWork) return;
+    const prevActiveElement = document.activeElement;
+
+    // Focus close button on mount
+    const timer = setTimeout(() => {
+      if (closeBtnRef.current) {
+        closeBtnRef.current.focus();
+      }
+    }, 50);
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose?.();
+        return;
+      }
+
+      // Focus trapping inside drawer
+      if (e.key === "Tab" && drawerRef.current) {
+        const focusableElements = drawerRef.current.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length > 0) {
+          const firstElement = focusableElements[0];
+          const lastElement = focusableElements[focusableElements.length - 1];
+
+          if (e.shiftKey && document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          } else if (!e.shiftKey && document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("keydown", handleKeyDown);
+      if (prevActiveElement && typeof prevActiveElement.focus === "function") {
+        try {
+          prevActiveElement.focus();
+        } catch {
+          // Ignore focus errors on unmounted triggers
+        }
+      }
+    };
+  }, [initialWork, onClose]);
+
+  if (!initialWork) return null;
 
   return createPortal(
-    <div className="drawer-overlay" onClick={onClose}>
-      <aside className="gov-detail-drawer" onClick={(e) => e.stopPropagation()}>
+    <div className="drawer-overlay" onClick={onClose} role="presentation">
+      <aside
+        ref={drawerRef}
+        className="gov-detail-drawer"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${authorityMeta.eyebrow} — ${primaryId}`}
+        tabIndex={-1}
+      >
         {/* 1. Official Government Dossier Header */}
         <div className="drawer-header">
           <div className="header-meta">
@@ -443,6 +527,7 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
               className="gov-btn-outline"
               onClick={handleCopyId}
               title="Copy Record ID"
+              aria-label="Copy Record ID"
             >
               {copiedId ? <Check size={14} color="#15803d" /> : <Copy size={14} />}
               <span>{copiedId ? "Copied" : "Copy ID"}</span>
@@ -452,15 +537,18 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
               className="gov-btn-outline"
               onClick={handlePrint}
               title="Print Official Dossier"
+              aria-label="Print Official Dossier"
             >
               <Printer size={14} />
               <span>Print</span>
             </button>
             <button
+              ref={closeBtnRef}
               type="button"
               className="drawer-close-btn"
               onClick={onClose}
-              aria-label="Close Dossier"
+              aria-label="Close Work Detail Dossier"
+              title="Close Dossier (Esc)"
             >
               <X size={18} />
             </button>
@@ -1445,7 +1533,10 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       type="button"
                       className="collector-btn btn-primary"
                       disabled={actionLoading}
-                      onClick={() => handleExecuteWorkflowAction("OVERSIGHT_DIRECTIVE", "MoSPI Central Compliance Directive", "Ministry of Statistics & Programme Implementation issued national compliance directive to District Nodal Authority.", "CRITICAL")}
+                      onClick={() => {
+                        handleExecuteWorkflowAction("OVERSIGHT_DIRECTIVE", "MoSPI Central Compliance Directive", "Ministry of Statistics & Programme Implementation issued national compliance directive to District Nodal Authority.", "CRITICAL");
+                        setMospiDirectiveIssued(true);
+                      }}
                     >
                       <CheckCircle2 size={14} />
                       <span>Issue Central MoSPI Compliance Directive to State</span>
@@ -1455,7 +1546,10 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       type="button"
                       className="collector-btn btn-warning"
                       disabled={actionLoading}
-                      onClick={() => handleExecuteWorkflowAction("OVERSIGHT_DIRECTIVE", "MoSPI SNA Tranche Withheld", "Central SNA disbursement tranche withheld pending field verification.", "HIGH")}
+                      onClick={() => {
+                        handleExecuteWorkflowAction("OVERSIGHT_DIRECTIVE", "MoSPI SNA Tranche Withheld", "Central SNA disbursement tranche withheld pending field verification.", "HIGH");
+                        setSnaTrancheWithheld(true);
+                      }}
                     >
                       <AlertOctagon size={14} />
                       <span>Withhold State Nodal Account (SNA) Tranche</span>
@@ -1465,7 +1559,10 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       type="button"
                       className="collector-btn btn-outline"
                       disabled={actionLoading}
-                      onClick={() => handleExecuteWorkflowAction("OVERSIGHT_DIRECTIVE", "Special CAG / CVC Audit Requisition", "Requisitioned special CAG / CVC audit for inter-state duplicate cluster scrutiny.", "CRITICAL")}
+                      onClick={() => {
+                        handleExecuteWorkflowAction("OVERSIGHT_DIRECTIVE", "Special CAG / CVC Audit Requisition", "Requisitioned special CAG / CVC audit for inter-state duplicate cluster scrutiny.", "CRITICAL");
+                        setCagAuditOrdered(true);
+                      }}
                     >
                       <ShieldAlert size={14} />
                       <span>Requisition Special CAG / CVC Audit</span>
@@ -1514,7 +1611,10 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       type="button"
                       className="collector-btn btn-primary"
                       disabled={actionLoading}
-                      onClick={() => handleExecuteWorkflowAction("MEASUREMENT_BOOK_SUBMISSION", "MB Entry & Running Bill Claim", `IA recorded Measurement Book (MB-2026-${canonicalWorkId}) measurements and submitted running bill for District Authority clearance.`, "MEDIUM")}
+                      onClick={() => {
+                        handleExecuteWorkflowAction("MEASUREMENT_BOOK_SUBMISSION", "MB Entry & Running Bill Claim", `IA recorded Measurement Book (MB-2026-${canonicalWorkId}) measurements and submitted running bill for District Authority clearance.`, "MEDIUM");
+                        setMbSubmitted(true);
+                      }}
                     >
                       <FileCheck size={14} />
                       <span>Record Measurement Book (MB) Entry & Submit Bill</span>
@@ -1524,7 +1624,10 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       type="button"
                       className="collector-btn btn-warning"
                       disabled={actionLoading}
-                      onClick={() => handleExecuteWorkflowAction("MEASUREMENT_BOOK_SUBMISSION", "Milestone Geo-Photo Logged", "Verified milestone geo-tagged photograph logged with tamper-proof timestamp.", "LOW")}
+                      onClick={() => {
+                        handleExecuteWorkflowAction("MEASUREMENT_BOOK_SUBMISSION", "Milestone Geo-Photo Logged", "Verified milestone geo-tagged photograph logged with tamper-proof timestamp.", "LOW");
+                        setGeoEvidenceUploaded(true);
+                      }}
                     >
                       <Camera size={14} />
                       <span>Upload Verified Milestone Geo-Photo</span>
@@ -1535,6 +1638,7 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       className="collector-btn btn-outline"
                       disabled={actionLoading}
                       onClick={() => {
+                        setEotFiled(true);
                         setComposerDefaultType("TIME_EXTENSION");
                         setComposerOpen(true);
                       }}
@@ -1551,33 +1655,32 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                 <div className="authority-directive-box mp-directive-theme">
                   <div className="section-header-row" style={{ marginBottom: "10px" }}>
                     <h3 className="section-title">
-                      <span className="sec-num-badge">7</span>
-                      <span>Hon'ble Member of Parliament Constituency Oversight & Inquiries</span>
+                      <span className="sec-num-badge">8</span>
+                      <span>Hon'ble Member of Parliament Directives & Priority Inquiries</span>
                     </h3>
-                    <span className="authority-badge-small mp">Hon'ble MP</span>
+                    <span className="authority-badge-small mp">Elected Representative</span>
                   </div>
                   <p className="action-box-desc">
-                    Constituency oversight and parliamentary priority management: monitor ₹5.00 Cr quota utilization,
-                    issue parliamentary inquiry to District Collectorate on execution delays, and endorse completed community assets for public inauguration.
+                    Direct oversight by Hon'ble MP ({work.MP_NAME || "Constituency Representative"}): raise parliamentary inquiries regarding stalled execution, request expedited sanction from Collectorate, or schedule field inspection.
                   </p>
 
                   <div className="directive-kpi-row">
                     <div className="d-kpi">
-                      <span className="d-kpi-label">Recommending MP</span>
-                      <strong className="d-kpi-val" style={{ color: "#7c3aed" }}>
-                        {work.MP_NAME || "Hon'ble MP"} ({displayHouse})
+                      <span className="d-kpi-label">Constituency Recommendation</span>
+                      <strong className="d-kpi-val" style={{ color: "#d97706" }}>
+                        OFFICIALLY SPONSORED
                       </strong>
                     </div>
                     <div className="d-kpi">
-                      <span className="d-kpi-label">Quota Entitlement Impact</span>
+                      <span className="d-kpi-label">Citizen Endorsement</span>
+                      <strong className="d-kpi-val">
+                        HIGH COMMUNITY NEED
+                      </strong>
+                    </div>
+                    <div className="d-kpi">
+                      <span className="d-kpi-label">Sansad Notice Status</span>
                       <strong className="d-kpi-val" style={{ color: "#059669" }}>
-                        {formatCrores(recAmount || sancAmount)} debited
-                      </strong>
-                    </div>
-                    <div className="d-kpi">
-                      <span className="d-kpi-label">Sansad Oversight</span>
-                      <strong className="d-kpi-val" style={{ color: "#005A9C" }}>
-                        CONSTITUENCY PRIORITY
+                        ACTIVE EXPEDITE REQUEST
                       </strong>
                     </div>
                   </div>
@@ -1587,7 +1690,10 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       type="button"
                       className="collector-btn btn-primary"
                       disabled={actionLoading}
-                      onClick={() => handleExecuteWorkflowAction("CONSTITUENCY_INQUIRY", "Parliamentary Expedited Inquiry", "Hon'ble MP issued parliamentary priority inquiry to District Collectorate regarding execution status.", "HIGH")}
+                      onClick={() => {
+                        handleExecuteWorkflowAction("CONSTITUENCY_INQUIRY", "Parliamentary Expedited Inquiry", "Hon'ble MP issued parliamentary priority inquiry to District Collectorate regarding execution status.", "HIGH");
+                        setSansadNoticeIssued(true);
+                      }}
                     >
                       <Bell size={14} />
                       <span>Issue Parliamentary Expedited Inquiry to Collector</span>
@@ -1597,7 +1703,10 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       type="button"
                       className="collector-btn btn-warning"
                       disabled={actionLoading}
-                      onClick={() => handleExecuteWorkflowAction("CONSTITUENCY_INQUIRY", "Asset Endorsement for Public Dedication", "Hon'ble MP formally endorsed completed community asset for public dedication and plaque inscription.", "LOW")}
+                      onClick={() => {
+                        handleExecuteWorkflowAction("CONSTITUENCY_INQUIRY", "Asset Endorsement for Public Dedication", "Hon'ble MP formally endorsed completed community asset for public dedication and plaque inscription.", "LOW");
+                        setInaugurationApproved(true);
+                      }}
                     >
                       <CheckCircle2 size={14} />
                       <span>Endorse for Public Dedication & Plaque Inscription</span>
@@ -1607,7 +1716,10 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       type="button"
                       className="collector-btn btn-outline"
                       disabled={actionLoading}
-                      onClick={() => handleExecuteWorkflowAction("CONSTITUENCY_INQUIRY", "On-Site Constituency Inspection Scheduled", "Hon'ble MP scheduled on-site constituency inspection visit with District Collectorate.", "MEDIUM")}
+                      onClick={() => {
+                        handleExecuteWorkflowAction("CONSTITUENCY_INQUIRY", "On-Site Constituency Inspection Scheduled", "Hon'ble MP scheduled on-site constituency inspection visit with District Collectorate.", "MEDIUM");
+                        setInspectionScheduled(true);
+                      }}
                     >
                       <Calendar size={14} />
                       <span>Schedule On-Site Constituency Inspection</span>
@@ -1666,7 +1778,10 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       type="button"
                       className="collector-btn btn-primary"
                       disabled={actionLoading}
-                      onClick={() => handleExecuteWorkflowAction("PUBLIC_VERIFICATION", "Citizen Social Audit Asset Verification", `Citizen verified community asset as delivered and usable with a satisfaction rating of ${citizenRating}/5 stars.`, "LOW")}
+                      onClick={() => {
+                        handleExecuteWorkflowAction("PUBLIC_VERIFICATION", "Citizen Social Audit Asset Verification", `Citizen verified community asset as delivered and usable with a satisfaction rating of ${citizenRating}/5 stars.`, "LOW");
+                        setCitizenAuditVerified(true);
+                      }}
                     >
                       <CheckCircle2 size={14} />
                       <span>Verify Community Asset as Delivered & Usable</span>
@@ -1677,6 +1792,7 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       className="collector-btn btn-warning"
                       disabled={actionLoading}
                       onClick={() => {
+                        setGrievanceReported(true);
                         setComposerDefaultType("GRIEVANCE");
                         setComposerOpen(true);
                       }}
@@ -1721,7 +1837,10 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       type="button"
                       className="collector-btn btn-primary"
                       disabled={actionLoading}
-                      onClick={() => handleExecuteWorkflowAction("ADMINISTRATIVE_NOTICE", "Collectorate Feasibility Clearance", "District Collectorate verified feasibility and cleared administrative scrutiny under MPLADS Guidelines.", "LOW")}
+                      onClick={() => {
+                        handleExecuteWorkflowAction("ADMINISTRATIVE_NOTICE", "Collectorate Feasibility Clearance", "District Collectorate verified feasibility and cleared administrative scrutiny under MPLADS Guidelines.", "LOW");
+                        setVerifiedLocally(true);
+                      }}
                     >
                       <CheckCircle2 size={14} />
                       <span>Mark Collectorate Feasibility Clearance</span>
@@ -1731,7 +1850,10 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       type="button"
                       className="collector-btn btn-warning"
                       disabled={actionLoading}
-                      onClick={() => handleExecuteWorkflowAction("ADMINISTRATIVE_NOTICE", "7-Day Explanation Notice to Agency", "District Collectorate issued statutory 7-day explanation notice to implementing agency for execution delay.", "HIGH")}
+                      onClick={() => {
+                        handleExecuteWorkflowAction("ADMINISTRATIVE_NOTICE", "7-Day Explanation Notice to Agency", "District Collectorate issued statutory 7-day explanation notice to implementing agency for execution delay.", "HIGH");
+                        setNoticeIssued(true);
+                      }}
                     >
                       <AlertOctagon size={14} />
                       <span>Issue 7-Day Explanation Notice to Agency</span>
@@ -1741,7 +1863,10 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                       type="button"
                       className="collector-btn btn-outline"
                       disabled={actionLoading}
-                      onClick={() => handleExecuteWorkflowAction("ADMINISTRATIVE_ESCALATION", "National Administrative Escalation to MoSPI", "District Collectorate escalated high-risk non-compliance / default to MoSPI Central Surveillance.", "CRITICAL")}
+                      onClick={() => {
+                        handleExecuteWorkflowAction("ADMINISTRATIVE_ESCALATION", "National Administrative Escalation to MoSPI", "District Collectorate escalated high-risk non-compliance / default to MoSPI Central Surveillance.", "CRITICAL");
+                        setFundsFrozen(true);
+                      }}
                     >
                       <ShieldAlert size={14} />
                       <span>Escalate to MoSPI Central Surveillance</span>
@@ -1822,10 +1947,21 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
             <Link
               to={`/works?q=${workId || recId || ""}`}
               className="drawer-action-btn-outline"
+              title="View full record in All-India Works Explorer"
             >
               <span>Explore in Registry</span>
               <ExternalLink size={13} />
             </Link>
+
+            <button
+              type="button"
+              className="drawer-action-btn-outline"
+              onClick={onClose}
+              title="Close Work Dossier (Esc)"
+              style={{ color: "#64748b" }}
+            >
+              <span>Close Dossier</span>
+            </button>
           </div>
         </div>
 

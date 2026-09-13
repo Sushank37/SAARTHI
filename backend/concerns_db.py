@@ -7,13 +7,25 @@ ACID-compliant, foreign-key enforced, immutable audit history, zero mock data.
 import sqlite3
 import json
 import os
+import shutil
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Union
 import pandas as pd
 
 BACKEND_DIR = Path(__file__).resolve().parent
-DB_PATH = BACKEND_DIR / "concerns.db"
+DEFAULT_DB_PATH = BACKEND_DIR / "concerns.db"
+
+def resolve_db_path() -> Path:
+    env_path = os.environ.get("CONCERNS_DB_PATH", "").strip()
+    if env_path:
+        p = Path(env_path)
+        if p.is_dir() or env_path.endswith("/") or env_path.endswith("\\"):
+            p = p / "concerns.db"
+        return p
+    return DEFAULT_DB_PATH
+
+DB_PATH = resolve_db_path()
 
 # Valid Concern Categories
 CONCERN_CATEGORIES = [
@@ -86,10 +98,34 @@ STATUS_TRANSITIONS = {
 
 
 class ConcernsDB:
-    def __init__(self, db_path: Path = DB_PATH, dataset_df: Optional[pd.DataFrame] = None):
-        self.db_path = db_path
+    def __init__(self, db_path: Optional[Union[Path, str]] = None, dataset_df: Optional[pd.DataFrame] = None):
+        self.db_path = Path(db_path) if db_path is not None else resolve_db_path()
         self.df = dataset_df
+        self._ensure_storage()
         self._init_db()
+
+    def _ensure_storage(self):
+        """Ensure the target parent directory exists and seed from bundle if new volume."""
+        try:
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            print(f"[ConcernsDB] WARNING: Could not create parent directory {self.db_path.parent}: {e}")
+
+        # If CONCERNS_DB_PATH environment variable is configured and the persistent file does not exist yet,
+        # copy the existing seed database from the repository build if available.
+        env_db_path = os.environ.get("CONCERNS_DB_PATH", "").strip()
+        if env_db_path and self.db_path.resolve() != DEFAULT_DB_PATH.resolve() and not self.db_path.exists() and DEFAULT_DB_PATH.exists():
+            try:
+                shutil.copy2(DEFAULT_DB_PATH, self.db_path)
+                print(f"[ConcernsDB] Seeded initial database from {DEFAULT_DB_PATH} to persistent path: {self.db_path}")
+            except Exception as e:
+                print(f"[ConcernsDB] Notice: Could not seed database ({e}). A fresh database will be initialized.")
+
+        is_production = os.environ.get("ENV") == "production" or os.environ.get("RAILWAY_ENVIRONMENT") or os.environ.get("RAILWAY_SERVICE_ID")
+        if is_production and self.db_path.resolve() == DEFAULT_DB_PATH.resolve():
+            print(f"[ConcernsDB] WARNING: Running in production without CONCERNS_DB_PATH set! Workflow data will be stored in ephemeral container path: {self.db_path}")
+        else:
+            print(f"[ConcernsDB] Database storage configured at: {self.db_path}")
 
     def set_dataset(self, df: pd.DataFrame):
         self.df = df

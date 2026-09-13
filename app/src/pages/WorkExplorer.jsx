@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Database,
   Search,
-  Download,
-  Filter,
   FileSpreadsheet,
   FileText,
   Printer,
-  ChevronRight,
 } from "lucide-react";
 import {
   API_BASE,
@@ -106,39 +103,49 @@ export default function WorkExplorer({ onSelectWork }) {
   const page = Number(params.get("page") || 1);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/states`)
+    let isMounted = true;
+    fetch(`${API_BASE}/api/analytics/states`)
       .then((r) => r.json())
-      .then((d) => setStates(d.states || []))
+      .then((d) => {
+        if (isMounted) setStates(d.states || []);
+      })
       .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const loadWorks = async () => {
-    setLoading(true);
-    try {
-      const query = new URLSearchParams({
-        page: String(page),
-        limit: "15",
-      });
-      if (q) query.set("q", q);
-      if (state) query.set("state", state);
-      if (mpName) query.set("mp_name", mpName);
-      if (risk) query.set("risk_level", risk);
-      if (duplicate) query.set("duplicate_risk", duplicate);
-      if (review) query.set("requires_review", review);
-
-      const res = await fetch(`${API_BASE}/api/works?${query}`);
-      const data = await res.json();
-      setResult(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadWorks();
-  }, [q, state, risk, duplicate, review, page]);
+    let isMounted = true;
+    const fetchWorks = async () => {
+      try {
+        const query = new URLSearchParams({
+          page: String(page),
+          limit: "15",
+        });
+        if (q) query.set("q", q);
+        if (state) query.set("state", state);
+        if (mpName) query.set("mp_name", mpName);
+        if (risk) query.set("risk_level", risk);
+        if (duplicate) query.set("duplicate_risk", duplicate);
+        if (review) query.set("requires_review", review);
+
+        const res = await fetch(`${API_BASE}/api/works?${query}`);
+        const data = await res.json();
+        if (isMounted) {
+          setResult(data);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error(err);
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchWorks();
+    return () => {
+      isMounted = false;
+    };
+  }, [q, state, mpName, risk, duplicate, review, page]);
 
   const setFilter = (key, value) => {
     const next = new URLSearchParams(params);

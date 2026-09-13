@@ -1,19 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Sparkles,
   ShieldAlert,
   AlertTriangle,
   CheckCircle2,
-  Search,
-  Building,
-  MapPin,
-  IndianRupee,
-  Layers,
-  ArrowRight,
   User,
-  PieChart,
 } from "lucide-react";
-import { API_BASE, formatCurrency, formatNumber } from "../constants";
+import { API_BASE, formatCurrency } from "../constants";
 
 const DEFAULT_MPS = [
   { name: "Arvind Dharmapuri", constituency: "NIZAMABAD", state: "Telangana", house: "Lok Sabha" },

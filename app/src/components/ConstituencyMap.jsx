@@ -1,20 +1,15 @@
-import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./ConstituencyMap.css";
-import { API_BASE } from "../constants";
+import { API_BASE, formatCrores } from "../constants";
 import {
-  MapPin,
-  Layers,
   Search,
-  Maximize2,
   RefreshCw,
   AlertTriangle,
-  CheckCircle2,
-  ExternalLink,
   Table as TableIcon,
   Map as MapIcon,
   Info,
@@ -37,46 +32,43 @@ export default function ConstituencyMap({ selectedMP, constituency, onSelectWork
   const [riskFilter, setRiskFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("map"); // 'map' or 'list'
-
-  // Format currency in Lakhs or Crores
-  const formatAmount = (val) => {
-    const num = Number(val) || 0;
-    if (num >= 10000000) return `₹${(num / 10000000).toFixed(2)} Cr`;
-    if (num >= 100000) return `₹${(num / 100000).toFixed(2)} L`;
-    return `₹${num.toLocaleString("en-IN")}`;
-  };
+  const [refreshTick, setRefreshTick] = useState(0);
 
   // Fetch GeoJSON from backend API
-  const fetchGeoData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const params = new URLSearchParams();
-      if (selectedMP) params.set("mp_name", selectedMP);
-      if (constituency) params.set("constituency", constituency);
-      if (stageFilter === "Approved") params.set("stage", "Sanction");
-      if (riskFilter !== "All") params.set("risk_level", riskFilter);
-      if (searchQuery.trim()) params.set("q", searchQuery.trim());
-
-      const res = await fetch(`${API_BASE}/api/works/geo?${params.toString()}`);
-      if (!res.ok) {
-        throw new Error(`Server returned HTTP ${res.status}`);
-      }
-      const data = await res.json();
-      setGeoData(data);
-    } catch (err) {
-      console.error("[GIS] Failed to fetch geo works:", err);
-      setError("Unable to load work locations from backend.");
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedMP, constituency, stageFilter, riskFilter, searchQuery]);
-
-  // Refetch when MP or filters change
   useEffect(() => {
-    fetchGeoData();
-  }, [fetchGeoData]);
+    let isMounted = true;
+    const load = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (selectedMP) params.set("mp_name", selectedMP);
+        if (constituency) params.set("constituency", constituency);
+        if (stageFilter === "Approved") params.set("stage", "Sanction");
+        if (riskFilter !== "All") params.set("risk_level", riskFilter);
+        if (searchQuery.trim()) params.set("q", searchQuery.trim());
+
+        const res = await fetch(`${API_BASE}/api/works/geo?${params.toString()}`);
+        if (!res.ok) {
+          throw new Error(`Server returned HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        if (isMounted) {
+          setGeoData(data);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("[GIS] Failed to fetch geo works:", err);
+        if (isMounted) {
+          setError("Unable to load work locations from backend.");
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedMP, constituency, stageFilter, riskFilter, searchQuery, refreshTick]);
 
   // Create custom marker icon according to backend risk
   const createMarkerIcon = useCallback((riskLevel) => {
@@ -227,11 +219,11 @@ export default function ConstituencyMap({ selectedMP, constituency, onSelectWork
               </div>
               <div class="gis-meta-item">
                 <span class="gis-meta-label">Recommended</span>
-                <span class="gis-meta-val">${formatAmount(props.recommended_amount)}</span>
+                <span class="gis-meta-val">${formatCrores(props.recommended_amount)}</span>
               </div>
               <div class="gis-meta-item">
                 <span class="gis-meta-label">Sanctioned</span>
-                <span class="gis-meta-val">${formatAmount(props.sanction_amount)}</span>
+                <span class="gis-meta-val">${formatCrores(props.sanction_amount)}</span>
               </div>
             </div>
           </div>
@@ -319,7 +311,10 @@ export default function ConstituencyMap({ selectedMP, constituency, onSelectWork
             <button
               type="button"
               className="map-control-btn"
-              onClick={fetchGeoData}
+              onClick={() => {
+                setLoading(true);
+                setRefreshTick((t) => t + 1);
+              }}
               title="Refresh geographic data"
             >
               <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
@@ -377,13 +372,15 @@ export default function ConstituencyMap({ selectedMP, constituency, onSelectWork
 
         {/* Filter Pills & Search */}
         <div className="map-filter-row">
-          <div className="map-pill-group">
+          <div className="map-pill-group" role="group" aria-label="Work Filters">
             {["All", "Approved"].map((f) => (
               <button
                 key={f}
                 type="button"
                 className={`map-filter-pill ${stageFilter === f ? "active" : ""}`}
                 onClick={() => setStageFilter(f)}
+                aria-pressed={stageFilter === f}
+                aria-label={`Filter by stage: ${f}`}
               >
                 {f === "All" ? `All Stages (${meta.total_works})` : f}
               </button>
@@ -397,6 +394,8 @@ export default function ConstituencyMap({ selectedMP, constituency, onSelectWork
                 type="button"
                 className={`map-filter-pill ${riskFilter === r ? "active" : ""}`}
                 onClick={() => setRiskFilter(r)}
+                aria-pressed={riskFilter === r}
+                aria-label={`Filter by risk level: ${r}`}
               >
                 {r === "All" ? "All Risk" : `${r} Risk`}
               </button>
@@ -439,7 +438,15 @@ export default function ConstituencyMap({ selectedMP, constituency, onSelectWork
                 Unable to load work locations
               </div>
               <div style={{ fontSize: "12px", color: "#64748b" }}>{error}</div>
-              <button type="button" className="map-control-btn" onClick={fetchGeoData}>
+              <button
+                type="button"
+                className="map-control-btn"
+                onClick={() => {
+                  setLoading(true);
+                  setError(null);
+                  setRefreshTick((t) => t + 1);
+                }}
+              >
                 Retry
               </button>
             </div>
@@ -507,7 +514,7 @@ export default function ConstituencyMap({ selectedMP, constituency, onSelectWork
                         </span>
                       </td>
                       <td>{p.stage || "—"}</td>
-                      <td><strong>{formatAmount(p.sanction_amount)}</strong></td>
+                      <td><strong>{formatCrores(p.sanction_amount)}</strong></td>
                       <td>
                         <span
                           className={`gis-popup-risk ${

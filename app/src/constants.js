@@ -28,14 +28,33 @@ export function formatCurrency(value) {
 export function formatCrores(amountInRupees) {
   if (amountInRupees === null || amountInRupees === undefined || amountInRupees === "") return "—";
   const number = Number(amountInRupees);
-  if (Number.isNaN(number)) return "—";
-  if (number === 0) return "₹ 0.00 Cr";
-  // Guard: if value is already in Crores (e.g. < 10,000 and non-zero), do not divide by 10^7 again
-  const crores = Math.abs(number) < 10000 ? number : number / 10000000;
-  return `₹ ${crores.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
+  if (Number.isNaN(number) || !Number.isFinite(number)) return "—";
+  if (number === 0) return "₹0";
+
+  const isNegative = number < 0;
+  const absNum = Math.abs(number);
+  const sign = isNegative ? "-" : "";
+
+  if (absNum >= 10000000) {
+    const crores = absNum / 10000000;
+    return `${sign}₹${crores.toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} Cr`;
+  }
+
+  if (absNum >= 100000) {
+    const lakhs = absNum / 100000;
+    return `${sign}₹${lakhs.toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} L`;
+  }
+
+  return `${sign}₹${absNum.toLocaleString("en-IN", {
+    minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  })} Cr`;
+  })}`;
 }
 
 export function exportToCSV(data, filename = "mplads_audit_export.csv") {

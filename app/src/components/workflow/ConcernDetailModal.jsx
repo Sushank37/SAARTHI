@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   X,
   Clock,
   CheckCircle2,
-  AlertTriangle,
   Building2,
   FileCheck,
   Send,
@@ -44,10 +43,8 @@ export default function ConcernDetailModal({
   const [submitting, setSubmitting] = useState(false);
   const [actionSuccess, setActionSuccess] = useState("");
 
-  const loadData = async () => {
+  const reloadData = async () => {
     if (!concernId) return;
-    setLoading(true);
-    setError(null);
     try {
       const [cData, tData] = await Promise.all([
         getConcernById(concernId),
@@ -59,16 +56,60 @@ export default function ConcernDetailModal({
         setAssignee(cData.assigned_to);
       }
     } catch (err) {
-      console.error("Failed to load concern details:", err);
-      setError("Unable to load concern details from database.");
-    } finally {
-      setLoading(false);
+      console.error("Failed to reload concern details:", err);
     }
   };
 
   useEffect(() => {
-    loadData();
+    let isMounted = true;
+    if (!concernId) return;
+
+    const fetchInitialData = async () => {
+      try {
+        const [cData, tData] = await Promise.all([
+          getConcernById(concernId),
+          getConcernTimeline(concernId),
+        ]);
+        if (!isMounted) return;
+        setConcern(cData);
+        setTimeline(tData.timeline || []);
+        if (cData?.assigned_to) {
+          setAssignee(cData.assigned_to);
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to load concern details:", err);
+        if (isMounted) {
+          setError("Unable to load concern details from database.");
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchInitialData();
+    return () => {
+      isMounted = false;
+    };
   }, [concernId]);
+
+  useEffect(() => {
+    if (!concernId) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [concernId, onClose]);
 
   // Handler for District Authority Actions
   const handleDAAction = async (type) => {
@@ -145,7 +186,7 @@ export default function ConcernDetailModal({
       setActionSuccess("Action successfully recorded in official audit ledger!");
       setNotes("");
       setActionType("");
-      await loadData();
+      await reloadData();
       if (onActionComplete) onActionComplete();
     } catch (err) {
       console.error("Action failed:", err);
@@ -199,7 +240,7 @@ export default function ConcernDetailModal({
       setNotes("");
       setEvidenceUrl("");
       setActionType("");
-      await loadData();
+      await reloadData();
       if (onActionComplete) onActionComplete();
     } catch (err) {
       console.error("IA response failed:", err);
@@ -237,7 +278,7 @@ export default function ConcernDetailModal({
       setActionSuccess("Updated successfully!");
       setNotes("");
       setActionType("");
-      await loadData();
+      await reloadData();
       if (onActionComplete) onActionComplete();
     } catch (err) {
       console.error("MP action failed:", err);
@@ -266,7 +307,7 @@ export default function ConcernDetailModal({
       setActionSuccess("MoSPI central surveillance directive logged!");
       setNotes("");
       setActionType("");
-      await loadData();
+      await reloadData();
       if (onActionComplete) onActionComplete();
     } catch (err) {
       console.error("MoSPI action failed:", err);
@@ -279,7 +320,7 @@ export default function ConcernDetailModal({
   if (!concernId) return null;
 
   return (
-    <div className="concern-modal-overlay" onClick={onClose}>
+    <div className="concern-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
       <div className="concern-modal-container" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="concern-modal-header">

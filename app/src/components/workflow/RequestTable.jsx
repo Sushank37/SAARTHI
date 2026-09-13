@@ -1,12 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  Search,
-  Filter,
   Eye,
   ExternalLink,
-  Clock,
-  CheckCircle2,
-  AlertTriangle,
   RefreshCw,
   FileText,
 } from "lucide-react";

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Search, ExternalLink, LogOut, Bell, ShieldAlert } from "lucide-react";
+import { Search, ExternalLink, LogOut, Bell, Menu, X } from "lucide-react";
 import { useAuth } from "../context/useAuth";
 import { ROLE_IDS } from "../data/roles";
 import LanguageSelector from "./LanguageSelector";
@@ -12,14 +12,11 @@ export default function Header({
   setHouse,
   role = "mospi",
   setRole,
-  fontSize,
-  setFontSize,
-  backendStatus = "connected",
-  onReconnect,
-  totalWorks,
   roleConfig,
   onLogout,
   onSelectWork,
+  mobileMenuOpen,
+  onToggleMobileMenu,
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -54,7 +51,7 @@ export default function Header({
             setAlertTotal(data.total);
           }
         }
-      } catch (e) {
+      } catch {
         // quiet fallback
       }
     };
@@ -89,6 +86,17 @@ export default function Header({
       <div className="header-main-row">
         {/* Left: Emblem + Titles */}
         <div className="header-brand-group">
+          {onToggleMobileMenu && (
+            <button
+              type="button"
+              className="mobile-menu-toggle-btn"
+              onClick={onToggleMobileMenu}
+              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={Boolean(mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          )}
           <div className="ashoka-emblem-small">
             <svg viewBox="0 0 100 130" className="ashoka-svg" aria-label="National Emblem">
               <circle cx="50" cy="50" r="46" fill="#1e3a8a" opacity="0.08" />

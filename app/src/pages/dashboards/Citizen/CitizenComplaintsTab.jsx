@@ -1,21 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
   Flag,
-  MapPin,
-  Calendar,
-  User,
-  ShieldCheck,
-  ArrowRight,
 } from "lucide-react";
 import { API_BASE } from "../../../constants";
 
 export default function CitizenComplaintsTab({ initialComplaintId }) {
   const [complaints, setComplaints] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchId, setSearchId] = useState(initialComplaintId || "");
   const [activeComplaint, setActiveComplaint] = useState(null);
 
@@ -28,33 +19,35 @@ export default function CitizenComplaintsTab({ initialComplaintId }) {
     { key: "Resolved", label: "Resolved" },
   ];
 
-  const fetchComplaints = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/api/public/grievances`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const list = data.grievances || [];
-      setComplaints(list);
-
-      // If initial complaint ID is supplied or searchId is set, select it
-      if (initialComplaintId) {
-        const found = list.find((c) => c.complaint_id.toUpperCase() === initialComplaintId.toUpperCase());
-        if (found) setActiveComplaint(found);
-        else if (list.length > 0) setActiveComplaint(list[0]);
-      } else if (list.length > 0 && !activeComplaint) {
-        setActiveComplaint(list[0]);
-      }
-    } catch (err) {
-      console.error("Failed to load grievances:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchComplaints();
-  }, []);
+    let cancelled = false;
+    async function loadComplaints() {
+      try {
+        const res = await fetch(`${API_BASE}/api/public/grievances`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const list = data.grievances || [];
+        if (!cancelled) {
+          setComplaints(list);
+
+          // If initial complaint ID is supplied or searchId is set, select it
+          if (initialComplaintId) {
+            const found = list.find((c) => c.complaint_id.toUpperCase() === initialComplaintId.toUpperCase());
+            if (found) setActiveComplaint(found);
+            else if (list.length > 0) setActiveComplaint(list[0]);
+          } else if (list.length > 0) {
+            setActiveComplaint((prev) => prev || list[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load grievances:", err);
+      }
+    }
+    loadComplaints();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialComplaintId]);
 
   const handleSearch = (e) => {
     e.preventDefault();

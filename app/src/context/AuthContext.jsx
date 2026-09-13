@@ -1,24 +1,25 @@
-import React, { createContext, useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { ROLE_IDS, getRoleConfig, isValidRole } from "../data/roles";
-
-export const AuthContext = createContext(null);
-
-const STORAGE_KEY = "saarthi_demo_role";
+import { fetchSessionToken, setSessionAuth, clearSessionAuth, getActiveRole, getAuthToken } from "../utils/auth";
+import { AuthContext } from "./auth-context";
 
 export function AuthProvider({ children }) {
   const [role, setRoleState] = useState(() => {
-    try {
-      const saved = sessionStorage.getItem(STORAGE_KEY);
-      if (saved && isValidRole(saved)) {
-        return saved.toUpperCase();
-      }
-    } catch {
-      // sessionStorage unavailable or blocked
+    const saved = getActiveRole();
+    if (saved && isValidRole(saved)) {
+      return saved.toUpperCase();
     }
     return null;
   });
 
   const isAuthenticated = Boolean(role && isValidRole(role));
+
+  // If role is active but token is missing, retrieve token asynchronously
+  useEffect(() => {
+    if (role && isValidRole(role) && !getAuthToken()) {
+      fetchSessionToken(role);
+    }
+  }, [role]);
 
   const roleConfig = useMemo(() => {
     return getRoleConfig(role);
@@ -30,21 +31,15 @@ export function AuthProvider({ children }) {
       return false;
     }
     const normalized = String(roleId).trim().toUpperCase();
-    try {
-      sessionStorage.setItem(STORAGE_KEY, normalized);
-    } catch {
-      // sessionStorage unavailable
-    }
+    setSessionAuth(normalized, null);
     setRoleState(normalized);
+    // Request cryptographic session token from backend
+    fetchSessionToken(normalized);
     return true;
   }, []);
 
   const logout = useCallback(() => {
-    try {
-      sessionStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // sessionStorage unavailable
-    }
+    clearSessionAuth();
     setRoleState(null);
   }, []);
 

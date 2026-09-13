@@ -1,18 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Camera,
   MapPin,
-  CheckCircle2,
-  Calendar,
   ShieldCheck,
-  Building2,
   Eye,
   Flag,
   RefreshCw,
   AlertTriangle,
-  Layers,
 } from "lucide-react";
-import { API_BASE, formatNumber, formatCrores } from "../../../constants";
+import { API_BASE } from "../../../constants";
 
 export default function CitizenEvidenceTab({ onSelectWork, onReportWork }) {
   const [items, setItems] = useState([]);
@@ -36,7 +32,28 @@ export default function CitizenEvidenceTab({ onSelectWork, onReportWork }) {
   };
 
   useEffect(() => {
-    fetchEvidence();
+    let cancelled = false;
+    async function init() {
+      try {
+        const res = await fetch(`${API_BASE}/api/public/evidence?limit=8`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!cancelled) {
+          setItems(data.items || []);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("[Evidence] Error loading inspection records:", err);
+        if (!cancelled) {
+          setError("Unable to load verified physical inspection records from backend.");
+          setLoading(false);
+        }
+      }
+    }
+    init();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (

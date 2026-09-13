@@ -1,5 +1,3 @@
-import React from "react";
-
 const STATUS_CONFIG = {
   SUBMITTED: { label: "Submitted", bg: "#fef3c7", color: "#92400e", border: "#fde68a" },
   RECEIVED: { label: "DA Received", bg: "#e0f2fe", color: "#0369a1", border: "#bae6fd" },

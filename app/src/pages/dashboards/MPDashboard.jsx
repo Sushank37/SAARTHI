@@ -122,7 +122,6 @@ export default function MPDashboard(props) {
 
   // Telemetry state
   const [analytics, setAnalytics] = useState(null);
-  const [backendOnline, setBackendOnline] = useState(true);
 
   // Works state for pages with data tables
   const [works, setWorks] = useState([]);
@@ -153,17 +152,35 @@ export default function MPDashboard(props) {
   };
 
   useEffect(() => {
-    if (section === "concerns") {
-      loadMPConcerns();
-    }
+    if (section !== "concerns" || !selectedMP) return;
+    let isMounted = true;
+    const fetchConcerns = async () => {
+      try {
+        const data = await getConcerns({ mpName: selectedMP });
+        if (isMounted) {
+          setMpConcerns(data.concerns || []);
+          setMpConcernsLoading(false);
+        }
+      } catch (err) {
+        console.error("Failed to load MP concerns:", err);
+        if (isMounted) setMpConcernsLoading(false);
+      }
+    };
+    fetchConcerns();
+    return () => {
+      isMounted = false;
+    };
   }, [section, selectedMP]);
 
   // Sync stage filter when URL search params change
   useEffect(() => {
     const s = searchParams.get("stage");
     if (s) {
-      setStageFilter(s);
-      setWorksPage(1);
+      const timer = setTimeout(() => {
+        setStageFilter(s);
+        setWorksPage(1);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [searchParams]);
 
@@ -215,7 +232,23 @@ export default function MPDashboard(props) {
   };
 
   useEffect(() => {
-    fetchMpInquiries();
+    let isMounted = true;
+    const loadInquiries = async () => {
+      try {
+        const data = await getRequests({ raisedByRole: "MP" });
+        if (isMounted) {
+          setMpInquiries(data.requests || []);
+          setInquiriesLoading(false);
+        }
+      } catch (err) {
+        console.error("Failed to load MP inquiries:", err);
+        if (isMounted) setInquiriesLoading(false);
+      }
+    };
+    loadInquiries();
+    return () => {
+      isMounted = false;
+    };
   }, [selectedMP]);
 
   // Load master list of MPs
@@ -236,11 +269,9 @@ export default function MPDashboard(props) {
               }))
             );
           }
-          setBackendOnline(true);
         }
       } catch (err) {
         console.error("Failed to load MPs list:", err);
-        setBackendOnline(false);
       }
     }
     fetchMPs();
@@ -255,25 +286,26 @@ export default function MPDashboard(props) {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Load MP Analytics
-  const loadMPAnalytics = async (mpName) => {
-    try {
-      const res = await fetch(
-        `${API_BASE}/api/analytics/mp?mp_name=${encodeURIComponent(mpName)}`
-      );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setAnalytics(data);
-      setBackendOnline(true);
-    } catch (err) {
-      console.error("Error fetching MP analytics:", err);
-      setAnalytics(null);
-      setBackendOnline(false);
-    }
-  };
-
   useEffect(() => {
-    loadMPAnalytics(selectedMP);
+    if (!selectedMP) return;
+    let isMounted = true;
+    const fetchAnalytics = async () => {
+      try {
+        const res = await fetch(
+          `${API_BASE}/api/analytics/mp?mp_name=${encodeURIComponent(selectedMP)}`
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (isMounted) setAnalytics(data);
+      } catch (err) {
+        console.error("Error fetching MP analytics:", err);
+        if (isMounted) setAnalytics(null);
+      }
+    };
+    fetchAnalytics();
+    return () => {
+      isMounted = false;
+    };
   }, [selectedMP]);
 
   // Load Constituency Works
@@ -304,20 +336,60 @@ export default function MPDashboard(props) {
       const data = await res.json();
       setWorks(data.data || []);
       setWorksTotal(data.total || 0);
-      setBackendOnline(true);
     } catch (err) {
       console.error("Error loading works:", err);
       setWorks([]);
       setWorksTotal(0);
-      setBackendOnline(false);
     } finally {
       setWorksLoading(false);
     }
   };
 
   useEffect(() => {
-    loadWorks();
-  }, [selectedMP, section, worksPage, stageFilter, debouncedSearch]);
+    let isMounted = true;
+    const fetchWorks = async () => {
+      try {
+        const params = new URLSearchParams();
+        params.set("page", worksPage);
+        params.set("limit", worksLimit);
+        params.set("mp_name", selectedMP);
+
+        if (stageFilter && stageFilter !== "All") {
+          params.set("stage", stageFilter);
+        }
+
+        if (section === "delayed-works") {
+          params.set("requires_review", "true");
+        } else if (section === "risk-alerts") {
+          params.set("tab", "ai-alerts");
+        }
+
+        if (debouncedSearch.trim()) {
+          params.set("q", debouncedSearch.trim());
+        }
+
+        const res = await fetch(`${API_BASE}/api/works?${params.toString()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (isMounted) {
+          setWorks(data.data || []);
+          setWorksTotal(data.total || 0);
+          setWorksLoading(false);
+        }
+      } catch (err) {
+        console.error("Error loading works:", err);
+        if (isMounted) {
+          setWorks([]);
+          setWorksTotal(0);
+          setWorksLoading(false);
+        }
+      }
+    };
+    fetchWorks();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedMP, section, worksPage, worksLimit, stageFilter, debouncedSearch]);
 
   // Filtered MP list for selector
   const filteredMps = useMemo(() => {
@@ -339,7 +411,7 @@ export default function MPDashboard(props) {
   const riskSummary = analytics?.risk_summary || {};
   const totalWorks = analytics?.total_works || 0;
   const flaggedWorks = analytics?.flagged_works || [];
-  const topCategories = analytics?.top_categories || [];
+  const topCategories = useMemo(() => analytics?.top_categories || [], [analytics?.top_categories]);
 
   const recAmount = Number(
     financials.recommended_amount ?? financials.total_recommended_amount ?? 0

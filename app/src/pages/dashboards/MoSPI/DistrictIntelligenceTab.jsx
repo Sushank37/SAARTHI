@@ -19,17 +19,10 @@ import {
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
-import { API_BASE, formatNumber } from "../../../constants";
+import { API_BASE, formatNumber, formatCrores } from "../../../constants";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatCurrencyINR(val) {
-  const n = Number(val);
-  if (!n || isNaN(n)) return "—";
-  if (n >= 1e7) return `₹${(n / 1e7).toFixed(2)} Cr`;
-  if (n >= 1e5) return `₹${(n / 1e5).toFixed(2)} L`;
-  return `₹${n.toLocaleString("en-IN")}`;
-}
 
 function RiskBadge({ level }) {
   const l = String(level || "LOW").toUpperCase();
@@ -68,6 +61,14 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
   // ── Derived ──────────────────────────────────────────────────────────────
   const selectedAuthority = idas.find((item) => item.IDA_NAME === inspectIdaName);
 
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const closeAll = useCallback(() => {
+    setActiveOverlay(null);
+    setInspectIdaName(null);
+    setIdaWorks([]);
+    setDossierWork(null);
+  }, []);
+
   // ── Body scroll lock + Esc key (covers both overlays) ─────────────────────
   useEffect(() => {
     if (!activeOverlay) return;
@@ -93,14 +94,7 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [activeOverlay]);
-
-  const closeAll = useCallback(() => {
-    setActiveOverlay(null);
-    setInspectIdaName(null);
-    setIdaWorks([]);
-    setDossierWork(null);
-  }, []);
+  }, [activeOverlay, closeAll]);
 
   // ── Data loading ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -661,7 +655,7 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                                   }}
                                 >
                                   {w.SANCTION_AMOUNT
-                                    ? formatCurrencyINR(w.SANCTION_AMOUNT)
+                                    ? formatCrores(w.SANCTION_AMOUNT)
                                     : "—"}
                                 </td>
                                 <td style={{ textAlign: "center" }}>
@@ -800,7 +794,7 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                         </div>
                         <div className="mospi-dossier-field-val">
                           {dwSancAmount > 0
-                            ? formatCurrencyINR(dwSancAmount)
+                            ? formatCrores(dwSancAmount)
                             : "Pending Sanction"}
                         </div>
                       </div>
@@ -813,7 +807,7 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                         </div>
                         <div className="mospi-dossier-field-val">
                           {dwActAmount > 0
-                            ? formatCurrencyINR(dwActAmount)
+                            ? formatCrores(dwActAmount)
                             : "—"}
                         </div>
                       </div>

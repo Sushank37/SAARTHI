@@ -1,16 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   AlertTriangle,
   Send,
   CheckCircle2,
-  Clock,
-  ShieldAlert,
-  FileText,
-  User,
-  ChevronDown,
   ChevronUp,
   MessageSquare,
-  ExternalLink,
   Plus,
 } from "lucide-react";
 import {
@@ -64,7 +58,22 @@ export default function WorkConcernSection({
   };
 
   useEffect(() => {
-    loadConcerns();
+    let isMounted = true;
+    if (!workId) return;
+    const fetchConcerns = async () => {
+      try {
+        const data = await getWorkConcerns(workId);
+        if (isMounted) {
+          setConcerns(data.concerns || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch concerns for work:", err);
+      }
+    };
+    fetchConcerns();
+    return () => {
+      isMounted = false;
+    };
   }, [workId]);
 
   const handleSubmit = async (e) => {

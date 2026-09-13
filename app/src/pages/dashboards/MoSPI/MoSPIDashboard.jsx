@@ -376,6 +376,8 @@ export default function MoSPIDashboard({ onSelectWork }) {
               type="button"
               className={`mospi-pill-btn ${isActive ? "active" : ""}`}
               onClick={() => handleTabChange(mod.id)}
+              aria-pressed={isActive}
+              aria-label={mod.label}
             >
               <Icon size={13} />
               <span>{mod.label}</span>

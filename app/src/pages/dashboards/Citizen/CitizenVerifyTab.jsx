@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   QrCode,
   MapPin,
   CheckCircle2,
   ShieldCheck,
   AlertTriangle,
-  Building2,
   Eye,
   Flag,
-  Smartphone,
   Search,
   RefreshCw,
 } from "lucide-react";
@@ -19,7 +17,6 @@ export default function CitizenVerifyTab({ onSelectWork, onReportWork }) {
   const [verifiedWork, setVerifiedWork] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [confirmed, setConfirmed] = useState(false);
 
   // Suggested canonical work IDs present in dataset
   const samplePlaques = [
@@ -35,7 +32,6 @@ export default function CitizenVerifyTab({ onSelectWork, onReportWork }) {
 
     setLoading(true);
     setError(null);
-    setConfirmed(false);
 
     try {
       const res = await fetch(`${API_BASE}/api/public/verify/${encodeURIComponent(targetId)}`);
@@ -57,7 +53,38 @@ export default function CitizenVerifyTab({ onSelectWork, onReportWork }) {
   };
 
   useEffect(() => {
-    handleVerify("70853");
+    let cancelled = false;
+    async function loadDefaultWork() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`${API_BASE}/api/public/verify/70853`);
+        if (!res.ok) {
+          if (res.status === 404) {
+            throw new Error("Work ID '70853' not found in official MPLADS registry.");
+          }
+          throw new Error(`Server returned HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        if (!cancelled) {
+          setVerifiedWork(data);
+        }
+      } catch (err) {
+        console.error("[Verify] Verification error:", err);
+        if (!cancelled) {
+          setError(err.message || "Unable to verify work ID.");
+          setVerifiedWork(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+    loadDefaultWork();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (

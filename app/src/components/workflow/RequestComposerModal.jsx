@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { X, Send, AlertCircle, CheckCircle2, ShieldAlert } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Send } from "lucide-react";
 import { createRequest, REQUEST_TYPES, REQUEST_TYPE_LABELS } from "../../services/workflowService";
 import "./workflow.css";
 
@@ -20,6 +20,23 @@ export default function RequestComposerModal({
   const [priority, setPriority] = useState("MEDIUM");
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,7 +72,7 @@ export default function RequestComposerModal({
   };
 
   return (
-    <div className="workflow-modal-overlay" onClick={onClose}>
+    <div className="workflow-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
       <div className="workflow-modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="workflow-modal-header">
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>

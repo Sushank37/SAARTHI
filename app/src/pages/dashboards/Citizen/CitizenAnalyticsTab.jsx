@@ -1,16 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   TrendingUp,
-  ArrowRight,
-  IndianRupee,
-  Building2,
-  CheckCircle2,
-  Clock,
   BarChart3,
   RefreshCw,
   AlertTriangle,
 } from "lucide-react";
-import { API_BASE, formatNumber, formatCrores } from "../../../constants";
+import { API_BASE, formatNumber } from "../../../constants";
 
 const SECTOR_COLORS = [
   "#005A9C",
@@ -30,34 +25,39 @@ export default function CitizenAnalyticsTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchAnalyticsData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [catRes, sumRes] = await Promise.all([
-        fetch(`${API_BASE}/api/analytics/categories`),
-        fetch(`${API_BASE}/api/summary`),
-      ]);
-
-      if (!catRes.ok || !sumRes.ok) {
-        throw new Error("Failed to load analytics datasets");
-      }
-
-      const catData = await catRes.json();
-      const sumData = await sumRes.json();
-
-      setCategories(catData.data || []);
-      setSummaryData(sumData);
-    } catch (err) {
-      console.error("[Citizen Analytics] Error:", err);
-      setError("Unable to load real sector analytics from backend server.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    let cancelled = false;
+    async function fetchAnalyticsData() {
+      try {
+        const [catRes, sumRes] = await Promise.all([
+          fetch(`${API_BASE}/api/analytics/categories`),
+          fetch(`${API_BASE}/api/summary`),
+        ]);
+
+        if (!catRes.ok || !sumRes.ok) {
+          throw new Error("Failed to load analytics datasets");
+        }
+
+        const catData = await catRes.json();
+        const sumData = await sumRes.json();
+
+        if (!cancelled) {
+          setCategories(catData.data || []);
+          setSummaryData(sumData);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("[Citizen Analytics] Error:", err);
+        if (!cancelled) {
+          setError("Unable to load real sector analytics from backend server.");
+          setLoading(false);
+        }
+      }
+    }
     fetchAnalyticsData();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const totalWorks = summaryData?.total_works || 102703;

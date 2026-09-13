@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   LayoutDashboard,
   Map,
@@ -10,7 +10,6 @@ import {
   Flag,
   CheckCircle2,
   QrCode,
-  ShieldCheck,
   MapPin,
 } from "lucide-react";
 
@@ -60,7 +59,7 @@ export default function CitizenDashboard({ summary, onSelectWork }) {
     handleTabChange("complaints");
   };
 
-  const citizenProfile = React.useMemo(() => {
+  const citizenProfile = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem("saarthi_citizen_profile") || "null");
     } catch {

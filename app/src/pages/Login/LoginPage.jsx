@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { ROLE_LIST, ROLE_IDS } from "../../data/roles";
@@ -17,7 +17,6 @@ import {
   MapPin,
   CheckCircle2,
   UserCheck,
-  FileText,
   KeyRound,
 } from "lucide-react";
 import "./LoginPage.css";
@@ -180,7 +179,7 @@ export default function LoginPage() {
     }
 
     // Check registered citizens in localStorage
-    let registeredCitizens = [];
+    let registeredCitizens;
     try {
       registeredCitizens = JSON.parse(localStorage.getItem("esakshi_registered_citizens") || "[]");
     } catch {
@@ -268,7 +267,7 @@ export default function LoginPage() {
     }
 
     // Check if already registered with same mobile or email
-    let existingCitizens = [];
+    let existingCitizens;
     try {
       existingCitizens = JSON.parse(localStorage.getItem("esakshi_registered_citizens") || "[]");
     } catch {

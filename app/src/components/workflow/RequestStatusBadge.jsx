@@ -1,4 +1,3 @@
-import React from "react";
 import "./workflow.css";
 
 export default function RequestStatusBadge({ status }) {

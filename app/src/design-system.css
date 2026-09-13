@@ -675,6 +675,13 @@ body, html {
   border: 1px solid var(--gov-danger-border) !important;
 }
 
+.gov-badge-neutral,
+.status-pill-public.neutral {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
 /* ==============================================================================
    13. UNIFIED FORM INPUTS & DROPDOWNS
    ============================================================================== */

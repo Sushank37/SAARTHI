@@ -1,12 +1,10 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Search,
   Download,
   ExternalLink,
   Eye,
   AlertCircle,
-  FileCheck,
-  CheckCircle2,
   Clock,
 } from "lucide-react";
 import ConcernStatusBadge from "./ConcernStatusBadge";

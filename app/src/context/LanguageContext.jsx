@@ -1,22 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { TRANSLATIONS } from "../data/translations";
-
-const SUPPORTED_LANGUAGES = [
-  { code: "en", name: "English", native: "English" },
-  { code: "hi", name: "Hindi", native: "हिन्दी" },
-  { code: "te", name: "Telugu", native: "తెలుగు" },
-  { code: "ta", name: "Tamil", native: "தமிழ்" },
-  { code: "bn", name: "Bengali", native: "বাংলা" },
-  { code: "mr", name: "Marathi", native: "मराठी" },
-  { code: "gu", name: "Gujarati", native: "ગુજરાતી" },
-  { code: "kn", name: "Kannada", native: "ಕನ್ನಡ" },
-  { code: "ml", name: "Malayalam", native: "മലയാളം" },
-  { code: "pa", name: "Punjabi", native: "ਪੰਜਾਬੀ" },
-  { code: "or", name: "Odia", native: "ଓଡ଼ିଆ" },
-  { code: "ur", name: "Urdu", native: "اردو" },
-];
-
-const LanguageContext = createContext(null);
+import { LanguageContext, SUPPORTED_LANGUAGES } from "./language-context";
 
 export function LanguageProvider({ children }) {
   const [currentLang, setCurrentLang] = useState(() => {
@@ -205,15 +189,3 @@ export function LanguageProvider({ children }) {
   );
 }
 
-export function useLanguage() {
-  const ctx = useContext(LanguageContext);
-  return (
-    ctx || {
-      currentLang: SUPPORTED_LANGUAGES[0],
-      changeLanguage: () => {},
-      supportedLanguages: SUPPORTED_LANGUAGES,
-      t: (text) => text,
-      applyDomTranslation: () => {},
-    }
-  );
-}

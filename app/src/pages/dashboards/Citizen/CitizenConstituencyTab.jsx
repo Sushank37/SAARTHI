@@ -1,21 +1,17 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   MapPin,
   Building2,
   IndianRupee,
   CheckCircle2,
-  Clock,
-  TrendingUp,
   Layers,
-  ArrowRight,
-  Eye,
   User,
   AlertTriangle,
   RefreshCw,
 } from "lucide-react";
-import { API_BASE, formatNumber, formatCrores } from "../../../constants";
+import { API_BASE, formatNumber } from "../../../constants";
 
-export default function CitizenConstituencyTab({ onSelectWork }) {
+export default function CitizenConstituencyTab() {
   const [constituency, setConstituency] = useState("Nizamabad");
   const [constituencyList, setConstituencyList] = useState([]);
   const [data, setData] = useState(null);

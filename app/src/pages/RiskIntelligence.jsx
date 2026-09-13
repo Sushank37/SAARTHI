@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   ShieldAlert,
-  AlertTriangle,
   Search,
   Download,
   Filter,
@@ -10,7 +9,6 @@ import {
   IndianRupee,
   TrendingUp,
   Activity,
-  ArrowRight,
 } from "lucide-react";
 import {
   API_BASE,
@@ -60,14 +58,47 @@ export default function RiskIntelligence({ onSelectWork }) {
   };
 
   useEffect(() => {
-    loadCases(1);
+    let isMounted = true;
+    const fetchCases = async () => {
+      try {
+        const params = new URLSearchParams({
+          page: "1",
+          limit: String(PAGE_SIZE),
+        });
+        if (level !== "ALL") {
+          params.append("level", level);
+        }
+        const res = await fetch(`${API_BASE}/api/risk-cases?${params.toString()}`);
+        const data = await res.json();
+        if (isMounted) {
+          setCases(data.data || []);
+          setTotalCases(data.total || 0);
+          setTotalPages(data.pages || 1);
+          setPage(1);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error(err);
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchCases();
+    return () => {
+      isMounted = false;
+    };
   }, [level]);
 
   useEffect(() => {
+    let isMounted = true;
     fetch(`${API_BASE}/api/analytics/risk-factors`)
       .then((r) => r.json())
-      .then(setRiskFactors)
+      .then((data) => {
+        if (isMounted) setRiskFactors(data);
+      })
       .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const filteredCases = useMemo(() => {

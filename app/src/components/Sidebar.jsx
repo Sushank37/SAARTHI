@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { NavLink, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, useLocation, useSearchParams } from "react-router-dom";
 import {
   Activity,
   AlertCircle,
@@ -16,9 +16,7 @@ import {
   IndianRupee,
   Layers,
   LayoutDashboard,
-  LogOut,
   Map,
-  Scale,
   ShieldAlert,
   Sparkles,
   TrendingUp,
@@ -27,25 +25,14 @@ import {
   Flag,
   QrCode,
   Search,
+  X,
 } from "lucide-react";
 import { API_BASE, formatNumber } from "../constants";
 import { ROLE_IDS } from "../data/roles";
-import { useAuth } from "../context/useAuth";
 
-export default function Sidebar({ summary, roleConfig, onLogout }) {
+export default function Sidebar({ summary, roleConfig, mobileOpen, onCloseMobile }) {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { logout } = useAuth();
   const [searchParams] = useSearchParams();
-
-  const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-    } else {
-      logout();
-      navigate("/login");
-    }
-  };
 
   const isCitizenRole =
     roleConfig?.id === ROLE_IDS.CITIZEN ||
@@ -83,22 +70,15 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
 
   const currentTab = searchParams.get("tab") || "overview";
 
-  const [activeMospiTab, setActiveMospiTab] = useState(() => {
-    const t = searchParams.get("tab");
-    return (!t || t === "overview") ? "national-overview" : t;
-  });
-
-  useEffect(() => {
-    const t = searchParams.get("tab");
-    if (t) {
-      setActiveMospiTab(t === "overview" ? "national-overview" : t);
-    }
-  }, [searchParams]);
+  // Derive active MoSPI tab without setting state in an effect
+  const tabParam = searchParams.get("tab");
+  const [customMospiTab, setCustomMospiTab] = useState(null);
+  const activeMospiTab = customMospiTab || ((!tabParam || tabParam === "overview") ? "national-overview" : tabParam);
 
   useEffect(() => {
     const onMospiTab = (e) => {
       if (e.detail) {
-        setActiveMospiTab(e.detail);
+        setCustomMospiTab(e.detail);
       }
     };
     window.addEventListener("mospi-tab-changed", onMospiTab);
@@ -111,8 +91,8 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
 
   useEffect(() => {
     if (!isDARole) {
-      setDaBadges(null);
-      return;
+      const timer = setTimeout(() => setDaBadges(null), 0);
+      return () => clearTimeout(timer);
     }
 
     let cancelled = false;
@@ -159,14 +139,15 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
   useEffect(() => {
     const paramIA = searchParams.get("ia");
     if (paramIA && paramIA !== currentIA) {
-      setCurrentIA(paramIA);
+      const timer = setTimeout(() => setCurrentIA(paramIA), 0);
+      return () => clearTimeout(timer);
     }
-  }, [searchParams]);
+  }, [searchParams, currentIA]);
 
   useEffect(() => {
     if (!isIARole) {
-      setIaBadges(null);
-      return;
+      const timer = setTimeout(() => setIaBadges(null), 0);
+      return () => clearTimeout(timer);
     }
 
     let cancelled = false;
@@ -790,7 +771,24 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
      ========================================================= */
 
   return (
-    <aside className="gov-sidebar-compact">
+    <aside
+      className={`gov-sidebar-compact ${mobileOpen ? "mobile-open" : ""}`}
+      role="navigation"
+      aria-label="Main Stakeholder Navigation"
+    >
+      {mobileOpen && (
+        <div className="mobile-sidebar-header">
+          <span>PORTAL NAVIGATION</span>
+          <button
+            type="button"
+            className="mobile-sidebar-close-btn"
+            onClick={onCloseMobile}
+            aria-label="Close navigation sidebar"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
       {isMoSPIRole ? (
         /* =====================================================
            MOSPI NAVIGATION (6 Standard Modules)
@@ -814,7 +812,7 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
                 className={() => `nav-item-compact ${isTabActive ? "active" : ""}`}
                 title={item.label}
                 onClick={() => {
-                  setActiveMospiTab(item.tab);
+                  setCustomMospiTab(item.tab);
                   window.dispatchEvent(new CustomEvent("mospi-tab-changed", { detail: item.tab }));
                 }}
               >
