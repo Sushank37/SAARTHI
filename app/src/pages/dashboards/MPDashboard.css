@@ -1780,3 +1780,68 @@
   color: #475569;
 }
 
+/* Mobile Responsive MP Dashboard */
+@media (max-width: 768px) {
+  .gov-mp-hero-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .gov-mp-switch-box {
+    max-width: 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .gov-mp-dropdown-menu {
+    width: 100% !important;
+  }
+
+  .gov-mp-works-table-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .gov-mp-works-table {
+    min-width: 650px !important;
+  }
+
+  .gov-filter-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .gov-filter-input,
+  .gov-filter-select {
+    width: 100% !important;
+  }
+
+  .stage-pills-list {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 4px !important;
+  }
+
+  .stage-pills-list::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .stage-pill {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .pagination-strip {
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
+}
+
+

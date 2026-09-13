@@ -725,3 +725,238 @@ body, html {
   border-color: var(--gov-primary) !important;
   box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12) !important;
 }
+
+/* ==============================================================================
+   14. MOBILE & TABLET RESPONSIVE FOUNDATION (DESKTOP FROZEN >= 1024px)
+   Strictly scoped to <= 1023px viewports to preserve desktop layout 100%
+   ============================================================================== */
+
+@media (max-width: 1023px) {
+  .gov-page-container,
+  .mp-dashboard-container,
+  .da-dashboard-container,
+  .ia-dashboard-container,
+  .mospi-dashboard-container,
+  .citizen-portal-container,
+  .compact-page-container {
+    padding: 12px 14px 28px !important;
+    gap: 14px !important;
+  }
+
+  /* Smooth Swipeable Tab & Filter Pill Bars */
+  .gov-tab-bar,
+  .mp-tab-bar,
+  .da-tab-nav-bar,
+  .ia-tab-nav-bar,
+  .mospi-tab-bar,
+  .citizen-tab-bar {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    white-space: nowrap !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    padding: 4px !important;
+  }
+
+  .gov-tab-bar::-webkit-scrollbar,
+  .mp-tab-bar::-webkit-scrollbar,
+  .da-tab-nav-bar::-webkit-scrollbar,
+  .ia-tab-nav-bar::-webkit-scrollbar,
+  .mospi-tab-bar::-webkit-scrollbar,
+  .citizen-tab-bar::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .gov-tab-pill,
+  .mp-tab-pill,
+  .da-tab-pill,
+  .ia-tab-pill,
+  .mospi-tab-pill,
+  .citizen-tab-pill {
+    flex-shrink: 0 !important;
+    height: 32px !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
+  }
+
+  /* Tables Isolated in Touch-Scroll Containers */
+  .gov-table-wrapper,
+  .mp-table-wrapper,
+  .da-table-wrapper,
+  .ia-table-wrapper,
+  .citizen-table-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    position: relative !important;
+  }
+
+  .gov-table,
+  .mp-table,
+  .da-table,
+  .ia-table,
+  .citizen-table {
+    min-width: 650px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .gov-page-container,
+  .mp-dashboard-container,
+  .da-dashboard-container,
+  .ia-dashboard-container,
+  .mospi-dashboard-container,
+  .citizen-portal-container,
+  .compact-page-container {
+    padding: 10px 10px 24px !important;
+    gap: 12px !important;
+  }
+
+  /* Responsive Hero & Page Headers */
+  .gov-page-header,
+  .mp-hero-banner,
+  .da-header-card,
+  .ia-header-card,
+  .mospi-header-card,
+  .citizen-hero-banner {
+    padding: 12px 14px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    border-radius: var(--radius-lg) !important;
+  }
+
+  .mp-hero-banner h1,
+  .citizen-hero-banner h1,
+  .gov-page-header h2,
+  .da-header-title h2,
+  .ia-header-title h2,
+  .mospi-header-title h2 {
+    font-size: 18px !important;
+  }
+
+  .gov-page-header p,
+  .mp-hero-banner p,
+  .citizen-hero-banner p,
+  .da-header-desc,
+  .ia-header-desc,
+  .mospi-header-desc {
+    font-size: 12px !important;
+  }
+
+  /* Content Cards */
+  .gov-card,
+  .mp-card,
+  .da-section-card,
+  .ia-section-card,
+  .mospi-card,
+  .citizen-card {
+    padding: 12px 12px !important;
+    gap: 10px !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  .gov-card-header,
+  .mp-card-header,
+  .da-section-header,
+  .ia-section-header,
+  .citizen-card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .gov-card-title,
+  .mp-card-title,
+  .citizen-card-title {
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* 2-Column Balanced KPI Cards Grid on Mobile */
+  .gov-kpi-grid,
+  .mp-kpi-grid,
+  .da-kpi-grid,
+  .ia-kpi-grid,
+  .mospi-kpi-grid,
+  .citizen-kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .gov-kpi-card,
+  .mp-kpi-card,
+  .da-kpi-card,
+  .ia-kpi-card,
+  .mospi-kpi-card,
+  .citizen-kpi-card {
+    padding: 9px 10px !important;
+    gap: 4px !important;
+  }
+
+  .gov-kpi-value,
+  .mp-kpi-value,
+  .da-kpi-value,
+  .ia-kpi-value,
+  .mospi-kpi-value,
+  .citizen-kpi-value {
+    font-size: 18px !important;
+  }
+
+  .gov-kpi-label,
+  .mp-kpi-label,
+  .da-kpi-label,
+  .ia-kpi-label,
+  .mospi-kpi-label,
+  .citizen-kpi-label {
+    font-size: 9.5px !important;
+  }
+
+  .gov-kpi-sub,
+  .mp-kpi-sub,
+  .da-kpi-sub,
+  .ia-kpi-sub,
+  .mospi-kpi-sub,
+  .citizen-kpi-sub {
+    font-size: 10px !important;
+  }
+
+  /* Form controls touch-friendly */
+  .gov-input,
+  .gov-select,
+  .mp-input,
+  .da-input,
+  .ia-input,
+  .citizen-input {
+    height: 38px !important;
+    font-size: 13px !important;
+  }
+
+  .gov-btn,
+  .mp-btn,
+  .da-btn,
+  .ia-btn,
+  .citizen-quick-action-btn {
+    height: 36px !important;
+    font-size: 12px !important;
+    padding: 0 10px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  /* Ultra-small mobile fallback */
+  .gov-kpi-grid,
+  .mp-kpi-grid,
+  .da-kpi-grid,
+  .ia-kpi-grid,
+  .mospi-kpi-grid,
+  .citizen-kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+

@@ -167,3 +167,31 @@
 .concern-work-badge:hover {
   background: #dbeafe;
 }
+
+@media (max-width: 768px) {
+  .concern-table-header-strip {
+    padding: 10px 14px !important;
+  }
+
+  .concern-filter-strip {
+    padding: 10px 14px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .concern-search-box {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .concern-table-responsive {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .concern-table {
+    min-width: 600px !important;
+  }
+}
+

@@ -342,3 +342,49 @@
 .concern-btn-outline:hover:not(:disabled) {
   background: #f1f5f9;
 }
+
+/* Mobile Responsive Concern Detail Modal */
+@media (max-width: 768px) {
+  .concern-modal-overlay {
+    padding: 6px !important;
+    align-items: flex-end !important;
+  }
+
+  .concern-modal-container {
+    max-height: 95vh !important;
+    border-radius: 12px 12px 0 0 !important;
+    width: 100% !important;
+  }
+
+  .concern-modal-header {
+    padding: 12px 14px !important;
+  }
+
+  .concern-modal-body {
+    padding: 14px !important;
+    gap: 12px !important;
+  }
+
+  .concern-summary-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .concern-modal-footer {
+    padding: 12px 14px !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .concern-modal-footer .concern-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .concern-summary-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+

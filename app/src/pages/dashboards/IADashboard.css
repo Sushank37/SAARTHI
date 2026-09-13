@@ -1014,3 +1014,50 @@
 .gov-sidebar-compact a[href^="/ia"].active .nav-icon {
   color: #005A9C !important;
 }
+
+/* Mobile Responsive IA Dashboard */
+@media (max-width: 768px) {
+  .ia-header-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .ia-header-agency-selector {
+    max-width: 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ia-tab-nav-bar {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 6px !important;
+    padding: 4px !important;
+  }
+
+  .ia-tab-nav-bar::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .ia-tab-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+  }
+
+  .ia-table-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .ia-table {
+    min-width: 650px !important;
+  }
+}
+

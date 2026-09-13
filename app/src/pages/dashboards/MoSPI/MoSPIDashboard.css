@@ -1152,3 +1152,48 @@
   flex-wrap: wrap;
 }
 
+/* Mobile Responsive MoSPI Dashboard */
+@media (max-width: 768px) {
+  .mospi-header-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .mospi-tab-bar {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 6px !important;
+    padding: 4px !important;
+  }
+
+  .mospi-tab-bar::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .mospi-tab-pill {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .mospi-kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .mospi-filter-strip {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .mospi-filter-input,
+  .mospi-filter-select {
+    width: 100% !important;
+  }
+}
+
+

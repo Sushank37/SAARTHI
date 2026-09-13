@@ -814,6 +814,7 @@ export default function Sidebar({ summary, roleConfig, mobileOpen, onCloseMobile
                 onClick={() => {
                   setCustomMospiTab(item.tab);
                   window.dispatchEvent(new CustomEvent("mospi-tab-changed", { detail: item.tab }));
+                  onCloseMobile?.();
                 }}
               >
                 <div className="nav-label-wrap">
@@ -852,6 +853,7 @@ export default function Sidebar({ summary, roleConfig, mobileOpen, onCloseMobile
                 to={`/ia?tab=${item.tab}${currentIA ? `&ia=${encodeURIComponent(currentIA)}` : ""}`}
                 className={() => `nav-item-compact ${isTabActive ? "active" : ""}`}
                 title={item.label}
+                onClick={() => onCloseMobile?.()}
               >
                 <div className="nav-label-wrap">
                   <Icon size={16} className="nav-icon" />
@@ -886,6 +888,7 @@ export default function Sidebar({ summary, roleConfig, mobileOpen, onCloseMobile
                 to={`/da?tab=${item.tab}`}
                 className={() => `nav-item-compact ${isTabActive ? "active" : ""}`}
                 title={item.label}
+                onClick={() => onCloseMobile?.()}
               >
                 <div className="nav-label-wrap">
                   <Icon size={16} className="nav-icon" />
@@ -920,6 +923,7 @@ export default function Sidebar({ summary, roleConfig, mobileOpen, onCloseMobile
                 key={item.id}
                 to={item.path}
                 className={() => `nav-item-compact ${isActive ? "active" : ""}`}
+                onClick={() => onCloseMobile?.()}
               >
                 <div className="nav-label-wrap">
                   <Icon size={16} className="nav-icon" />
@@ -957,6 +961,7 @@ export default function Sidebar({ summary, roleConfig, mobileOpen, onCloseMobile
                 key={item.path}
                 to={item.path}
                 className={`nav-item-compact ${isActive ? "active" : ""}`}
+                onClick={() => onCloseMobile?.()}
               >
                 <div className="nav-label-wrap">
                   <Icon size={16} className="nav-icon" />

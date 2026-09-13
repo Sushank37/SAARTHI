@@ -700,7 +700,7 @@ a {
   color: var(--text-primary, #0f172a);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .mobile-menu-toggle-btn {
     display: flex;
   }
@@ -709,7 +709,8 @@ a {
     display: flex;
   }
 
-  .gov-sidebar-compact {
+  .gov-sidebar-compact,
+  .gov-sidebar-compact.da-mode {
     position: fixed;
     top: 0;
     left: 0;
@@ -726,7 +727,8 @@ a {
     -webkit-overflow-scrolling: touch;
   }
 
-  .gov-sidebar-compact.mobile-open {
+  .gov-sidebar-compact.mobile-open,
+  .gov-sidebar-compact.da-mode.mobile-open {
     transform: translateX(0);
   }
 
@@ -758,11 +760,106 @@ a {
   }
 
   .portal-title {
-    font-size: 11px;
-    max-width: 180px;
+    font-size: 12px;
+    max-width: 220px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-main-row {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .header-brand-group {
+    gap: 8px;
+  }
+
+  .ashoka-emblem-small {
+    width: 24px;
+    height: 32px;
+  }
+
+  .portal-title {
+    font-size: 11.5px;
+    max-width: 160px;
+  }
+
+  .ministry-title {
+    display: none;
+  }
+
+  .saarthi-pill {
+    display: none;
+  }
+
+  .header-right-group {
+    gap: 5px;
+  }
+
+  /* Compact Icon-First Touch Buttons on Mobile Header */
+  .header-early-alert-btn span:not(.header-early-alert-badge) {
+    display: none;
+  }
+
+  .header-early-alert-btn {
+    padding: 4px 6px;
+    gap: 2px;
+  }
+
+  .header-active-persona .persona-name {
+    display: none;
+  }
+
+  .header-active-persona {
+    padding: 4px 6px;
+  }
+
+  .external-portal-btn span {
+    display: none;
+  }
+
+  .external-portal-btn {
+    padding: 4px 6px;
+  }
+
+  .header-logout-btn span {
+    display: none;
+  }
+
+  .header-logout-btn {
+    padding: 4px 6px;
+  }
+
+  .header-lang-btn {
+    padding: 4px 6px;
+  }
+
+  .header-lang-name {
+    display: none;
+  }
+
+  .header-lang-chevron {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .portal-title {
+    max-width: 130px;
+    font-size: 11px;
+  }
+
+  .header-main-row {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+
+  .mobile-menu-toggle-btn {
+    padding: 4px;
   }
 }
 
