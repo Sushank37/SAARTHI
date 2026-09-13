@@ -791,7 +791,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                         setSelectedStage(isSelected ? "All" : st.id);
                         setWorksPage(1);
                       }}
-                      title={`Filter by ${t(st.label)}`}
+                      title={`${t("Filter by")} ${t(st.label)}`}
                     >
                       <span className="da-stage-step-name">{t(st.label)}</span>
                       <span className="da-stage-step-count">{formatNumber(st.count)}</span>
@@ -888,7 +888,7 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-panel-header">
                 <h2 className="da-panel-title">
                   <ShieldAlert size={16} color="#b45309" />
-                  <span>{t("District Priority Action Focus")} ({priorityCases.length} Critical Cases in Scope)</span>
+                  <span>{t("District Priority Action Focus")} ({priorityCases.length} {t("Critical Cases in Scope")})</span>
                 </h2>
                 <button
                   type="button"
@@ -909,12 +909,12 @@ export default function DADashboard({ summary, onSelectWork }) {
                     <span className="text-xs text-slate-500 font-semibold">· {t("Hon'ble MP:")} {priorityCases[0].MP_NAME || "—"}</span>
                   </div>
                   <div className="da-spotlight-desc">
-                    {priorityCases[0].WORK_DESCRIPTION || "Work Proposal"}
+                    {priorityCases[0].WORK_DESCRIPTION || t("Work Proposal")}
                   </div>
                   <div className="da-spotlight-subline">
-                    <span>{t("Category:")} <strong>{priorityCases[0].WORK_CATEGORY || "Civic Infrastructure"}</strong></span>
+                    <span>{t("Category:")} <strong>{t(priorityCases[0].WORK_CATEGORY) || t("Civic Infrastructure")}</strong></span>
                     <span>·</span>
-                    <span>{t("AI Status:")} <strong>{priorityCases[0].RISK_REASON || priorityCases[0].REVIEW_REASON || t("Scrutiny Flagged")}</strong></span>
+                    <span>{t("AI Status:")} <strong>{t(priorityCases[0].RISK_REASON) || t(priorityCases[0].REVIEW_REASON) || t("Scrutiny Flagged")}</strong></span>
                   </div>
                 </div>
                 <div className="da-spotlight-right">
@@ -2013,7 +2013,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                     const wData = await res.json();
                     handleSelectWork(wData, "actions");
                   } else {
-                    alert(`Work #${workId} could not be loaded from registry.`);
+                    alert(`${t("Work #")}${workId} ${t("could not be loaded from registry.")}`);
                   }
                 } catch (e) {
                   console.error(e);
@@ -2071,7 +2071,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                           </span>
                           <span>·</span>
                           <span>
-                            {t("Category:")} <strong>{c.WORK_CATEGORY || t("Infrastructure")}</strong>
+                            {t("Category:")} <strong>{t(c.WORK_CATEGORY) || t("Infrastructure")}</strong>
                           </span>
                           {c.SANCTION_DELAY_DAYS !== undefined && c.SANCTION_DELAY_DAYS !== null && !Number.isNaN(Number(c.SANCTION_DELAY_DAYS)) && (
                             <>
@@ -2121,36 +2121,35 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-module-banner-left">
               <div className="da-module-banner-eyebrow">
                 <AlertCircle size={13} />
-                <span>District Magistrate & Collectorate Work Concerns Center</span>
+                <span>{t("District Magistrate & Collectorate Work Concerns Center")}</span>
               </div>
-              <h2 className="da-module-banner-title">Parliamentary Concerns & Statutory Directives</h2>
+              <h2 className="da-module-banner-title">{t("Parliamentary Concerns & Statutory Directives")}</h2>
               <p className="da-module-banner-desc">
-                Review concerns raised by Hon'ble MPs under jurisdiction, issue directives to Implementing Agencies,
-                request clarification, record administrative actions, and verify ground rectification.
+                {t("Review concerns raised by Hon'ble MPs under jurisdiction, issue directives to Implementing Agencies, request clarification, record administrative actions, and verify ground rectification.")}
               </p>
             </div>
             <div className="da-module-banner-right">
               <div className="da-intel-stats">
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Total Concerns</span>
+                  <span className="da-intel-stat-label">{t("Total Concerns")}</span>
                   <div className="da-intel-stat-val" style={{ color: "#005a9c" }}>
                     {daConcerns.length}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Needs DA Action</span>
+                  <span className="da-intel-stat-label">{t("Needs DA Action")}</span>
                   <div className="da-intel-stat-val text-amber-700">
                     {daConcerns.filter((c) => ["SUBMITTED", "RECEIVED", "UNDER_REVIEW", "EVIDENCE_SUBMITTED"].includes((c.status || "").toUpperCase())).length}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Assigned to IA</span>
+                  <span className="da-intel-stat-label">{t("Assigned to IA")}</span>
                   <div className="da-intel-stat-val" style={{ color: "#6b21a8" }}>
                     {daConcerns.filter((c) => ["ACTION_ASSIGNED", "ACTION_IN_PROGRESS"].includes((c.status || "").toUpperCase())).length}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Resolved</span>
+                  <span className="da-intel-stat-label">{t("Resolved")}</span>
                   <div className="da-intel-stat-val text-emerald-700">
                     {daConcerns.filter((c) => ["RESOLVED", "CLOSED"].includes((c.status || "").toUpperCase())).length}
                   </div>
@@ -2162,12 +2161,12 @@ export default function DADashboard({ summary, onSelectWork }) {
           <ConcernListTable
             concerns={daConcerns}
             loading={daConcernsLoading}
-            title="Jurisdiction Work Concerns Register"
-            subtitle={`Statutory oversight for ${selectedIDA === "ALL" ? "All District Authorities" : selectedIDA}`}
+            title={t("Jurisdiction Work Concerns Register")}
+            subtitle={`${t("Statutory oversight for")} ${selectedIDA === "ALL" ? t("All District Authorities") : selectedIDA}`}
             role="DISTRICT_AUTHORITY"
             onSelectConcern={(id) => setSelectedConcernId(id)}
             onOpenWork={(workId) => onSelectWork ? onSelectWork(workId, "actions") : handleSelectWork(workId, "actions")}
-            emptyMessage="No concerns currently logged for this District Authority jurisdiction."
+            emptyMessage={t("No concerns currently logged for this District Authority jurisdiction.")}
           />
         </div>
       )}

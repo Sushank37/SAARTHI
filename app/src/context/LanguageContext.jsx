@@ -160,7 +160,7 @@ export function LanguageProvider({ children }) {
    * using original English text as the persistent key.
    */
   const applyDomTranslation = useCallback(
-    (rootElement = document.getElementById("root")) => {
+    (rootElement = document.body || document.getElementById("root")) => {
       if (!rootElement) return;
 
       const isEnglish = currentLang.code === "en";
@@ -275,7 +275,7 @@ export function LanguageProvider({ children }) {
       }, 100);
     });
 
-    const rootNode = document.getElementById("root");
+    const rootNode = document.body || document.getElementById("root");
     if (rootNode) {
       observerRef.current.observe(rootNode, {
         childList: true,

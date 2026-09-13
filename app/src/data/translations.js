@@ -5569,7 +5569,1291 @@ export const TRANSLATIONS = {
     "pa": "ਮਾਣਯੋਗ ਐਮ.ਪੀ.:",
     "or": "ମାନ୍ୟବର ସାଂସଦ:",
     "ur": "معزز رکن پارلیمنٹ:"
-  }
+  },
+  '⚖️ DISTRICT MAGISTRATE & COLLECTORATE · STATUTORY SANCTION DOSSIER': {
+    'hi': '⚖️ जिलाधिकारी एवं कलेक्ट्रेट · सांविधिक स्वीकृति डोजियर',
+    'te': '⚖️ జిల్లా మేజిస్ట్రేట్ & కలెక్టరేట్ · చట్టబద్ధమైన మంజూరు డాసియర్',
+    'ta': '⚖️ மாவட்ட ஆட்சியர் அலுவலகம் · சட்டப்பூர்வ ஒப்புதல் ஆவணம்',
+    'bn': '⚖️ জেলা ম্যাজিস্ট্রেট ও কালেক্টরেট · সংবিধিবদ্ধ অনুমোদন ডসিয়ার',
+    'mr': '⚖️ जिल्हाधिकारी व कचेरी · वैधानिक मंजुरी डॉसियर',
+    'gu': '⚖️ જિલ્લા મેજિસ્ટ્રેટ અને કલેક્ટર કચેરી · વૈધાનિક મંજૂરી ડોઝિયર',
+    'kn': '⚖️ ಜಿಲ್ಲಾ ಮ್ಯಾಜಿಸ್ಟ್ರೇಟ್ ಮತ್ತು ಕಲೆಕ್ಟರೇಟ್ · ಶಾಸನಬದ್ಧ ಮಂಜೂರಾತಿ ದಾಖಲೆ',
+    'ml': '⚖️ ജില്ലാ മജിസ്ട്രേറ്റ് & കലക്ടറേറ്റ് · നിയമാനുസൃത അനുമതി ഡോസിയർ',
+    'pa': '⚖️ ਜ਼ਿਲ੍ਹਾ ਮੈਜਿਸਟ੍ਰੇਟ ਅਤੇ ਕਲੈਕਟਰੇਟ · ਕਾਨੂੰਨੀ ਮਨਜ਼ੂਰੀ ਡੋਜ਼ੀਅਰ',
+    'or': '⚖️ ଜିଲ୍ଲା ମାଜିଷ୍ଟ୍ରେଟ୍ ଏବଂ କଲେକ୍ଟରେଟ୍ · ବୈଧାନିକ ମଞ୍ଜୁରୀ ଡୋସିଅର',
+    'ur': '⚖️ ڈسٹرکٹ مجسٹریٹ اور کلکٹریٹ · قانونی منظوری کا ڈوزیئر',
+  },
+  'DISTRICT MAGISTRATE & COLLECTORATE · STATUTORY SANCTION DOSSIER': {
+    'hi': 'जिलाधिकारी एवं कलेक्ट्रेट · सांविधिक स्वीकृति डोजियर',
+    'te': 'జిల్లా మేజిస్ట్రేట్ & కలెక్టరేట్ · చట్టబద్ధమైన మంజూరు డాసియర్',
+    'ta': 'மாவட்ட ஆட்சியர் அலுவலகம் · சட்டப்பூர்வ ஒப்புதல் ஆவணம்',
+    'bn': 'জেলা ম্যাজিস্ট্রেট ও কালেক্টরেট · সংবিধিবদ্ধ অনুমোদন ডসিয়ার',
+    'mr': 'जिल्हाधिकारी व कचेरी · वैधानिक मंजुरी डॉसियर',
+    'gu': 'જિલ્લા મેજિસ્ટ્રેટ અને કલેક્ટર કચેરી · વૈધાનિક મંજૂરી ડોઝિયર',
+    'kn': 'ಜಿಲ್ಲಾ ಮ್ಯಾಜಿಸ್ಟ್ರೇಟ್ ಮತ್ತು ಕಲೆಕ್ಟರೇಟ್ · ಶಾಸನಬದ್ಧ ಮಂಜೂರಾತಿ ದಾಖಲೆ',
+    'ml': 'ജില്ലാ മജിസ്ട്രേറ്റ് & കലക്ടറേറ്റ് · നിയമാനുസൃത അനുമതി ഡോസിയർ',
+    'pa': 'ਜ਼ਿਲ੍ਹਾ ਮੈਜਿਸਟ੍ਰੇਟ ਅਤੇ ਕਲੈਕਟਰੇਟ · ਕਾਨੂੰਨੀ ਮਨਜ਼ੂਰੀ ਡੋਜ਼ੀਅਰ',
+    'or': 'ଜିଲ୍ଲା ମାଜିଷ୍ଟ୍ରେଟ୍ ଏବଂ କଲେକ୍ଟରେଟ୍ · ବୈଧାନିକ ମଞ୍ଜୁରୀ ଡୋସିଅର',
+    'ur': 'ڈسٹرکٹ مجسٹریٹ اور کلکٹریٹ · قانونی منظوری کا ڈوزیئر',
+  },
+  'STATUTORY RECORD · FORM 78-A': {
+    'hi': 'सांविधिक अभिलेख · प्रपत्र 78-ए',
+    'te': 'చట్టబద్ధమైన రికార్డు · ఫారమ్ 78-A',
+    'ta': 'சட்டப்பூர்வ பதிவு · படிவம் 78-A',
+    'bn': 'সংবিধিবদ্ধ রেকর্ড · ফর্ম ৭৮-এ',
+    'mr': 'वैधानिक नोंद · प्रपत्र ७८-ए',
+    'gu': 'વૈધાનિક રેકોર્ડ · ફોર્મ ૭૮-એ',
+    'kn': 'ಶಾಸನಬದ್ಧ ದಾಖಲೆ · ನಮೂನೆ 78-A',
+    'ml': 'നിയമാനുസൃത രേഖ · ഫോം 78-A',
+    'pa': 'ਕਾਨੂੰਨੀ ਰਿਕਾਰਡ · ਫਾਰਮ 78-A',
+    'or': 'ବୈଧାନିକ ରେକର୍ଡ · ଫର୍ମ ୭୮-ଏ',
+    'ur': 'قانونی ریکارڈ · فارم 78-A',
+  },
+  'Section 3.11 Feasibility & Section 3.12 45-Day Statutory Scrutiny': {
+    'hi': 'धारा 3.11 व्यवहार्यता एवं धारा 3.12 45-दिवसीय सांविधिक संवीक्षा',
+    'te': 'సెక్షన్ 3.11 సాధ్యాసాధ్యాలు & సెక్షన్ 3.12 45 రోజుల చట్టబద్ధమైన పరిశీలన',
+    'ta': 'பிரிவு 3.11 சாத்தியக்கூறு & பிரிவு 3.12 45-நாள் சட்டப்பூர்வ ஆய்வு',
+    'bn': 'ধারা ৩.১১ সম্ভাব্যতা ও ধারা ৩.১২ ৪৫-দিনের সংবিধিবদ্ধ নিরীক্ষা',
+    'mr': 'कलम ३.११ व्यवहार्यता व कलम ३.१२ ४५-दिवसीय वैधानिक तपासणी',
+    'gu': 'કલમ ૩.૧૧ શક્યતા અને કલમ ૩.૧૨ ૪૫-દિવસીય વૈધાનિક ચકાસણી',
+    'kn': 'ವಿಭಾಗ 3.11 ಕಾರ್ಯಸಾಧ್ಯತೆ ಮತ್ತು ವಿಭಾಗ 3.12 45-ದಿನಗಳ ಶಾಸನಬದ್ಧ ಪರಿಶೀಲನೆ',
+    'ml': 'സെക്ഷൻ 3.11 സാധ്യതാ പഠനവും സെക്ഷൻ 3.12 45-ദിവസത്തെ പരിശോധനയും',
+    'pa': 'ਧਾਰਾ 3.11 ਸੰਭਾਵਨਾ ਅਤੇ ਧਾਰਾ 3.12 45-ਦਿਨਾਂ ਦੀ ਕਾਨੂੰਨੀ ਪੜਤਾਲ',
+    'or': 'ଧାରା ୩.୧୧ ସମ୍ଭାବ୍ୟତା ଏବଂ ଧାରା ୩.୧୨ ୪୫-ଦିନର ବୈଧାନିକ ଯାଞ୍ଚ',
+    'ur': 'سیکشن 3.11 فزیبلٹی اور سیکشن 3.12 45 روزہ قانونی جانچ پڑتال',
+  },
+  '👷 IMPLEMENTING AGENCY (IA) · CONTRACT EXECUTION & MB DOSSIER': {
+    'hi': '👷 कार्यान्वयन एजेंसी (IA) · अनुबंध निष्पादन एवं एमबी डोजियर',
+  },
+  'SITE EXECUTION & BILLING': {
+    'hi': 'स्थल निष्पादन एवं बिलिंग',
+  },
+  'Measurement Book (MB) Recordings, Milestone Delivery & Photo Evidence': {
+    'hi': 'माप पुस्तिका (एमबी) प्रविष्टियां, मील का पत्थर वितरण एवं फोटो साक्ष्य',
+  },
+  "🎖️ HON'BLE MEMBER OF PARLIAMENT · CONSTITUENCY WORK DOSSIER": {
+    'hi': '🎖️ माननीय संसद सदस्य · निर्वाचन क्षेत्र कार्य डोजियर',
+  },
+  'SANSAD OVERSIGHT BRIEF': {
+    'hi': 'सांसद निगरानी विवरण',
+  },
+  '₹5.00 Cr Quota Entitlement, Recommendation Tracking & Asset Delivery': {
+    'hi': '₹5.00 करोड़ कोटा पात्रता, अनुशंसा ट्रैकिंग एवं परिसंपत्ति वितरण',
+  },
+  '👥 SAARTHI CITIZEN · PUBLIC TRANSPARENCY & SOCIAL AUDIT': {
+    'hi': '👥 सारथी नागरिक · सार्वजनिक पारदर्शिता एवं सामाजिक अंकेक्षण',
+  },
+  'PUBLIC AUDIT REGISTER': {
+    'hi': 'सार्वजनिक अंकेक्षण रजिस्टर',
+  },
+  'Constituency Development Verification & Democratic Social Audit': {
+    'hi': 'निर्वाचन क्षेत्र विकास सत्यापन एवं लोकतांत्रिक सामाजिक अंकेक्षण',
+  },
+  '🏛️ MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION · CENTRAL AUDIT DOSSIER': {
+    'hi': '🏛️ सांख्यिकी एवं कार्यक्रम कार्यान्वयन मंत्रालय · केंद्रीय अंकेक्षण डोजियर',
+  },
+  'SNA CENTRAL AUDIT & VIGILANCE': {
+    'hi': 'एसएनए केंद्रीय अंकेक्षण एवं सतर्कता',
+  },
+  'Single Nodal Account (SNA) Fund Flow, Multi-District Governance & Inter-State Cluster Analysis': {
+    'hi': 'सिंगल नोडल खाता (एसएनए) निधि प्रवाह, बहु-जिला शासन एवं अंतर-राज्यीय समूह विश्लेषण',
+  },
+  'Recommendation #': {
+    'hi': 'अनुशंसा #',
+  },
+  'Copy Record ID': {
+    'hi': 'रिकॉर्ड आईडी कॉपी करें',
+  },
+  'Copied': {
+    'hi': 'कॉपी किया गया',
+  },
+  'Copy ID': {
+    'hi': 'आईडी कॉपी करें',
+  },
+  'Print Official Dossier': {
+    'hi': 'आधिकारिक डोजियर प्रिंट करें',
+  },
+  'Print': {
+    'hi': 'प्रिंट करें',
+  },
+  'Close Dossier': {
+    'hi': 'डोजियर बंद करें',
+  },
+  'STAGE:': {
+    'hi': 'चरण:',
+  },
+  'FINANCIAL RISK:': {
+    'hi': 'वित्तीय जोखिम:',
+  },
+  'DUPLICATE RISK:': {
+    'hi': 'दोहरा जोखिम:',
+  },
+  '45-DAY LIMIT EXCEEDED': {
+    'hi': '45-दिवसीय सीमा समाप्त',
+  },
+  '30-45D WARNING': {
+    'hi': '30-45 दिन चेतावनी',
+  },
+  'SANCTION COMPLIANT': {
+    'hi': 'स्वीकृति अनुपालित',
+  },
+  '12-MO COMPLETION OVERDUE': {
+    'hi': '12-माह पूर्णता विलंबित',
+  },
+  'COMPLETED ASSET': {
+    'hi': 'पूर्ण परिसंपत्ति',
+  },
+  'CENTRAL DIRECTIVE ACTIVE ✓': {
+    'hi': 'केंद्रीय निर्देश सक्रिय ✓',
+  },
+  'SNA TRANCHE BLOCKED ⛔': {
+    'hi': 'एसएनए किश्त अवरुद्ध ⛔',
+  },
+  'CAG AUDIT REQUISITIONED ⚖️': {
+    'hi': 'सीएजी अंकेक्षण अपेक्षित ⚖️',
+  },
+  'MB BILL SUBMITTED ✓': {
+    'hi': 'एमबी बिल प्रस्तुत ✓',
+  },
+  'GEO-EVIDENCE LOGGED 📷': {
+    'hi': 'भू-साक्ष्य दर्ज 📷',
+  },
+  'EOT EXTENSION CLAIMED': {
+    'hi': 'ईओटी विस्तार दावा',
+  },
+  'SANSAD INQUIRY SERVED ✓': {
+    'hi': 'संसदीय पूछताछ प्रेषित ✓',
+  },
+  'DEDICATION APPROVED 🎖️': {
+    'hi': 'लोकार्पण स्वीकृत 🎖️',
+  },
+  'GROUND INSPECTION LOGGED 📍': {
+    'hi': 'धरातलीय निरीक्षण दर्ज 📍',
+  },
+  'COMMUNITY VERIFIED': {
+    'hi': 'समुदाय सत्यापित',
+  },
+  'GRIEVANCE LOGGED TO DM': {
+    'hi': 'जिलाधिकारी को शिकायत दर्ज',
+  },
+  'COLLECTORATE VERIFIED ✓': {
+    'hi': 'कलेक्ट्रेट द्वारा सत्यापित ✓',
+  },
+  '7-DAY NOTICE ISSUED': {
+    'hi': '7-दिवसीय नोटिस जारी',
+  },
+  'INSTALLMENT WITHHELD ⛔': {
+    'hi': 'किश्त रोकी गई ⛔',
+  },
+  'Full Central Audit (All)': {
+    'hi': 'पूर्ण केंद्रीय अंकेक्षण (सभी)',
+  },
+  '1. Central Registry & Identifiers': {
+    'hi': '1. केंद्रीय रजिस्ट्री एवं पहचानकर्ता',
+  },
+  '2. Central SNA Fund Flow & Audit': {
+    'hi': '2. केंद्रीय एसएनए निधि प्रवाह एवं अंकेक्षण',
+  },
+  '3. Inter-State Duplicate Clusters': {
+    'hi': '3. अंतर-राज्यीय दोहरा समूह',
+  },
+  '4. National Delay Breach & SLAs': {
+    'hi': '4. राष्ट्रीय विलंब उल्लंघन एवं एसएलए',
+  },
+  '5. National Risk & Forensic Anomalies': {
+    'hi': '5. राष्ट्रीय जोखिम एवं फोरेंसिक विसंगतियां',
+  },
+  '6. IA National Benchmarking': {
+    'hi': '6. आईए राष्ट्रीय बेंचमार्किंग',
+  },
+  '7. Evidence & EXIF Forensic Audit': {
+    'hi': '7. साक्ष्य एवं ईएक्सआईएफ फोरेंसिक अंकेक्षण',
+  },
+  '8. National Concerns & Central Directives': {
+    'hi': '8. राष्ट्रीय चिंताएं एवं केंद्रीय निर्देश',
+  },
+  'Full Execution File (All)': {
+    'hi': 'पूर्ण निष्पादन फ़ाइल (सभी)',
+  },
+  '1. Work Order & Scope of Works': {
+    'hi': '1. कार्य आदेश एवं कार्यों का दायरा',
+  },
+  '2. Physical Milestones & Progress': {
+    'hi': '2. भौतिक मील के पत्थर एवं प्रगति',
+  },
+  '3. Measurement Book (MB) & Claims': {
+    'hi': '3. माप पुस्तिका (एमबी) एवं दावे',
+  },
+  '4. Geo-Tagged Photos & Site Uploads': {
+    'hi': '4. भू-टैग फोटो एवं साइट अपलोड',
+  },
+  '5. Deadlines & Extension (EOT)': {
+    'hi': '5. समय-सीमा एवं विस्तार (ईओटी)',
+  },
+  '6. Site Quality & Rectification Log': {
+    'hi': '6. स्थल गुणवत्ता एवं सुधार लॉग',
+  },
+  '7. Assigned Concerns & IA Directives': {
+    'hi': '7. आवंटित चिंताएं एवं आईए निर्देश',
+  },
+  'Full Parliamentary Brief (All)': {
+    'hi': 'पूर्ण संसदीय विवरण (सभी)',
+  },
+  '1. MP Sponsorship & ₹5 Cr Quota Debit': {
+    'hi': '1. सांसद अनुशंसा एवं ₹5 करोड़ कोटा कटौती',
+  },
+  '2. Constituency Sanction SLA & DA Status': {
+    'hi': '2. निर्वाचन क्षेत्र स्वीकृति एसएलए एवं डीए स्थिति',
+  },
+  '3. Ground Delivery & Milestone Progress': {
+    'hi': '3. धरातलीय वितरण एवं मील का पत्थर प्रगति',
+  },
+  '4. Constituency Fund Release & Balance': {
+    'hi': '4. निर्वाचन क्षेत्र निधि जारी एवं शेष',
+  },
+  '5. Asset Photos for Public Dedication': {
+    'hi': '5. सार्वजनिक लोकार्पण हेतु परिसंपत्ति तस्वीरें',
+  },
+  '6. Grievances & Constituency Delay Flags': {
+    'hi': '6. शिकायतें एवं निर्वाचन क्षेत्र विलंब ध्वज',
+  },
+  '7. Parliamentary Concerns & Directives': {
+    'hi': '7. संसदीय चिंताएं एवं निर्देश',
+  },
+  'Public Factsheet (All)': {
+    'hi': 'सार्वजनिक तथ्यपत्र (सभी)',
+  },
+  '1. Community Infrastructure Summary': {
+    'hi': '1. सामुदायिक अवसंरचना सारांश',
+  },
+  '2. Public Fund Utilization Breakdown': {
+    'hi': '2. सार्वजनिक निधि उपयोग विवरण',
+  },
+  '3. Delivery Status & Public Opening': {
+    'hi': '3. वितरण स्थिति एवं सार्वजनिक उद्घाटन',
+  },
+  '4. Before & After Photo Gallery': {
+    'hi': '4. पहले एवं बाद की फोटो गैलरी',
+  },
+  '5. Citizen Concerns & Social Audit': {
+    'hi': '5. नागरिक चिंताएं एवं सामाजिक अंकेक्षण',
+  },
+  'Full Statutory Audit (All)': {
+    'hi': 'पूर्ण सांविधिक अंकेक्षण (सभी)',
+  },
+  '1. Overview & Sponsorship': {
+    'hi': '1. अवलोकन एवं अनुशंसा',
+  },
+  '2. Sanction Feasibility (Sec 3.11)': {
+    'hi': '2. स्वीकृति व्यवहार्यता (धारा 3.11)',
+  },
+  '3. 45-Day Limit (Sec 3.12)': {
+    'hi': '3. 45-दिवसीय सीमा (धारा 3.12)',
+  },
+  '4. 1-Yr Completion (Sec 3.14)': {
+    'hi': '4. 1-वर्षीय पूर्णता (धारा 3.14)',
+  },
+  '5. Financials & Escalation': {
+    'hi': '5. वित्तीय विवरण एवं लागत वृद्धि',
+  },
+  '6. AI Risk & Anomalies': {
+    'hi': '6. एआई जोखिम एवं विसंगतियां',
+  },
+  '7. Duplicate Clusters': {
+    'hi': '7. दोहरे समूह',
+  },
+  '8. Executing Agency (IA)': {
+    'hi': '8. कार्यान्वयन एजेंसी (आईए)',
+  },
+  '9. Ground Evidence': {
+    'hi': '9. धरातलीय साक्ष्य',
+  },
+  '10. Geo-Photo & Site (Sec 3.16)': {
+    'hi': '10. भू-टैग फोटो एवं स्थल (धारा 3.16)',
+  },
+  '11. Work Concerns & Collector Directives': {
+    'hi': '11. कार्य संबंधी चिंताएं एवं कलेक्ट्रेट निर्देश',
+  },
+  'Reset to All': {
+    'hi': 'सभी पर रीसेट करें',
+  },
+  'Show all sections': {
+    'hi': 'सभी अनुभाग दिखाएं',
+  },
+  'District Overview & Parliamentary Sponsorship': {
+    'hi': 'जिला अवलोकन एवं संसदीय अनुशंसा',
+  },
+  'Copy work description': {
+    'hi': 'कार्य विवरण कॉपी करें',
+  },
+  'Copy Description': {
+    'hi': 'विवरण कॉपी करें',
+  },
+  'Official Work Description (eSAKSHI Entry):': {
+    'hi': 'आधिकारिक कार्य विवरण (ई-साक्षी प्रविष्टि):',
+  },
+  'No detailed work description recorded in eSAKSHI entry.': {
+    'hi': 'ई-साक्षी प्रविष्टि में कोई विस्तृत कार्य विवरण दर्ज नहीं है।',
+  },
+  'Cluster Representative Description:': {
+    'hi': 'समूह प्रतिनिधि विवरण:',
+  },
+  "Recommending Hon'ble MP": {
+    'hi': 'अनुशंसाकर्ता माननीय सांसद',
+  },
+  "Hon'ble MP Not Specified": {
+    'hi': 'माननीय सांसद निर्दिष्ट नहीं',
+  },
+  'General/Civil Works': {
+    'hi': 'सामान्य/नागरिक कार्य',
+  },
+  'Activity Designation': {
+    'hi': 'गतिविधि पदनाम',
+  },
+  'Standard Civic Infrastructure': {
+    'hi': 'मानक नागरिक अवसंरचना',
+  },
+  'Recommendation Date': {
+    'hi': 'अनुशंसा तिथि',
+  },
+  'Parliamentary Term & House': {
+    'hi': 'संसदीय कार्यकाल एवं सदन',
+  },
+  'Master Recommendation Detail ID': {
+    'hi': 'मास्टर अनुशंसा विवरण आईडी',
+  },
+  'Administrative & Technical Sanction (Sec 3.11 MPLADS)': {
+    'hi': 'प्रशासनिक एवं तकनीकी स्वीकृति (धारा 3.11 एमपीलैड्स)',
+  },
+  'Statutory Mandate (Section 3.11):': {
+    'hi': 'सांविधिक अधिदेश (धारा 3.11):',
+  },
+  'The District Authority shall examine the feasibility of proposed works, verify site eligibility, obtain detailed cost estimates from the Implementing Agency, and accord Administrative Sanction (AS) or formal rejection.': {
+    'hi': 'जिला प्राधिकरण प्रस्तावित कार्यों की व्यवहार्यता की जांच करेगा, स्थल पात्रता का सत्यापन करेगा, कार्यान्वयन एजेंसी से विस्तृत लागत अनुमान प्राप्त करेगा, और प्रशासनिक स्वीकृति (एएस) या औपचारिक अस्वीकृति प्रदान करेगा।',
+  },
+  'Sanction Order Status': {
+    'hi': 'स्वीकृति आदेश स्थिति',
+  },
+  'AS/TS Order Issued': {
+    'hi': 'एएस/टीएस आदेश जारी',
+  },
+  'Awaiting Collector Order': {
+    'hi': 'जिलाधिकारी आदेश की प्रतीक्षा',
+  },
+  'Formal Sanction Date': {
+    'hi': 'औपचारिक स्वीकृति तिथि',
+  },
+  'Pending Issuance': {
+    'hi': 'जारी होना लंबित',
+  },
+  'Sanctioned Cost (₹)': {
+    'hi': 'स्वीकृत लागत (₹)',
+  },
+  'Awaiting Approval': {
+    'hi': 'अनुमोदन की प्रतीक्षा',
+  },
+  'Feasibility Verification Status:': {
+    'hi': 'व्यवहार्यता सत्यापन स्थिति:',
+  },
+  'Feasibility Established & Sanctioned': {
+    'hi': 'व्यवहार्यता स्थापित एवं स्वीकृत',
+  },
+  'Feasibility Scrutiny in Progress': {
+    'hi': 'व्यवहार्यता संवीक्षा प्रगति पर',
+  },
+  'Work Order / Technical Sanction ID:': {
+    'hi': 'कार्य आदेश / तकनीकी स्वीकृति आईडी:',
+  },
+  'Pending AS/TS': {
+    'hi': 'एएस/टीएस लंबित',
+  },
+  'Recommended vs Sanction Ratio:': {
+    'hi': 'अनुशंसित बनाम स्वीकृत अनुपात:',
+  },
+  'of proposal estimate': {
+    'hi': 'प्रस्ताव अनुमान का',
+  },
+  'Pending': {
+    'hi': 'लंबित',
+  },
+  'Statutory 45-Day Sanction Limit Compliance (Sec 3.12)': {
+    'hi': 'सांविधिक 45-दिवसीय स्वीकृति सीमा अनुपालन (धारा 3.12)',
+  },
+  'NON-COMPLIANT': {
+    'hi': 'गैर-अनुपालन',
+  },
+  'COMPLIANT': {
+    'hi': 'अनुपालित',
+  },
+  'PENDING': {
+    'hi': 'लंबित',
+  },
+  'Statutory 45-Day Sanction Window Exceeded by': {
+    'hi': 'सांविधिक 45-दिवसीय स्वीकृति समय-सीमा पार:',
+  },
+  'Approaching Statutory 45-Day Limit': {
+    'hi': 'सांविधिक 45-दिवसीय सीमा के निकट',
+  },
+  'Days Elapsed,': {
+    'hi': 'दिन बीते,',
+  },
+  'Days Left': {
+    'hi': 'दिन शेष',
+  },
+  'Compliant with Section 3.12 (Sanctioned in': {
+    'hi': 'धारा 3.12 का अनुपालन (स्वीकृति समय:',
+  },
+  'Days)': {
+    'hi': 'दिन)',
+  },
+  'Pending Sanction Review under Section 3.12': {
+    'hi': 'धारा 3.12 के तहत स्वीकृति समीक्षा लंबित',
+  },
+  "Under MPLADS Guidelines Section 3.12, the District Authority is mandated to accord sanction or communicate reasons for rejection to the Hon'ble MP within 45 days of receipt of recommendation.": {
+    'hi': 'एमपीलैड्स दिशानिर्देश धारा 3.12 के तहत, जिला प्राधिकरण अनुशंसा प्राप्त होने के 45 दिनों के भीतर माननीय सांसद को स्वीकृति प्रदान करने या अस्वीकृति के कारणों से अवगत कराने के लिए बाध्य है।',
+  },
+  'Actual Sanction Elapsed Days': {
+    'hi': 'वास्तविक स्वीकृति में बीते दिन',
+  },
+  'Awaiting Sanction': {
+    'hi': 'स्वीकृति की प्रतीक्षा',
+  },
+  'MPLADS Statutory Limit: 45 Days Maximum': {
+    'hi': 'एमपीलैड्स सांविधिक सीमा: अधिकतम 45 दिन',
+  },
+  'District Peer Median Sanction Delay': {
+    'hi': 'जिला समकक्ष औसत स्वीकृति विलंब',
+  },
+  'Across peer civil works in jurisdiction': {
+    'hi': 'अधिकार क्षेत्र में समकक्ष नागरिक कार्यों में',
+  },
+  'Sanction Delay Ratio vs Peer Median:': {
+    'hi': 'समकक्ष औसत की तुलना में स्वीकृति विलंब अनुपात:',
+  },
+  'peer median delay': {
+    'hi': 'समकक्ष औसत विलंब',
+  },
+  'Recommendation Inward Date:': {
+    'hi': 'अनुशंसा प्राप्ति तिथि:',
+  },
+  'Mandatory Statutory 45-Day Deadline:': {
+    'hi': 'अनिवार्य सांविधिक 45-दिवसीय अंतिम तिथि:',
+  },
+  '1-Year Completion & Asset Handover Window (Sec 3.14)': {
+    'hi': '1-वर्षीय पूर्णता एवं परिसंपत्ति हस्तांतरण समय-सीमा (धारा 3.14)',
+  },
+  'OVERDUE > 12 MONTHS': {
+    'hi': '12 महीने से अधिक विलंबित',
+  },
+  'COMPLETED': {
+    'hi': 'पूर्ण',
+  },
+  'IN EXECUTION': {
+    'hi': 'निष्पादनाधीन',
+  },
+  'Execution Window Overdue: Exceeded 1-Year Limit by': {
+    'hi': 'निष्पादन समय-सीमा समाप्त: 1-वर्ष की सीमा पार:',
+  },
+  'Work Completed & Asset Handed Over': {
+    'hi': 'कार्य पूर्ण एवं परिसंपत्ति हस्तांतरित',
+  },
+  'Days Total Lifecycle': {
+    'hi': 'दिन कुल जीवनचक्र',
+  },
+  'Currently Under Construction': {
+    'hi': 'वर्तमान में निर्माणाधीन',
+  },
+  'Days Elapsed since Sanction': {
+    'hi': 'दिन स्वीकृति के बाद से बीते',
+  },
+  'MPLADS Guidelines Section 3.14 stipulates that all sanctioned civil works should be completed within 1 year from the date of sanction order issuance. Overdue works require immediate agency audit.': {
+    'hi': 'एमपीलैड्स दिशानिर्देश धारा 3.14 निर्धारित करती है कि सभी स्वीकृत नागरिक कार्य स्वीकृति आदेश जारी होने की तारीख से 1 वर्ष के भीतर पूरे होने चाहिए। अत्यधिक विलंबित कार्यों के लिए तत्काल एजेंसी अंकेक्षण आवश्यक है।',
+  },
+  'Execution Duration / Elapsed': {
+    'hi': 'निष्पादन अवधि / बीता समय',
+  },
+  'Statutory Limit: 365 Days (1 Year)': {
+    'hi': 'सांविधिक सीमा: 365 दिन (1 वर्ष)',
+  },
+  'District Peer Median Completion': {
+    'hi': 'जिला समकक्ष औसत पूर्णता अवधि',
+  },
+  'Peer civil works in state/district': {
+    'hi': 'राज्य/जिले में समकक्ष नागरिक कार्य',
+  },
+  'Sanction Order Date:': {
+    'hi': 'स्वीकृति आदेश तिथि:',
+  },
+  'Actual End / Handover Date:': {
+    'hi': 'वास्तविक समाप्ति / हस्तांतरण तिथि:',
+  },
+  'Total Lifecycle Duration:': {
+    'hi': 'कुल जीवनचक्र अवधि:',
+  },
+  'Completion Duration vs Peer:': {
+    'hi': 'समकक्ष की तुलना में पूर्णता अवधि:',
+  },
+  'peer completion': {
+    'hi': 'समकक्ष पूर्णता',
+  },
+  'District Financial Scrutiny & Cost Variance Audit': {
+    'hi': 'जिला वित्तीय संवीक्षा एवं लागत भिन्नता अंकेक्षण',
+  },
+  'Awaiting AS/TS': {
+    'hi': 'एएस/टीएस की प्रतीक्षा',
+  },
+  'Uncommitted Sanction Balance:': {
+    'hi': 'अप्रतिबद्ध स्वीकृति शेष:',
+  },
+  'Cost Escalation vs Sanction:': {
+    'hi': 'स्वीकृति के सापेक्ष लागत वृद्धि:',
+  },
+  'State & Category Peer Median Sanction:': {
+    'hi': 'राज्य एवं श्रेणी समकक्ष औसत स्वीकृति:',
+  },
+  'Cost Ratio vs Peer Median:': {
+    'hi': 'समकक्ष औसत की तुलना में लागत अनुपात:',
+  },
+  'peer cost': {
+    'hi': 'समकक्ष लागत',
+  },
+  'AI Risk & Anomaly Intelligence Engine': {
+    'hi': 'एआई जोखिम एवं विसंगति विश्लेषण इंजन',
+  },
+  'RISK:': {
+    'hi': 'जोखिम:',
+  },
+  'AI Audit Rationale:': {
+    'hi': 'एआई अंकेक्षण तर्क:',
+  },
+  'No severe financial or procedural risk flags triggered on this proposal.': {
+    'hi': 'इस प्रस्ताव पर कोई गंभीर वित्तीय या प्रक्रियात्मक जोखिम ध्वज सक्रिय नहीं हुआ।',
+  },
+  'Delay Risk Index': {
+    'hi': 'विलंब जोखिम सूचकांक',
+  },
+  'Cost Risk Index': {
+    'hi': 'लागत जोखिम सूचकांक',
+  },
+  'Variance Risk': {
+    'hi': 'भिन्नता जोखिम',
+  },
+  'Completion Risk Flag': {
+    'hi': 'पूर्णता जोखिम ध्वज',
+  },
+  'Anomaly': {
+    'hi': 'विसंगति',
+  },
+  'Normal (0.0)': {
+    'hi': 'सामान्य (0.0)',
+  },
+  'Normal': {
+    'hi': 'सामान्य',
+  },
+  'Duplicate Proposal Intelligence & Cluster Evidence': {
+    'hi': 'दोहरी प्रस्ताव विश्लेषण एवं समूह साक्ष्य',
+  },
+  'Inspect Cluster #': {
+    'hi': 'समूह का निरीक्षण करें #',
+  },
+  'This work proposal belongs to duplicate cluster #': {
+    'hi': 'यह कार्य प्रस्ताव दोहरे समूह # से संबंधित है',
+  },
+  'with': {
+    'hi': 'जिसमें',
+  },
+  'linked proposals in the district database.': {
+    'hi': 'जुड़े प्रस्ताव जिला डेटाबेस में हैं।',
+  },
+  'Unique Work: No duplicate proposals or semantic clusters detected for this entry.': {
+    'hi': 'विशिष्ट कार्य: इस प्रविष्टि के लिए कोई दोहरे प्रस्ताव या अर्थगत समूह नहीं पाए गए।',
+  },
+  'Duplicate Cluster Identifier:': {
+    'hi': 'दोहरा समूह पहचानकर्ता:',
+  },
+  'Not in Cluster': {
+    'hi': 'समूह में नहीं',
+  },
+  'Linked Proposals in Cluster:': {
+    'hi': 'समूह में जुड़े प्रस्ताव:',
+  },
+  'Linked Proposals': {
+    'hi': 'जुड़े प्रस्ताव',
+  },
+  'Unique Proposal': {
+    'hi': 'विशिष्ट प्रस्ताव',
+  },
+  'Candidate Pair Relationships:': {
+    'hi': 'उम्मीदवार युग्म संबंध:',
+  },
+  'Evaluated Pairs': {
+    'hi': 'मूल्यांकित युग्म',
+  },
+  'Single Work': {
+    'hi': 'एकल कार्य',
+  },
+  'Average Text Similarity:': {
+    'hi': 'औसत पाठ समानता:',
+  },
+  'Maximum Text Similarity:': {
+    'hi': 'अधिकतम पाठ समानता:',
+  },
+  'Average Cost Similarity:': {
+    'hi': 'औसत लागत समानता:',
+  },
+  'Cluster Suspicion Score:': {
+    'hi': 'समूह संदेह स्कोर:',
+  },
+  'Exact Description Text Match:': {
+    'hi': 'सटीक विवरण पाठ मिलान:',
+  },
+  'Exact Sanction Amount Match:': {
+    'hi': 'सटीक स्वीकृत राशि मिलान:',
+  },
+  'YES (Identical Text Match)': {
+    'hi': 'हाँ (सटीक पाठ मिलान)',
+  },
+  'YES (Identical Budget Match)': {
+    'hi': 'हाँ (सटीक बजट मिलान)',
+  },
+  'NO': {
+    'hi': 'नहीं',
+  },
+  'Executing Agency & Implementing District Authority (IA)': {
+    'hi': 'कार्यान्वयन एजेंसी एवं क्रियान्वयन जिला प्राधिकरण (IA)',
+  },
+  'AGENCY': {
+    'hi': 'एजेंसी',
+  },
+  'Implementing District Authority (IDA)': {
+    'hi': 'कार्यान्वयन जिला प्राधिकरण (आईडीए)',
+  },
+  'Executing Body / Technical Division': {
+    'hi': 'निष्पादन निकाय / तकनीकी प्रभाग',
+  },
+  'District Collectorate / District Planning Office': {
+    'hi': 'जिला कलेक्ट्रेट / जिला योजना कार्यालय',
+  },
+  'Engineering Division': {
+    'hi': 'अभियांत्रिकी प्रभाग',
+  },
+  'Zila Parishad / Rural Works': {
+    'hi': 'जिला परिषद / ग्रामीण कार्य',
+  },
+  'Current Milestone Stage:': {
+    'hi': 'वर्तमान मील का पत्थर चरण:',
+  },
+  'Disbursement Progress:': {
+    'hi': 'संवितरण प्रगति:',
+  },
+  'released of': {
+    'hi': 'संवितरित, कुल स्वीकृत:',
+  },
+  'Contractor / Vendor Status:': {
+    'hi': 'ठेकेदार / विक्रेता स्थिति:',
+  },
+  'Vendor Tendering in Progress': {
+    'hi': 'विक्रेता निविदा प्रगति पर',
+  },
+  'Awaiting AS/TS before Tendering': {
+    'hi': 'निविदा से पहले एएस/टीएस की प्रतीक्षा',
+  },
+  'Agency Assigned & Executing': {
+    'hi': 'एजेंसी आवंटित एवं निष्पादनाधीन',
+  },
+  'Ground Evidence & Analytical Scrutiny': {
+    'hi': 'धरातलीय साक्ष्य एवं विश्लेषणात्मक संवीक्षा',
+  },
+  'Milestone Evidence Score': {
+    'hi': 'मील का पत्थर साक्ष्य स्कोर',
+  },
+  'Ground Suspicion Rating': {
+    'hi': 'धरातलीय संदेह रेटिंग',
+  },
+  'Baseline (Verified)': {
+    'hi': 'आधारभूत (सत्यापित)',
+  },
+  'Baseline Verified': {
+    'hi': 'आधारभूत सत्यापित',
+  },
+  'Scrutiny Requirement:': {
+    'hi': 'संवीक्षा आवश्यकता:',
+  },
+  'Mandatory Verification Required': {
+    'hi': 'अनिवार्य सत्यापन आवश्यक',
+  },
+  'Standard Procedural Review': {
+    'hi': 'मानक प्रक्रियात्मक समीक्षा',
+  },
+  'Review Rationale:': {
+    'hi': 'समीक्षा तर्क:',
+  },
+  'No anomalies flagged': {
+    'hi': 'कोई विसंगति नहीं पाई गई',
+  },
+  'Geo-Photo & Physical Site Inspection (Sec 3.16)': {
+    'hi': 'भू-टैग फोटो एवं भौतिक स्थल निरीक्षण (धारा 3.16)',
+  },
+  'MPLADS Mandate (Section 3.16):': {
+    'hi': 'एमपीलैड्स अधिदेश (धारा 3.16):',
+  },
+  'District Authorities and designated nodal officers must conduct physical inspection of at least 10% of works, and mandatory geo-tagged before/after photographs must be uploaded to eSAKSHI prior to final asset handover.': {
+    'hi': 'जिला प्राधिकरणों और नामित नोडल अधिकारियों को कम से कम 10% कार्यों का भौतिक निरीक्षण करना होगा, और अंतिम परिसंपत्ति हस्तांतरण से पहले ई-साक्षी पर अनिवार्य भू-टैग की गई तस्वीरें अपलोड करनी होंगी।',
+  },
+  'Required & Logged': {
+    'hi': 'आवश्यक एवं दर्ज',
+  },
+  'Pre-Execution': {
+    'hi': 'निष्पादन पूर्व',
+  },
+  'Geo-Tagged Photo Status': {
+    'hi': 'भू-टैग फोटो स्थिति',
+  },
+  'Final Asset Photo Mandated': {
+    'hi': 'अंतिम परिसंपत्ति फोटो अनिवार्य',
+  },
+  'Inspection Requirement': {
+    'hi': 'निरीक्षण आवश्यकता',
+  },
+  'Mandatory Collector Audit': {
+    'hi': 'अनिवार्य जिलाधिकारी अंकेक्षण',
+  },
+  'Sub-Divisional Officer': {
+    'hi': 'उप-विभागीय अधिकारी (एसडीओ)',
+  },
+  'Constituency Coordinates:': {
+    'hi': 'निर्वाचन क्षेत्र निर्देशांक:',
+  },
+  'Photo Milestone Verification Score:': {
+    'hi': 'फोटो मील का पत्थर सत्यापन स्कोर:',
+  },
+  'Active Cross-Role Workflow Requests': {
+    'hi': 'सक्रिय क्रॉस-रोल वर्कफ़्लो अनुरोध',
+  },
+  '+ Raise Formal Request': {
+    'hi': '+ औपचारिक अनुरोध दर्ज करें',
+  },
+  'Loading workflow records...': {
+    'hi': 'वर्कफ़्लो रिकॉर्ड लोड हो रहे हैं...',
+  },
+  'Raised by': {
+    'hi': 'द्वारा उठाया गया:',
+  },
+  '➔ Target:': {
+    'hi': '➔ लक्ष्य विभाग:',
+  },
+  'MoSPI Central Vigilance & National Directive Board': {
+    'hi': 'एमओएसपीआई केंद्रीय सतर्कता एवं राष्ट्रीय निर्देश बोर्ड',
+  },
+  'Central Nodal Authority': {
+    'hi': 'केंद्रीय नोडल प्राधिकरण',
+  },
+  'Central Vigilance Priority': {
+    'hi': 'केंद्रीय सतर्कता प्राथमिकता',
+  },
+  'LEVEL 1 — IMMEDIATE AUDIT': {
+    'hi': 'स्तर 1 — तत्काल अंकेक्षण',
+  },
+  'STANDARD CENTRAL SURVEILLANCE': {
+    'hi': 'मानक केंद्रीय निगरानी',
+  },
+  'SNA Grant Release': {
+    'hi': 'एसएनए अनुदान जारी',
+  },
+  'BLOCKED / WITHHELD ⚠️': {
+    'hi': 'अवरुद्ध / रोका गया ⚠️',
+  },
+  'CENTRAL SNA AUTHORISED ✓': {
+    'hi': 'केंद्रीय एसएनए अधिकृत ✓',
+  },
+  'CAG Special Audit': {
+    'hi': 'सीएजी विशेष अंकेक्षण',
+  },
+  'REQUISITION ACTIVE ✓': {
+    'hi': 'मांग सक्रिय ✓',
+  },
+  'NOT REQUISITIONED': {
+    'hi': 'मांग नहीं की गई',
+  },
+  'Issue Central MoSPI Compliance Directive to State': {
+    'hi': 'राज्य को केंद्रीय एमओएसपीआई अनुपालन निर्देश जारी करें',
+  },
+  'Withhold State Nodal Account (SNA) Tranche': {
+    'hi': 'राज्य नोडल खाता (एसएनए) किश्त रोकें',
+  },
+  'Requisition Special CAG / CVC Audit': {
+    'hi': 'विशेष सीएजी / सीवीसी अंकेक्षण की मांग करें',
+  },
+  'Implementing Agency Execution, MB Records & Billing Submissions': {
+    'hi': 'कार्यान्वयन एजेंसी निष्पादन, एमबी रिकॉर्ड एवं बिल प्रस्तुति',
+  },
+  'Executing Agency': {
+    'hi': 'कार्यान्वयन एजेंसी',
+  },
+  'MB Ledger Entry': {
+    'hi': 'एमबी लेजर प्रविष्टि',
+  },
+  'Stage Geo-Photos': {
+    'hi': 'चरण भू-तस्वीरें',
+  },
+  'GEO-STAMP VERIFIED (100%)': {
+    'hi': 'भू-मुहर सत्यापित (100%)',
+  },
+  'Time Extension (EOT)': {
+    'hi': 'समय विस्तार (ईओटी)',
+  },
+  'STANDARD TIMELINE': {
+    'hi': 'मानक समय-सीमा',
+  },
+  'Record Measurement Book (MB) Entry & Submit Bill': {
+    'hi': 'माप पुस्तिका (एमबी) प्रविष्टि दर्ज करें एवं बिल प्रस्तुत करें',
+  },
+  'Upload Verified Milestone Geo-Photo': {
+    'hi': 'सत्यापित मील का पत्थर भू-तस्वीर अपलोड करें',
+  },
+  'Apply for Formal Time Extension (EOT)': {
+    'hi': 'औपचारिक समय विस्तार (ईओटी) के लिए आवेदन करें',
+  },
+  "Hon'ble Member of Parliament Constituency Oversight & Inquiries": {
+    'hi': 'माननीय संसद सदस्य निर्वाचन क्षेत्र निगरानी एवं पूछताछ',
+  },
+  'Quota Entitlement Impact': {
+    'hi': 'कोटा पात्रता प्रभाव',
+  },
+  'debited': {
+    'hi': 'डेबिट किया गया',
+  },
+  'Sansad Oversight': {
+    'hi': 'संसद निगरानी',
+  },
+  'CONSTITUENCY PRIORITY': {
+    'hi': 'निर्वाचन क्षेत्र प्राथमिकता',
+  },
+  'Issue Parliamentary Expedited Inquiry to Collector': {
+    'hi': 'जिलाधिकारी को संसदीय त्वरित पूछताछ भेजें',
+  },
+  'Endorse for Public Dedication & Plaque Inscription': {
+    'hi': 'सार्वजनिक लोकार्पण एवं पट्टिका शिलालेख हेतु समर्थन',
+  },
+  'Schedule On-Site Constituency Inspection': {
+    'hi': 'स्थलीय निर्वाचन क्षेत्र निरीक्षण निर्धारित करें',
+  },
+  'Saarthi Citizen Social Audit & Public Verification': {
+    'hi': 'सारथी नागरिक सामाजिक अंकेक्षण एवं सार्वजनिक सत्यापन',
+  },
+  'Public Transparency': {
+    'hi': 'सार्वजनिक पारदर्शिता',
+  },
+  'Rate Community Asset Quality & Utility:': {
+    'hi': 'सामुदायिक परिसंपत्ति गुणवत्ता एवं उपयोगिता का मूल्यांकन करें:',
+  },
+  'Public Social Audit': {
+    'hi': 'सार्वजनिक सामाजिक अंकेक्षण',
+  },
+  'Verify Community Asset as Delivered & Usable': {
+    'hi': 'सामुदायिक परिसंपत्ति को वितरित एवं उपयोगी सत्यापित करें',
+  },
+  'Report On-Ground Defect / Incomplete Work': {
+    'hi': 'धरातलीय दोष / अपूर्ण कार्य की रिपोर्ट करें',
+  },
+  'File e-RTI Public Information Request': {
+    'hi': 'ई-आरटीआई सार्वजनिक सूचना अनुरोध दर्ज करें',
+  },
+  'District Collectorate Priority Action & Official Clearance': {
+    'hi': 'जिला कलेक्ट्रेट प्राथमिकता कार्रवाई एवं आधिकारिक स्वीकृति',
+  },
+  'ACTIVE COLLECTORATE': {
+    'hi': 'सक्रिय कलेक्ट्रेट',
+  },
+  'District Collectorate Action Directives': {
+    'hi': 'जिला कलेक्ट्रेट कार्रवाई निर्देश',
+  },
+  'Mark Collectorate Feasibility Clearance': {
+    'hi': 'कलेक्ट्रेट व्यवहार्यता स्वीकृति प्रदान करें',
+  },
+  'Issue 7-Day Explanation Notice to Agency': {
+    'hi': 'एजेंसी को 7-दिवसीय स्पष्टीकरण नोटिस जारी करें',
+  },
+  'Escalate to MoSPI Central Surveillance': {
+    'hi': 'एमओएसपीआई केंद्रीय निगरानी को अग्रेषित करें',
+  },
+  'MoSPI Central Record #': {
+    'hi': 'एमओएसपीआई केंद्रीय रिकॉर्ड #',
+  },
+  'All-India': {
+    'hi': 'अखिल भारतीय',
+  },
+  'Work Order #': {
+    'hi': 'कार्य आदेश #',
+  },
+  'Agency:': {
+    'hi': 'एजेंसी:',
+  },
+  'Constituency Work #': {
+    'hi': 'निर्वाचन क्षेत्र कार्य #',
+  },
+  'Public Asset #': {
+    'hi': 'सार्वजनिक परिसंपत्ति #',
+  },
+  'Local Area': {
+    'hi': 'स्थानीय क्षेत्र',
+  },
+  'Record #': {
+    'hi': 'रिकॉर्ड #',
+  },
+  'Directive Active ✓': {
+    'hi': 'निर्देश सक्रिय ✓',
+  },
+  'MoSPI Central Action': {
+    'hi': 'एमओएसपीआई केंद्रीय कार्रवाई',
+  },
+  'MB Bill Filed ✓': {
+    'hi': 'एमबी बिल दर्ज ✓',
+  },
+  'Submit Execution Claim / MB': {
+    'hi': 'निष्पादन दावा / एमबी प्रस्तुत करें',
+  },
+  'Notice Served ✓': {
+    'hi': 'नोटिस जारी ✓',
+  },
+  'Dispatch Sansad Notice': {
+    'hi': 'संसद नोटिस प्रेषित करें',
+  },
+  'Feedback Recorded ✓': {
+    'hi': 'प्रतिक्रिया दर्ज ✓',
+  },
+  'Submit Social Audit Feedback': {
+    'hi': 'सामाजिक अंकेक्षण प्रतिक्रिया प्रस्तुत करें',
+  },
+  'Collectorate Cleared ✓': {
+    'hi': 'कलेक्ट्रेट द्वारा स्वीकृत ✓',
+  },
+  'Accord Clearance': {
+    'hi': 'स्वीकृति प्रदान करें',
+  },
+  'Explore in Registry': {
+    'hi': 'रजिस्ट्री में खोजें',
+  },
+  'Collector Dossier': {
+    'hi': 'जिलाधिकारी डोजियर',
+    'te': 'కలెక్టర్ డాసియర్',
+    'ta': 'ஆட்சியர் ஆவணம்',
+    'bn': 'কালেক্টর ডসিয়ার',
+    'mr': 'कलेक्टर डॉसियर',
+    'gu': 'કલેક્ટર ડોઝિયર',
+    'kn': 'ಕಲೆಕ್ಟರ್ ದಾಖಲೆ',
+    'ml': 'കലക്ടർ ഡോസിയർ',
+    'pa': 'ਕਲੈਕਟਰ ਡੋਜ਼ੀਅਰ',
+    'or': 'କଲେକ୍ଟର ଡୋସିଅର',
+    'ur': 'کلکٹر ڈوزیئر',
+  },
+  'Sanction Dossier': {
+    'hi': 'स्वीकृति डोजियर',
+    'te': 'మంజూరు డాసియర్',
+    'ta': 'ஒப்புதல் ஆவணம்',
+    'bn': 'অনুমোদন ডসিয়ার',
+    'mr': 'मंजुरी डॉसियर',
+    'gu': 'મંજૂરી ડોઝિયર',
+    'kn': 'ಮಂಜೂರಾತಿ ದಾಖಲೆ',
+    'ml': 'അനുമതി ഡോസിയർ',
+    'pa': 'ਮਨਜ਼ੂਰੀ ਡੋਜ਼ੀਅਰ',
+    'or': 'ମଞ୍ଜୁରୀ ଡୋସିଅର',
+    'ur': 'منظوری کا ڈوزیئر',
+  },
+  'Duplicate Dossier': {
+    'hi': 'दोहरा समूह डोजियर',
+    'te': 'డూప్లికేట్ డాసియర్',
+    'ta': 'போலி ஆவணம்',
+    'bn': 'নকল ডসিয়ার',
+    'mr': 'डुप्लिकेट डॉसियर',
+    'gu': 'ડુપ્લિકેટ ડોઝિયર',
+    'kn': 'ನಕಲಿ ದಾಖಲೆ',
+    'ml': 'ഡ്യൂപ്ലിക്കേറ്റ് ഡോസിയർ',
+    'pa': 'ਡੁਪਲੀਕੇਟ ਡੋਜ਼ੀਅਰ',
+    'or': 'ଡୁପ୍ଲିକେଟ୍ ଡୋସିଅର',
+    'ur': 'ڈپلیکیٹ ڈوزیئر',
+  },
+  '45-Day SLA Dossier': {
+    'hi': '45-दिवसीय एसएलए डोजियर',
+    'te': '45 రోజుల SLA డాసియర్',
+    'ta': '45-நாள் SLA ஆவணம்',
+    'bn': '৪৫-দিনের এসএলএ ডসিয়ার',
+    'mr': '४५-दिवसीय एसएलए डॉसियर',
+    'gu': '૪૫-દિવસીય SLA ડોઝિયર',
+    'kn': '45-ದಿನಗಳ SLA ದಾಖಲೆ',
+    'ml': '45-ദിവസത്തെ SLA ഡോസിയർ',
+    'pa': '45-ਦਿਨਾਂ ਦਾ SLA ਡੋਜ਼ੀਅਰ',
+    'or': '୪୫-ଦିନ SLA ଡୋସିଅର',
+    'ur': '45 روزہ SLA ڈوزیئر',
+  },
+  'Completion Dossier': {
+    'hi': 'पूर्णता डोजियर',
+    'te': 'పూర్తి డాసియర్',
+    'ta': 'நிறைவு ஆவணம்',
+    'bn': 'সম্পন্নকরণ ডসিয়ার',
+    'mr': 'पूर्णता डॉसियर',
+    'gu': 'પૂર્ણતા ડોઝિયર',
+    'kn': 'ಪೂರ್ಣಗೊಳಿಸುವಿಕೆ ದಾಖಲೆ',
+    'ml': 'പൂർത്തീകരണ ഡോസിയർ',
+    'pa': 'ਮੁਕੰਮਲ ਡੋਜ਼ੀਅਰ',
+    'or': 'ସମ୍ପୂର୍ଣ୍ଣତା ଡୋସିଅର',
+    'ur': 'تکمیل کا ڈوزیئر',
+  },
+  'Risk Audit Dossier': {
+    'hi': 'जोखिम अंकेक्षण डोजियर',
+    'te': 'రిస్క్ ఆడిట్ డాసియర్',
+    'ta': 'ஆபத்து தணிக்கை ஆவணம்',
+    'bn': 'ঝুঁকি নিরীক্ষা ডসিয়ার',
+    'mr': 'जोखीम ऑडिट डॉसियर',
+    'gu': 'જોખમ ઓડિટ ડોઝિયર',
+    'kn': 'ಅಪಾಯ ಆಡಿಟ್ ದಾಖಲೆ',
+    'ml': 'റിസ്ക് ഓഡിറ്റ് ഡോസിയർ',
+    'pa': 'ਜੋਖਮ ਆਡਿਟ ਡੋਜ਼ੀਅਰ',
+    'or': 'ବିପଦ ଅଡିଟ୍ ଡୋସିଅର',
+    'ur': 'رسک آڈٹ ڈوزیئر',
+  },
+  'Inspect Priority Scrutiny Dossier': {
+    'hi': 'प्राथमिकता संवीक्षा डोजियर का निरीक्षण करें',
+    'te': 'ప్రాధాన్యత పరిశీలన డాసియర్\u200cను తనిఖీ చేయండి',
+    'ta': 'முன்னுரிமை ஆய்வு ஆவணத்தை சரிபார்க்கவும்',
+    'bn': 'অগ্রাধিকার নিরীক্ষা ডসিয়ার পরিদর্শন করুন',
+    'mr': 'प्राधान्य तपासणी डॉसियर तपासा',
+    'gu': 'પ્રાથમિકતા ચકાસણી ડોઝિયર તપાસો',
+    'kn': 'ಆದ್ಯತೆಯ ಪರಿಶೀಲನಾ ದಾಖಲೆಯನ್ನು ಪರಿಶೀಲಿಸಿ',
+    'ml': 'മുൻഗണനാ പരിശോധനാ ഡോസിയർ പരിശോധിക്കുക',
+    'pa': 'ਤਰਜੀਹੀ ਪੜਤਾਲ ਡੋਜ਼ੀਅਰ ਦੀ ਜਾਂਚ ਕਰੋ',
+    'or': 'ପ୍ରାଥମିକତା ଯାଞ୍ଚ ଡୋସିଅର ଯାଞ୍ଚ କରନ୍ତୁ',
+    'ur': 'ترجیحی جانچ پڑتال کے ڈوزیئر کا معائنہ کریں',
+  },
+  'Open Priority Scrutiny Dossier for High-Attention Case': {
+    'hi': 'उच्च-ध्यान मामले के लिए प्राथमिकता संवीक्षा डोजियर खोलें',
+    'te': 'అధిక శ్రద్ధ కలిగిన కేసు కోసం ప్రాధాన్యతా పరిశీలన డాసియర్\u200cను తెరవండి',
+    'ta': 'அதிக கவனத்திற்குரிய வழக்கிற்கான முன்னுரிமை ஆய்வு ஆவணத்தைத் திறக்கவும்',
+    'bn': 'উচ্চ-মনোযোগের ক্ষেত্রের জন্য অগ্রাধিকার নিরীক্ষা ডসিয়ার খুলুন',
+    'mr': 'उच्च लक्ष प्रकरणासाठी प्राधान्य तपासणी डॉसियर उघडा',
+    'gu': 'ઉચ્ચ ધ્યાન કેસ માટે પ્રાથમિકતા ચકાસણી ડોઝિયર ખોલો',
+    'kn': 'ಹೆಚ್ಚಿನ ಗಮನ ಪ್ರಕರಣಕ್ಕಾಗಿ ಆದ್ಯತೆಯ ಪರಿಶೀಲನಾ ದಾಖಲೆಯನ್ನು ತೆರೆಯಿರಿ',
+    'ml': 'പ്രത്യേക ശ്രദ്ധ ആവശ്യമുള്ള കേസുകൾക്കായി മുൻഗണനാ പരിശോധനാ ഡോസിയർ തുറക്കുക',
+    'pa': 'ਉੱਚ-ਧਿਆਨ ਵਾਲੇ ਮਾਮਲੇ ਲਈ ਤਰਜੀਹੀ ਪੜਤਾਲ ਡੋਜ਼ੀਅਰ ਖੋਲ੍ਹੋ',
+    'or': 'ଉଚ୍ଚ ଧ୍ୟାନ ମାମଲା ପାଇଁ ପ୍ରାଥମିକତା ଯାଞ୍ଚ ଡୋସିଅର ଖୋଲନ୍ତୁ',
+    'ur': 'زیادہ توجہ والے کیس کے لیے ترجیحی جانچ پڑتال کا ڈوزیئر کھولیں',
+  },
+  'Inspect District Magistrate Official Sanction Record': {
+    'hi': 'जिला मजिस्ट्रेट आधिकारिक स्वीकृति रिकॉर्ड का निरीक्षण करें',
+  },
+  'Inspect Duplicate Cluster Scrutiny': {
+    'hi': 'दोहरे समूह संवीक्षा का निरीक्षण करें',
+  },
+  'Inspect 45-Day Statutory Sanction Delay Breach': {
+    'hi': '45-दिवसीय सांविधिक स्वीकृति विलंब उल्लंघन का निरीक्षण करें',
+  },
+  'Inspect 1-Year Statutory Completion Delay': {
+    'hi': '1-वर्षीय सांविधिक पूर्णता विलंब का निरीक्षण करें',
+  },
+  'Inspect Section 3.11 Sanction Feasibility': {
+    'hi': 'धारा 3.11 स्वीकृति व्यवहार्यता का निरीक्षण करें',
+  },
+  'Inspect AI Risk Scoring & Forensic Anomalies': {
+    'hi': 'एआई जोखिम स्कोरिंग एवं फोरेंसिक विसंगतियों का निरीक्षण करें',
+  },
+  'Normal/Others': {
+    'hi': 'सामान्य/अन्य',
+    'te': 'సాధారణ/ఇతరాలు',
+    'ta': 'இயல்பான/மற்றவை',
+    'bn': 'সাধারণ/অন্যান্য',
+    'mr': 'सामान्य/इतर',
+    'gu': 'સામાન્ય/અન્ય',
+    'kn': 'ಸಾಮಾನ್ಯ/ಇತರ',
+    'ml': 'സാധാരണ/മറ്റുള്ളവ',
+    'pa': 'ਆਮ/ਹੋਰ',
+    'or': 'ସାଧାରଣ/ଅନ୍ୟାନ୍ୟ',
+    'ur': 'عام/دیگر',
+  },
+  'No major anomaly detected': {
+    'hi': 'कोई प्रमुख विसंगति नहीं पाई गई',
+    'te': 'ఎటువంటి ప్రధాన వ్యత్యాసాలు గుర్తించబడలేదు',
+    'ta': 'பெரிய முரண்பாடுகள் எதுவும் கண்டறியப்படவில்லை',
+    'bn': 'কোন বড় অসঙ্গতি সনাক্ত করা যায়নি',
+    'mr': 'कोणतीही मोठी विसंगती आढळली नाही',
+    'gu': 'કોઈ મોટી વિસંગતતા જણાઈ નથી',
+    'kn': 'ಯಾವುದೇ ಪ್ರಮುಖ ಅಸಂಗತತೆ ಪತ್ತೆಯಾಗಿಲ್ಲ',
+    'ml': 'പ്രധാന വ്യതിയാനങ്ങളൊന്നും കണ്ടെത്തിയില്ല',
+    'pa': 'ਕੋਈ ਵੱਡੀ ਖਾਮੀ ਨਹੀਂ ਮਿਲੀ',
+    'or': 'କୌଣସି ପ୍ରମୁଖ ଅସଙ୍ଗତି ମିଳିଲା ନାହିଁ',
+    'ur': 'کوئی بڑا تضاد نہیں ملا',
+  },
+  'Critical Cases in Scope': {
+    'hi': 'दायरे में महत्वपूर्ण मामले',
+    'te': 'పరిధిలోని కీలకమైన కేసులు',
+    'ta': 'வரம்பிற்குட்பட்ட முக்கியமான வழக்குகள்',
+    'bn': 'আওতাধীন সংকটজনক ঘটনা',
+    'mr': 'कक्षेत असलेली गंभीर प्रकरणे',
+    'gu': 'કાર્યક્ષેત્રમાં ગંભીર કેસો',
+    'kn': 'ವ್ಯಾಪ್ತಿಯಲ್ಲಿರುವ ನಿರ್ಣಾಯಕ ಪ್ರಕರಣಗಳು',
+    'ml': 'പരിധിയിലുള്ള പ്രധാന കേസുകൾ',
+    'pa': 'ਦਾਇਰੇ ਅੰਦਰ ਅਹਿਮ ਮਾਮਲੇ',
+    'or': 'ପରିସର ମଧ୍ୟରେ ଥିବା ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମାମଲା',
+    'ur': 'دائرہ کار میں اہم کیسز',
+  },
+  'Exporting...': {
+    'hi': 'निर्यात हो रहा है...',
+    'te': 'ఎగుమతి అవుతోంది...',
+    'ta': 'ஏற்றுமதி செய்யப்படுகிறது...',
+    'bn': 'রপ্তানি হচ্ছে...',
+    'mr': 'निर्यात होत आहे...',
+    'gu': 'નિકાસ થઈ રહ્યું છે...',
+    'kn': 'ರಫ್ತು ಮಾಡಲಾಗುತ್ತಿದೆ...',
+    'ml': 'കയറ്റുമതി ചെയ്യുന്നു...',
+    'pa': 'ਨਿਰਯਾਤ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...',
+    'or': 'ରପ୍ତାନି ହେଉଛି...',
+    'ur': 'برآمد کیا جا رہا ہے...',
+  },
+  'Work Concerns & Actions': {
+    'hi': 'कार्य संबंधी चिंताएं एवं कार्रवाइयां',
+    'te': 'పనుల ఆందోళనలు & చర్యలు',
+    'ta': 'பணி கவலைகள் & நடவடிக்கைகள்',
+    'bn': 'কাজের উদ্বেগ ও পদক্ষেপ',
+    'mr': 'कामकाज चिंता व कृती',
+    'gu': 'કામની ચિંતાઓ અને પગલાં',
+    'kn': 'ಕಾಮಗಾರಿ ಕಾಳಜಿಗಳು ಮತ್ತು ಕ್ರಮಗಳು',
+    'ml': 'പ്രവൃത്തി സംബന്ധമായ ആശങ്കകളും നടപടികളും',
+    'pa': 'ਕੰਮ ਸੰਬੰਧੀ ਚਿੰਤਾਵਾਂ ਅਤੇ ਕਾਰਵਾਈਆਂ',
+    'or': 'କାର୍ଯ୍ୟ ସମ୍ପର୍କିତ ଚିନ୍ତା ଓ କାର୍ଯ୍ୟାନୁଷ୍ଠାନ',
+    'ur': 'کام سے متعلق خدشات اور اقدامات',
+  },
+  'Concerns': {
+    'hi': 'चिंताएं',
+    'te': 'ఆందోళనలు',
+    'ta': 'கவலைகள்',
+    'bn': 'উদ্বেগ',
+    'mr': 'चिंता',
+    'gu': 'ચિંતાઓ',
+    'kn': 'ಕಾಳಜಿಗಳು',
+    'ml': 'ആശങ്കകൾ',
+    'pa': 'ਚਿੰਤਾਵਾਂ',
+    'or': 'ଚିନ୍ତା',
+    'ur': 'خدشات',
+  },
+  'District Magistrate & Collectorate Work Concerns Center': {
+    'hi': 'जिलाधिकारी एवं कलेक्ट्रेट कार्य चिंता केंद्र',
+  },
+  'Parliamentary Concerns & Statutory Directives': {
+    'hi': 'संसदीय चिंताएं एवं सांविधिक निर्देश',
+  },
+  "Review concerns raised by Hon'ble MPs under jurisdiction, issue directives to Implementing Agencies, request clarification, record administrative actions, and verify ground rectification.": {
+    'hi': 'अधिकार क्षेत्र के तहत माननीय सांसदों द्वारा उठाई गई चिंताओं की समीक्षा करें, कार्यान्वयन एजेंसियों को निर्देश जारी करें, स्पष्टीकरण मांगें, प्रशासनिक कार्रवाई दर्ज करें और धरातलीय सुधार का सत्यापन करें।',
+  },
+  'Total Concerns': {
+    'hi': 'कुल चिंताएं',
+  },
+  'Needs DA Action': {
+    'hi': 'डीए कार्रवाई अपेक्षित',
+  },
+  'Assigned to IA': {
+    'hi': 'आईए को आवंटित',
+  },
+  'Resolved': {
+    'hi': 'निराकृत',
+  },
+  'Jurisdiction Work Concerns Register': {
+    'hi': 'अधिकार क्षेत्र कार्य चिंता रजिस्टर',
+  },
+  'Statutory oversight for': {
+    'hi': 'सांविधिक निगरानी:',
+  },
+  'All District Authorities': {
+    'hi': 'सभी जिला प्राधिकरण',
+  },
+  'No concerns currently logged for this District Authority jurisdiction.': {
+    'hi': 'इस जिला प्राधिकरण अधिकार क्षेत्र के लिए वर्तमान में कोई चिंता दर्ज नहीं है।',
+  },
+  'Work Concerns & Action Records': {
+    'hi': 'कार्य संबंधी चिंताएं एवं कार्रवाई रिकॉर्ड',
+  },
+  'Official cross-stakeholder tracking register': {
+    'hi': 'आधिकारिक हितधारक ट्रैकिंग रजिस्टर',
+  },
+  'Export Register (CSV)': {
+    'hi': 'रजिस्टर निर्यात करें (सीएसवी)',
+  },
+  'Search Concern ID, Work ID, title, or agency...': {
+    'hi': 'चिंता आईडी, कार्य आईडी, शीर्षक या एजेंसी खोजें...',
+  },
+  'Active / Open': {
+    'hi': 'सक्रिय / खुला',
+  },
+  'CONCERN ID': {
+    'hi': 'चिंता आईडी',
+  },
+  'WORK ID': {
+    'hi': 'कार्य आईडी',
+  },
+  'SUBJECT & CONCERN SCOPE': {
+    'hi': 'विषय एवं चिंता दायरा',
+  },
+  'PRIORITY': {
+    'hi': 'प्राथमिकता',
+  },
+  'STATUS': {
+    'hi': 'स्थिति',
+  },
+  'AUTHORITIES': {
+    'hi': 'प्राधिकरण',
+  },
+  'DATE RAISED': {
+    'hi': 'उठाए जाने की तिथि',
+  },
+  'ACTION': {
+    'hi': 'कार्रवाई',
+  },
+  'Loading live concern ledger records...': {
+    'hi': 'चिंता लेजर रिकॉर्ड लोड हो रहे हैं...',
+  },
+  'No concerns currently recorded.': {
+    'hi': 'वर्तमान में कोई चिंता दर्ज नहीं है।',
+  },
+  'Click to view details & audit timeline': {
+    'hi': 'विवरण एवं अंकेक्षण समय-सीमा देखने के लिए क्लिक करें',
+  },
+  'Inspect Official Work Dossier': {
+    'hi': 'आधिकारिक कार्य डोजियर का निरीक्षण करें',
+  },
+  'Submitted': {
+    'hi': 'प्रस्तुत',
+  },
+  'DA Received': {
+    'hi': 'डीए द्वारा प्राप्त',
+  },
+  'Under Review': {
+    'hi': 'समीक्षाधीन',
+  },
+  'Action Assigned to IA': {
+    'hi': 'आईए को कार्रवाई आवंटित',
+  },
+  'Action In Progress': {
+    'hi': 'कार्रवाई प्रगति पर',
+  },
+  'Clarification Needed': {
+    'hi': 'स्पष्टीकरण आवश्यक',
+  },
+  'Evidence Submitted': {
+    'hi': 'साक्ष्य प्रस्तुत',
+  },
+  'Action Taken': {
+    'hi': 'कार्रवाई की गई',
+  },
+  'Resolved ✓': {
+    'hi': 'निराकृत ✓',
+  },
+  'Reopened ⚠️': {
+    'hi': 'पुनः खोला गया ⚠️',
+  },
+  'Closed': {
+    'hi': 'बंद',
+  },
+  'could not be loaded from registry.': {
+    'hi': 'रजिस्ट्री से लोड नहीं किया जा सका।',
+  },
 };
 
 
