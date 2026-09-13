@@ -13,6 +13,7 @@ import {
 import RequestStatusBadge from "./RequestStatusBadge";
 import RequestPriorityBadge from "./RequestPriorityBadge";
 import RequestDetailModal from "./RequestDetailModal";
+import { useLanguage } from "../../context/LanguageContext";
 import "./workflow.css";
 
 export default function RequestTable({
@@ -25,6 +26,7 @@ export default function RequestTable({
   onOpenWork,
   onStatusUpdated,
 }) {
+  const { t } = useLanguage();
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -50,19 +52,19 @@ export default function RequestTable({
         <div className="workflow-title-area">
           <h3>
             <FileText size={16} color="#005A9C" />
-            <span>{title}</span>
+            <span>{t(title)}</span>
             <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 500 }}>
-              ({filteredRequests.length} of {requests.length} records)
+              ({filteredRequests.length} {t("of")} {requests.length} {t("records")})
             </span>
           </h3>
-          <p className="workflow-subtitle">{subtitle}</p>
+          <p className="workflow-subtitle">{t(subtitle)}</p>
         </div>
 
         <div className="workflow-toolbar">
           <input
             type="text"
             className="workflow-search-input"
-            placeholder="Search Request ID, Work #, title..."
+            placeholder={t("Search Request ID, Work #, title...")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -72,12 +74,12 @@ export default function RequestTable({
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="ALL">All Statuses</option>
-            <option value="SUBMITTED">Submitted</option>
-            <option value="UNDER_REVIEW">Under Review</option>
-            <option value="ACTION_TAKEN">Action Taken</option>
-            <option value="RESOLVED">Resolved</option>
-            <option value="REJECTED">Rejected</option>
+            <option value="ALL">{t("All Statuses")}</option>
+            <option value="SUBMITTED">{t("Submitted")}</option>
+            <option value="UNDER_REVIEW">{t("Under Review")}</option>
+            <option value="ACTION_TAKEN">{t("Action Taken")}</option>
+            <option value="RESOLVED">{t("Resolved")}</option>
+            <option value="REJECTED">{t("Rejected")}</option>
           </select>
 
           {onRefresh && (
@@ -86,10 +88,10 @@ export default function RequestTable({
               className="workflow-btn workflow-btn-outline"
               onClick={onRefresh}
               disabled={loading}
-              title="Refresh queue from server"
+              title={t("Refresh queue from server")}
             >
               <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
-              <span>Refresh</span>
+              <span>{t("Refresh")}</span>
             </button>
           )}
         </div>
@@ -100,16 +102,16 @@ export default function RequestTable({
         <table className="workflow-table">
           <thead>
             <tr>
-              <th>Request ID</th>
-              <th>Work ID</th>
-              <th>Type</th>
-              <th>Subject / Title</th>
-              <th>Raised By</th>
-              <th>Target Queue</th>
-              <th>Priority</th>
-              <th>Status</th>
-              <th>Created</th>
-              <th style={{ textAlign: "right" }}>Actions</th>
+              <th>{t("Request ID")}</th>
+              <th>{t("Work ID")}</th>
+              <th>{t("Type")}</th>
+              <th>{t("Subject / Title")}</th>
+              <th>{t("Raised By")}</th>
+              <th>{t("Target Queue")}</th>
+              <th>{t("Priority")}</th>
+              <th>{t("Status")}</th>
+              <th>{t("Created")}</th>
+              <th style={{ textAlign: "right" }}>{t("Actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -118,15 +120,15 @@ export default function RequestTable({
                 <td colSpan={10} className="workflow-empty">
                   <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px" }}>
                     <RefreshCw size={16} className="animate-spin text-slate-500" />
-                    <span>Synchronizing workflow records from server...</span>
+                    <span>{t("Synchronizing workflow records from server...")}</span>
                   </div>
                 </td>
               </tr>
             ) : filteredRequests.length === 0 ? (
               <tr>
                 <td colSpan={10} className="workflow-empty">
-                  <strong>No Requests in Queue</strong>
-                  <p>There are no active workflow requests matching the current filters.</p>
+                  <strong>{t("No Requests in Queue")}</strong>
+                  <p>{t("There are no active workflow requests matching the current filters.")}</p>
                 </td>
               </tr>
             ) : (
@@ -142,7 +144,7 @@ export default function RequestTable({
                       type="button"
                       className="workflow-work-link"
                       onClick={() => onOpenWork && onOpenWork(r.work_id)}
-                      title="Click to inspect work dossier"
+                      title={t("Click to inspect work dossier")}
                     >
                       <span>#{r.work_id}</span>
                       <ExternalLink size={11} />
@@ -170,12 +172,12 @@ export default function RequestTable({
                   </td>
                   <td>
                     <span style={{ fontSize: "11px", color: "#475569" }}>
-                      {r.raised_by_role}
+                      {t(r.raised_by_role)}
                     </span>
                   </td>
                   <td>
                     <span style={{ fontSize: "11px", color: "#475569" }} title={r.target_department}>
-                      {r.target_role}
+                      {t(r.target_role)}
                     </span>
                   </td>
                   <td>
@@ -196,7 +198,7 @@ export default function RequestTable({
                       onClick={() => setSelectedRequest(r)}
                     >
                       <Eye size={12} />
-                      <span>Inspect / Action</span>
+                      <span>{t("Inspect / Action")}</span>
                     </button>
                   </td>
                 </tr>

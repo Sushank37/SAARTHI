@@ -42,6 +42,7 @@ import {
 import RequestStatusBadge from "./workflow/RequestStatusBadge";
 import RequestPriorityBadge from "./workflow/RequestPriorityBadge";
 import RequestComposerModal from "./workflow/RequestComposerModal";
+import { useLanguage } from "../context/LanguageContext";
 import WorkConcernSection from "./workflow/WorkConcernSection";
 import "./WorkDetailDrawer.css";
 
@@ -115,6 +116,7 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
 
   const { role: authRole } = useAuth() || {};
   const location = useLocation();
+  const { t } = useLanguage();
 
   // Normalize incoming work object (handles raw IDs, numbers, lowercase objects)
   const incomingWorkObj = useMemo(() => {
@@ -648,7 +650,7 @@ export default function WorkDetailDrawer({ work: initialWork, onClose, initialSe
                 className={`dossier-nav-tab ${activeSection === tab.id ? "active" : ""}`}
                 onClick={() => setActiveSection(tab.id)}
               >
-                {tab.label}
+                {t(tab.label)}
               </button>
             ))}
           </div>

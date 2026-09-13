@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
+import { useLanguage } from "../../context/LanguageContext";
 import {
   Scale,
   ShieldCheck,
@@ -60,7 +61,6 @@ const DA_MODULES = [
   { id: "alerts-queue", label: "Alerts & Queue", icon: Bell },
   { id: "concerns", label: "Work Concerns & Actions", icon: AlertCircle },
 ];
-
 function LayoutDashboardIcon(props) {
   return (
     <svg
@@ -85,6 +85,7 @@ function LayoutDashboardIcon(props) {
 
 export default function DADashboard({ summary, onSelectWork }) {
   const { roleConfig } = useAuth();
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Active module tab from URL query param: e.g. /da?tab=compliance-45d
@@ -514,19 +515,19 @@ export default function DADashboard({ summary, onSelectWork }) {
           <div className="da-identity-block">
             <div className="da-ministry-badge">
               <Scale size={13} />
-              <span>Nodal District Authority (DA / Collectorate) · Scrutiny & Sanction Portal</span>
+              <span>{t("Nodal District Authority (DA / Collectorate) · Scrutiny & Sanction Portal")}</span>
             </div>
             <h1 className="da-name-heading">
               {analytics?.district_name
-                ? `${analytics.district_name} District Administration`
-                : "District Magistrate / Collectorate"}
+                ? `${t(analytics.district_name)} ${t("District Administration")}`
+                : t("District Magistrate / Collectorate")}
             </h1>
             <p className="da-constituency-crumb">
               <MapPin size={14} color="#64748b" />
               <span>
-                Nodal Authority: <strong>{analytics?.ida_name || selectedIDA}</strong> · State:{" "}
-                <strong>{analytics?.state || "Uttar Pradesh"}</strong> · Scope Jurisdiction:{" "}
-                <strong>{formatNumber(totalWorks)} Works Audited</strong>
+                {t("Nodal Authority:")} <strong>{t(analytics?.ida_name || selectedIDA)}</strong> · {t("State:")}{" "}
+                <strong>{t(analytics?.state || "Uttar Pradesh")}</strong> · {t("Scope Jurisdiction:")}{" "}
+                <strong>{formatNumber(totalWorks)} {t("Works Audited")}</strong>
               </span>
             </p>
           </div>
@@ -537,16 +538,16 @@ export default function DADashboard({ summary, onSelectWork }) {
               type="button"
               className="da-selector-btn"
               onClick={() => setIdaDropdownOpen(!idaDropdownOpen)}
-              title="Select District Authority from 763 authorities in dataset"
+              title={t("Select District Authority from 763 authorities in dataset")}
             >
               <div>
                 <span className="da-selector-caption">
-                  Jurisdiction Authority ({idasList.length || 763} IDAs)
+                  {t("Jurisdiction Authority")} ({idasList.length || 763} IDAs)
                 </span>
                 <span className="da-selector-active-name">
                   {selectedIDA === "ALL"
-                    ? "All District Authorities (National Scope)"
-                    : analytics?.district_name || selectedIDA}
+                    ? t("All District Authorities (National Scope)")
+                    : t(analytics?.district_name || selectedIDA)}
                 </span>
               </div>
               <ChevronDown size={16} color="#64748b" />
@@ -559,7 +560,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                   <input
                     type="text"
                     className="da-dropdown-input"
-                    placeholder="Search district, collectorate or state..."
+                    placeholder={t("Search district, collectorate or state...")}
                     value={idaSearchText}
                     onChange={(e) => setIdaSearchText(e.target.value)}
                     autoFocus
@@ -574,8 +575,8 @@ export default function DADashboard({ summary, onSelectWork }) {
                     }}
                   >
                     <div>
-                      <div className="font-semibold">All District Authorities (National Scope)</div>
-                      <div className="da-row-meta">Aggregated across all 763 Collectorates</div>
+                      <div className="font-semibold">{t("All District Authorities (National Scope)")}</div>
+                      <div className="da-row-meta">{t("Aggregated across all 763 Collectorates")}</div>
                     </div>
                     <span className="da-row-works-count">102,703</span>
                   </div>
@@ -591,10 +592,10 @@ export default function DADashboard({ summary, onSelectWork }) {
                     >
                       <div style={{ maxWidth: "260px" }}>
                         <div className="truncate font-semibold">
-                          {ida.district_name || ida.ida_name}
+                          {t(ida.district_name || ida.ida_name)}
                         </div>
                         <div className="da-row-meta truncate">
-                          {ida.state} {ida.constituency ? `· ${ida.constituency}` : ""}
+                          {t(ida.state)} {ida.constituency ? `· ${t(ida.constituency)}` : ""}
                         </div>
                       </div>
                       {ida.works_count > 0 && (
@@ -604,7 +605,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                   ))}
                   {filteredIdas.length === 0 && (
                     <div className="p-3 text-center text-xs text-slate-500">
-                      No matching authority found
+                      {t("No matching authority found")}
                     </div>
                   )}
                 </div>
@@ -628,7 +629,7 @@ export default function DADashboard({ summary, onSelectWork }) {
               onClick={() => handleTabChange(mod.id)}
             >
               <Icon size={14} />
-              <span>{mod.label}</span>
+              <span>{t(mod.label)}</span>
               {badgeVal !== undefined && (
                 <span className="text-xs opacity-75">({formatNumber(badgeVal)})</span>
               )}
@@ -647,62 +648,62 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div
               className={`da-metric-card ${activeKpiFilter === null ? "active-filter" : ""}`}
               onClick={() => handleKpiCardClick(null)}
-              title="Total works under this District Authority"
+              title={t("Total works under this District Authority")}
             >
               <div className="da-metric-top">
-                <span className="da-metric-caption">Total Works in Scope</span>
-                <span className="da-metric-pill neutral">JURISDICTION</span>
+                <span className="da-metric-caption">{t("Total Works in Scope")}</span>
+                <span className="da-metric-pill neutral">{t("JURISDICTION")}</span>
               </div>
               <span className="da-metric-figure">{formatNumber(kpis.total_works || totalWorks)}</span>
               <span className="da-metric-subtext">
-                Recommended: <strong>{formatCrores(kpis.recommended_amount || 0)}</strong>
+                {t("Recommended:")} <strong>{formatCrores(kpis.recommended_amount || 0)}</strong>
               </span>
             </div>
 
             <div
               className={`da-metric-card ${activeKpiFilter === "attention" ? "active-filter" : ""}`}
               onClick={() => handleKpiCardClick("attention")}
-              title="Works requiring administrative scrutiny or review"
+              title={t("Works requiring administrative scrutiny or review")}
             >
               <div className="da-metric-top">
-                <span className="da-metric-caption">Requires Attention</span>
-                <span className="da-metric-pill alert">SCRUTINY</span>
+                <span className="da-metric-caption">{t("Requires Attention")}</span>
+                <span className="da-metric-pill alert">{t("SCRUTINY")}</span>
               </div>
               <span className="da-metric-figure">{formatNumber(kpis.attention_required || 0)}</span>
               <span className="da-metric-subtext">
-                <strong>{riskSummary.requires_review || 0}</strong> review flags ·{" "}
-                <strong>{riskSummary.high_duplicate_risk || 0}</strong> duplicate alerts
+                <strong>{riskSummary.requires_review || 0}</strong> {t("review flags")} ·{" "}
+                <strong>{riskSummary.high_duplicate_risk || 0}</strong> {t("duplicate alerts")}
               </span>
             </div>
 
             <div
               className={`da-metric-card ${activeKpiFilter === "risk" ? "active-filter" : ""}`}
               onClick={() => handleKpiCardClick("risk")}
-              title="High-risk and anomaly works"
+              title={t("High-risk and anomaly works")}
             >
               <div className="da-metric-top">
-                <span className="da-metric-caption">High Risk Anomalies</span>
-                <span className="da-metric-pill warning">INTELLIGENCE</span>
+                <span className="da-metric-caption">{t("High Risk Anomalies")}</span>
+                <span className="da-metric-pill warning">{t("INTELLIGENCE")}</span>
               </div>
               <span className="da-metric-figure">{formatNumber(kpis.high_risk_works || 0)}</span>
               <span className="da-metric-subtext">
-                Sanction Conversion: <strong>{kpis.sanction_conversion_rate || 0}%</strong> of proposals
+                {t("Sanction Conversion:")} <strong>{kpis.sanction_conversion_rate || 0}%</strong> {t("of proposals")}
               </span>
             </div>
 
             <div
               className={`da-metric-card ${activeKpiFilter === "timeline" ? "active-filter" : ""}`}
               onClick={() => handleKpiCardClick("timeline")}
-              title="Timeline delay concerns"
+              title={t("Timeline delay concerns")}
             >
               <div className="da-metric-top">
-                <span className="da-metric-caption">Timeline Concerns</span>
-                <span className="da-metric-pill neutral">COMPLIANCE</span>
+                <span className="da-metric-caption">{t("Timeline Concerns")}</span>
+                <span className="da-metric-pill neutral">{t("COMPLIANCE")}</span>
               </div>
               <span className="da-metric-figure">{formatNumber(kpis.timeline_concerns || 0)}</span>
               <span className="da-metric-subtext">
-                Completion Rate: <strong>{kpis.completion_rate || 0}%</strong> ·{" "}
-                <strong>{completionMonitoring.overdue_count || 0}</strong> overdue (&gt;1 yr)
+                {t("Completion Rate:")} <strong>{kpis.completion_rate || 0}%</strong> ·{" "}
+                <strong>{completionMonitoring.overdue_count || 0}</strong> {t("overdue (>1 yr)")}
               </span>
             </div>
           </div>
@@ -714,17 +715,17 @@ export default function DADashboard({ summary, onSelectWork }) {
                 <>
                   <AlertTriangle size={18} color="#b45309" />
                   <span>
-                    <strong>District Authority Action Required:</strong>{" "}
-                    {riskSummary.requires_review || 0} proposals pending feasibility review and{" "}
-                    {riskSummary.high_duplicate_risk || 0} duplicate clusters require clearance.
+                    <strong>{t("District Authority Action Required:")}</strong>{" "}
+                    {riskSummary.requires_review || 0} {t("proposals pending feasibility review and")}{" "}
+                    {riskSummary.high_duplicate_risk || 0} {t("duplicate clusters require clearance.")}
                   </span>
                 </>
               ) : (
                 <>
                   <CheckCircle2 size={18} color="#15803d" />
                   <span>
-                    <strong>Operational Clearance Up-to-Date:</strong> All proposals within{" "}
-                    {analytics?.district_name || "district"} jurisdiction have verified status.
+                    <strong>{t("Operational Clearance Up-to-Date:")}</strong> {t("All proposals within")}{" "}
+                    {analytics?.district_name || "district"} {t("jurisdiction have verified status.")}
                   </span>
                 </>
               )}
@@ -736,7 +737,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 onClick={() => handleTabChange("alerts-queue")}
               >
                 <FileText size={13} />
-                <span>Open Priority Queue ({formatNumber(kpis.attention_required || 0)})</span>
+                <span>{t("Open Priority Queue")} ({formatNumber(kpis.attention_required || 0)})</span>
               </button>
             </div>
           </div>
@@ -747,9 +748,9 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-panel-header">
                 <h2 className="da-panel-title">
                   <Layers size={16} color="#b45309" />
-                  <span>Sanction & Milestone Execution Pipeline</span>
+                  <span>{t("Sanction & Milestone Execution Pipeline")}</span>
                 </h2>
-                <span className="da-panel-meta">Click stage to filter register</span>
+                <span className="da-panel-meta">{t("Click stage to filter register")}</span>
               </div>
 
               <div className="da-stage-grid">
@@ -790,11 +791,11 @@ export default function DADashboard({ summary, onSelectWork }) {
                         setSelectedStage(isSelected ? "All" : st.id);
                         setWorksPage(1);
                       }}
-                      title={`Filter by ${st.label}`}
+                      title={`${t("Filter by")} ${t(st.label)}`}
                     >
-                      <span className="da-stage-step-name">{st.label}</span>
+                      <span className="da-stage-step-name">{t(st.label)}</span>
                       <span className="da-stage-step-count">{formatNumber(st.count)}</span>
-                      <span className="da-stage-step-pct">{pct}% of total</span>
+                      <span className="da-stage-step-pct">{pct}{t("% of total")}</span>
                     </div>
                   );
                 })}
@@ -805,39 +806,39 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-panel-header">
                 <h2 className="da-panel-title">
                   <Clock size={16} color="#1e3a8a" />
-                  <span>Statutory Timeline Compliance</span>
+                  <span>{t("Statutory Timeline Compliance")}</span>
                 </h2>
               </div>
 
               <div className="da-compliance-box">
                 <div className="da-compliance-row">
-                  <span className="da-compliance-label">Average Sanction Delay:</span>
+                  <span className="da-compliance-label">{t("Average Sanction Delay:")}</span>
                   <span className="da-compliance-val">
-                    {Number(sanctionMonitoring.avg_sanction_delay_days ?? 0).toFixed(1)} Days
+                    {formatDecimal(sanctionMonitoring.avg_sanction_delay_days || 0)} {t("Days")}
                   </span>
                 </div>
                 <div className="da-compliance-row">
-                  <span className="da-compliance-label">Peer District Median:</span>
+                  <span className="da-compliance-label">{t("Peer District Median:")}</span>
                   <span className="da-compliance-val">
-                    {Number(sanctionMonitoring.peer_median_delay_days ?? 0).toFixed(1)} Days
+                    {formatDecimal(sanctionMonitoring.peer_median_delay_days || 0)} {t("Days")}
                   </span>
                 </div>
                 <div className="da-compliance-row">
-                  <span className="da-compliance-label">Delayed Beyond Peer Median:</span>
+                  <span className="da-compliance-label">{t("Delayed Beyond Peer Median:")}</span>
                   <span
                     className={`da-compliance-val ${sanctionMonitoring.delayed_past_peer_count > 0 ? "warn" : ""
                       }`}
                   >
-                    {formatNumber(sanctionMonitoring.delayed_past_peer_count || 0)} Works
+                    {formatNumber(sanctionMonitoring.delayed_past_peer_count || 0)} {t("Works")}
                   </span>
                 </div>
                 <div className="da-compliance-row">
-                  <span className="da-compliance-label">Overdue &gt; 12 Mo (Statutory MPLADS):</span>
+                  <span className="da-compliance-label">{t("Overdue > 12 Mo (Statutory MPLADS):")}</span>
                   <span
                     className={`da-compliance-val ${completionMonitoring.overdue_count > 0 ? "alert" : ""
                       }`}
                   >
-                    {formatNumber(completionMonitoring.overdue_count || 0)} Works
+                    {formatNumber(completionMonitoring.overdue_count || 0)} {t("Works")}
                   </span>
                 </div>
               </div>
@@ -849,34 +850,34 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-panel-header">
               <h2 className="da-panel-title">
                 <TrendingUp size={16} color="#15803d" />
-                <span>District Financial Scrutiny & Fund Utilization</span>
+                <span>{t("District Financial Scrutiny & Fund Utilization")}</span>
               </h2>
               <span className="da-panel-meta">
-                Sanction Rate: <strong>{financials.sanction_rate_percent || 0}%</strong> · Utilization:{" "}
+                {t("Sanction Rate:")} <strong>{financials.sanction_rate_percent || 0}%</strong> · {t("Utilization:")}{" "}
                 <strong>{financials.expenditure_rate_percent || 0}%</strong>
               </span>
             </div>
 
             <div className="da-financial-grid">
               <div className="da-fin-item">
-                <span className="da-fin-label">Total Recommended Value</span>
+                <span className="da-fin-label">{t("Total Recommended Value")}</span>
                 <span className="da-fin-val">{formatCrores(financials.recommended_amount || 0)}</span>
-                <span className="da-fin-note">From MP Recommendations</span>
+                <span className="da-fin-note">{t("From MP Recommendations")}</span>
               </div>
               <div className="da-fin-item">
-                <span className="da-fin-label">Sanctioned Amount (AS/TS)</span>
+                <span className="da-fin-label">{t("Sanctioned Amount (AS/TS)")}</span>
                 <span className="da-fin-val">{formatCrores(financials.sanction_amount || 0)}</span>
-                <span className="da-fin-note">Administrative & Technical Approval</span>
+                <span className="da-fin-note">{t("Administrative & Technical Approval")}</span>
               </div>
               <div className="da-fin-item">
-                <span className="da-fin-label">Disbursed Expenditure</span>
+                <span className="da-fin-label">{t("Disbursed Expenditure")}</span>
                 <span className="da-fin-val">{formatCrores(financials.actual_amount || 0)}</span>
-                <span className="da-fin-note">Released to Executing Agencies</span>
+                <span className="da-fin-note">{t("Released to Executing Agencies")}</span>
               </div>
               <div className="da-fin-item">
-                <span className="da-fin-label">Uncommitted Balance</span>
+                <span className="da-fin-label">{t("Uncommitted Balance")}</span>
                 <span className="da-fin-val">{formatCrores(financials.remaining_amount || 0)}</span>
-                <span className="da-fin-note">Available for Allocation</span>
+                <span className="da-fin-note">{t("Available for Allocation")}</span>
               </div>
             </div>
           </div>
@@ -887,39 +888,39 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-panel-header">
                 <h2 className="da-panel-title">
                   <ShieldAlert size={16} color="#b45309" />
-                  <span>District Priority Action Focus ({priorityCases.length} Critical Cases in Scope)</span>
+                  <span>{t("District Priority Action Focus")} ({priorityCases.length} {t("Critical Cases in Scope")})</span>
                 </h2>
                 <button
                   type="button"
                   className="da-panel-meta text-blue-700 hover:underline cursor-pointer"
                   onClick={() => handleTabChange("alerts-queue")}
                 >
-                  View Complete Queue →
+                  {t("View Complete Queue →")}
                 </button>
               </div>
               <div className="da-part-spotlight-card warning">
                 <div className="da-spotlight-left">
                   <div className="da-spotlight-eyebrow">
                     <AlertTriangle size={12} />
-                    <span>Top Collectorate Attention Case · Stage: {priorityCases[0].WORK_STAGE || "Pending Sanction"}</span>
+                    <span>{t("Top Collectorate Attention Case")} · {t("Stage:")} {t(priorityCases[0].WORK_STAGE || "Pending Sanction")}</span>
                   </div>
                   <div className="da-spotlight-title-line">
                     <span className="da-spotlight-work-id">#{priorityCases[0].WORK_ID || priorityCases[0].WORK_RECOMMENDATION_DTL_ID}</span>
-                    <span className="text-xs text-slate-500 font-semibold">· Hon'ble MP: {priorityCases[0].MP_NAME || "—"}</span>
+                    <span className="text-xs text-slate-500 font-semibold">· {t("Hon'ble MP:")} {priorityCases[0].MP_NAME || "—"}</span>
                   </div>
                   <div className="da-spotlight-desc">
-                    {priorityCases[0].WORK_DESCRIPTION || "Work Proposal"}
+                    {priorityCases[0].WORK_DESCRIPTION || t("Work Proposal")}
                   </div>
                   <div className="da-spotlight-subline">
-                    <span>Category: <strong>{priorityCases[0].WORK_CATEGORY || "Civic Infrastructure"}</strong></span>
+                    <span>{t("Category:")} <strong>{t(priorityCases[0].WORK_CATEGORY) || t("Civic Infrastructure")}</strong></span>
                     <span>·</span>
-                    <span>AI Status: <strong>{priorityCases[0].RISK_REASON || priorityCases[0].REVIEW_REASON || "Scrutiny Flagged"}</strong></span>
+                    <span>{t("AI Status:")} <strong>{t(priorityCases[0].RISK_REASON) || t(priorityCases[0].REVIEW_REASON) || t("Scrutiny Flagged")}</strong></span>
                   </div>
                 </div>
                 <div className="da-spotlight-right">
                   <div className="da-spotlight-amount">
                     <span className="da-spotlight-amount-val">{formatCurrency(priorityCases[0].RECOMMENDED_AMOUNT || 0)}</span>
-                    <span className="da-spotlight-amount-label">Recommended</span>
+                    <span className="da-spotlight-amount-label">{t("Recommended (₹)")}</span>
                   </div>
                   <button
                     type="button"
@@ -929,10 +930,10 @@ export default function DADashboard({ summary, onSelectWork }) {
                       const sec = pCase?.DUPLICATE_RISK === "HIGH" ? "duplicates" : pCase?.RISK_LEVEL === "HIGH" ? "risk" : "sanction";
                       handleSelectWork(pCase, sec);
                     }}
-                    title="Open Priority Scrutiny Dossier for High-Attention Case"
+                    title={t("Open Priority Scrutiny Dossier for High-Attention Case")}
                   >
                     <Eye size={13} />
-                    <span>Inspect Priority Scrutiny Dossier →</span>
+                    <span>{t("Inspect Priority Scrutiny Dossier")} →</span>
                   </button>
                 </div>
               </div>
@@ -948,26 +949,25 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-module-banner-left">
               <div className="da-module-banner-eyebrow">
                 <Clock size={13} />
-                <span>Pending Administrative & Technical Sanctions (AS/TS)</span>
+                <span>{t("Pending Administrative & Technical Sanctions (AS/TS)")}</span>
               </div>
-              <h2 className="da-module-banner-title">Works Awaiting District Collector Sanction Orders</h2>
+              <h2 className="da-module-banner-title">{t("Works Awaiting District Collector Sanction Orders")}</h2>
               <p className="da-module-banner-desc">
-                Under Section 3.11 of MPLADS Guidelines, District Authorities must verify feasibility, estimate
-                accuracy, and issue formal administrative sanctions for recommended works.
+                {t("Under Section 3.11 of MPLADS Guidelines, District Authorities must verify feasibility, estimate accuracy, and issue formal administrative sanctions for recommended works.")}
               </p>
             </div>
             <div className="da-module-banner-right">
               <div className="da-intel-stats">
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Pending Works</span>
+                  <span className="da-intel-stat-label">{t("Pending Works")}</span>
                   <div className="da-intel-stat-val text-amber-700">
                     {formatNumber(sanctionMonitoring.pending_sanction_count || 0)}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Avg Delay</span>
+                  <span className="da-intel-stat-label">{t("Avg Delay")}</span>
                   <div className="da-intel-stat-val">
-                    {Number(sanctionMonitoring.avg_sanction_delay_days ?? 0).toFixed(1)} Days
+                    {formatDecimal(sanctionMonitoring.avg_sanction_delay_days || 0)} {t("Days")}
                   </div>
                 </div>
               </div>
@@ -975,7 +975,7 @@ export default function DADashboard({ summary, onSelectWork }) {
           </div>
 
           <div className="da-subfilter-bar">
-            <span className="da-subfilter-label">Filter Queue:</span>
+            <span className="da-subfilter-label">{t("Filter Queue:")}</span>
             <button
               type="button"
               className={`da-subfilter-btn ${subfilter === "all" ? "active" : ""}`}
@@ -984,7 +984,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>All Pending Works</span>
+              <span>{t("All Pending Works")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(sanctionMonitoring.pending_sanction_count || 0)}
               </span>
@@ -997,7 +997,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Delayed Beyond 45 Days</span>
+              <span>{t("Delayed Beyond 45 Days")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(compliance45d.exceeded_count || 0)}
               </span>
@@ -1010,7 +1010,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>High Value (&gt; ₹10 Lakh)</span>
+              <span>{t("High Value (> ₹10 Lakh)")}</span>
             </button>
           </div>
 
@@ -1020,32 +1020,32 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-spotlight-left">
                 <div className="da-spotlight-eyebrow">
                   <Clock size={12} />
-                  <span>Pending AS/TS Sanction Spotlight · Section 3.11 Feasibility</span>
+                  <span>{t("Pending AS/TS Sanction Spotlight · Section 3.11 Feasibility")}</span>
                 </div>
                 <div className="da-spotlight-title-line">
                   <span className="da-spotlight-work-id">#{works[0].WORK_ID || works[0].WORK_RECOMMENDATION_DTL_ID}</span>
-                  <span className="text-xs text-slate-500 font-semibold">· Hon'ble MP: {works[0].MP_NAME || "—"}</span>
+                  <span className="text-xs text-slate-500 font-semibold">· {t("Hon'ble MP:")} {works[0].MP_NAME || "—"}</span>
                 </div>
-                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || "Pending Sanction Proposal"}</div>
+                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || t("Pending Sanction Proposal")}</div>
                 <div className="da-spotlight-subline">
-                  <span>Category: <strong>{works[0].WORK_CATEGORY || "Civic Infrastructure"}</strong></span>
+                  <span>{t("Category:")} <strong>{t(works[0].WORK_CATEGORY) || t("Civic Infrastructure")}</strong></span>
                   <span>·</span>
-                  <span>Delay: <strong className={(Number(works[0].SANCTION_DELAY_DAYS) || 0) > 45 ? "text-red-700 font-bold" : ""}>{works[0].SANCTION_DELAY_DAYS != null && !Number.isNaN(Number(works[0].SANCTION_DELAY_DAYS)) ? `${Number(works[0].SANCTION_DELAY_DAYS)} Days` : "Pending Sanction Order"}</strong></span>
+                  <span>{t("Delay:")} <strong className={(Number(works[0].SANCTION_DELAY_DAYS) || 0) > 45 ? "text-red-700 font-bold" : ""}>{works[0].SANCTION_DELAY_DAYS != null && !Number.isNaN(Number(works[0].SANCTION_DELAY_DAYS)) ? `${Number(works[0].SANCTION_DELAY_DAYS)} ${t("Days")}` : t("Pending Sanction Order")}</strong></span>
                 </div>
               </div>
               <div className="da-spotlight-right">
                 <div className="da-spotlight-amount">
                   <span className="da-spotlight-amount-val">{formatCurrency(works[0].RECOMMENDED_AMOUNT || 0)}</span>
-                  <span className="da-spotlight-amount-label">Proposal Value</span>
+                  <span className="da-spotlight-amount-label">{t("Proposal Value")}</span>
                 </div>
                 <button
                   type="button"
                   className="da-spotlight-inspect-btn btn-warning"
                   onClick={() => handleSelectWork(works[0], "sanction")}
-                  title="Inspect Section 3.11 Sanction Dossier"
+                  title={t("Inspect Section 3.11 Sanction Dossier")}
                 >
                   <Eye size={13} />
-                  <span>Inspect Sanction Dossier</span>
+                  <span>{t("Inspect Sanction Dossier")}</span>
                 </button>
               </div>
             </div>
@@ -1060,30 +1060,29 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-module-banner-left">
               <div className="da-module-banner-eyebrow">
                 <AlertTriangle size={13} />
-                <span>Statutory 45-Day Timeline Compliance · Section 3.12 MPLADS</span>
+                <span>{t("Statutory 45-Day Timeline Compliance · Section 3.12 MPLADS")}</span>
               </div>
-              <h2 className="da-module-banner-title">Works Approaching or Exceeding 45-Day Sanction Limit</h2>
+              <h2 className="da-module-banner-title">{t("Works Approaching or Exceeding 45-Day Sanction Limit")}</h2>
               <p className="da-module-banner-desc">
-                Statutory mandate requires the District Authority to accord sanction or communicate rejection
-                within <strong>45 days</strong> of receiving recommendation from the Hon'ble MP.
+                {t("Statutory mandate requires the District Authority to accord sanction or communicate rejection within")} <strong>45 {t("Days")}</strong> {t("of receiving recommendation from the Hon'ble MP.")}
               </p>
             </div>
             <div className="da-module-banner-right">
               <div className="da-intel-stats">
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">&gt; 45 Days Exceeded</span>
+                  <span className="da-intel-stat-label">{t("> 45 Days Exceeded")}</span>
                   <div className="da-intel-stat-val text-red-700">
                     {formatNumber(compliance45d.exceeded_count || 0)}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">30-45 Days (Warning)</span>
+                  <span className="da-intel-stat-label">{t("30-45 Days (Warning)")}</span>
                   <div className="da-intel-stat-val text-amber-700">
                     {formatNumber(compliance45d.approaching_count || 0)}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Compliant (&lt;30d)</span>
+                  <span className="da-intel-stat-label">{t("Compliant (<30d)")}</span>
                   <div className="da-intel-stat-val text-emerald-700">
                     {formatNumber(compliance45d.compliant_count || 0)}
                   </div>
@@ -1093,7 +1092,7 @@ export default function DADashboard({ summary, onSelectWork }) {
           </div>
 
           <div className="da-subfilter-bar">
-            <span className="da-subfilter-label">Compliance Status:</span>
+            <span className="da-subfilter-label">{t("Compliance Status:")}</span>
             <button
               type="button"
               className={`da-subfilter-btn ${subfilter === "all" ? "active" : ""}`}
@@ -1102,7 +1101,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Exceeded 45 Days (Default)</span>
+              <span>{t("Exceeded 45 Days (Default)")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(compliance45d.exceeded_count || 0)}
               </span>
@@ -1115,7 +1114,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Approaching Deadline (30-45d)</span>
+              <span>{t("Approaching Deadline (30-45d)")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(compliance45d.approaching_count || 0)}
               </span>
@@ -1128,7 +1127,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Compliant (&lt;30 Days)</span>
+              <span>{t("Compliant (<30 Days)")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(compliance45d.compliant_count || 0)}
               </span>
@@ -1141,36 +1140,36 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-spotlight-left">
                 <div className="da-spotlight-eyebrow text-red-700">
                   <AlertTriangle size={12} />
-                  <span>Statutory 45-Day Escalation Spotlight · Section 3.12 Non-Compliance</span>
+                  <span>{t("Statutory 45-Day Escalation Spotlight · Section 3.12 Non-Compliance")}</span>
                 </div>
                 <div className="da-spotlight-title-line">
                   <span className="da-spotlight-work-id">#{works[0].WORK_ID || works[0].WORK_RECOMMENDATION_DTL_ID}</span>
                   <span className="text-xs text-red-700 font-bold">
                     {(Number(works[0].SANCTION_DELAY_DAYS) || 0) > 45
-                      ? `(+${(Number(works[0].SANCTION_DELAY_DAYS) || 0) - 45} Days Past Statutory 45-Day Window)`
-                      : `(${Number(works[0].SANCTION_DELAY_DAYS) || 0} Days Elapsed)`}
+                      ? `(+${(Number(works[0].SANCTION_DELAY_DAYS) || 0) - 45} ${t("Days Past Statutory 45-Day Window")})`
+                      : `(${Number(works[0].SANCTION_DELAY_DAYS) || 0} ${t("Days Elapsed")})`}
                   </span>
                 </div>
-                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || "Statutory Delay Proposal"}</div>
+                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || t("Statutory Delay Proposal")}</div>
                 <div className="da-spotlight-subline">
-                  <span>Hon'ble MP: <strong>{works[0].MP_NAME || "—"}</strong></span>
+                  <span>{t("Hon'ble MP:")} <strong>{works[0].MP_NAME || "—"}</strong></span>
                   <span>·</span>
-                  <span>Peer Median Delay: <strong>{works[0].PEER_MEDIAN_SANCTION_DELAY != null && !Number.isNaN(Number(works[0].PEER_MEDIAN_SANCTION_DELAY)) ? `${formatDecimal(works[0].PEER_MEDIAN_SANCTION_DELAY)} Days` : "36 Days"}</strong></span>
+                  <span>{t("Peer Median Delay:")} <strong>{works[0].PEER_MEDIAN_SANCTION_DELAY != null && !Number.isNaN(Number(works[0].PEER_MEDIAN_SANCTION_DELAY)) ? `${formatDecimal(works[0].PEER_MEDIAN_SANCTION_DELAY)} ${t("Days")}` : `36 ${t("Days")}`}</strong></span>
                 </div>
               </div>
               <div className="da-spotlight-right">
                 <div className="da-spotlight-amount">
                   <span className="da-spotlight-amount-val">{formatCurrency(works[0].RECOMMENDED_AMOUNT || 0)}</span>
-                  <span className="da-spotlight-amount-label">Recommended</span>
+                  <span className="da-spotlight-amount-label">{t("Recommended")}</span>
                 </div>
                 <button
                   type="button"
                   className="da-spotlight-inspect-btn btn-danger"
                   onClick={() => handleSelectWork(works[0], "compliance-45d")}
-                  title="Inspect Section 3.12 45-Day Compliance Dossier"
+                  title={t("Inspect Section 3.12 45-Day Compliance Dossier")}
                 >
                   <Eye size={13} />
-                  <span>Inspect Delay Dossier</span>
+                  <span>{t("Inspect Delay Dossier")}</span>
                 </button>
               </div>
             </div>
@@ -1185,30 +1184,29 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-module-banner-left">
               <div className="da-module-banner-eyebrow">
                 <CheckCircle2 size={13} />
-                <span>1-Year Completion Monitoring · Section 3.14 MPLADS Guidelines</span>
+                <span>{t("1-Year Completion Monitoring · Section 3.14 MPLADS Guidelines")}</span>
               </div>
-              <h2 className="da-module-banner-title">Works Approaching or Exceeding 12-Month Execution Window</h2>
+              <h2 className="da-module-banner-title">{t("Works Approaching or Exceeding 12-Month Execution Window")}</h2>
               <p className="da-module-banner-desc">
-                All sanctioned civil works must be physically completed and handed over within 1 year from sanction
-                order date. Overdue works require immediate Collectorate review and contractor audit.
+                {t("All sanctioned civil works must be physically completed and handed over within 1 year from sanction order date. Overdue works require immediate Collectorate review and contractor audit.")}
               </p>
             </div>
             <div className="da-module-banner-right">
               <div className="da-intel-stats">
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Overdue (&gt; 1 Yr)</span>
+                  <span className="da-intel-stat-label">{t("Overdue (> 1 Yr)")}</span>
                   <div className="da-intel-stat-val text-red-700">
                     {formatNumber(completionMonitoring.overdue_count || 0)}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Under Construction</span>
+                  <span className="da-intel-stat-label">{t("Under Construction")}</span>
                   <div className="da-intel-stat-val">
                     {formatNumber(completionMonitoring.under_construction_count || 0)}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Completed</span>
+                  <span className="da-intel-stat-label">{t("Completed")}</span>
                   <div className="da-intel-stat-val text-emerald-700">
                     {formatNumber(completionMonitoring.completed_count || 0)}
                   </div>
@@ -1218,7 +1216,7 @@ export default function DADashboard({ summary, onSelectWork }) {
           </div>
 
           <div className="da-subfilter-bar">
-            <span className="da-subfilter-label">Execution Stage:</span>
+            <span className="da-subfilter-label">{t("Execution Stage:")}</span>
             <button
               type="button"
               className={`da-subfilter-btn ${subfilter === "all" ? "active" : ""}`}
@@ -1227,7 +1225,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Overdue Uncompleted (&gt;1 Yr)</span>
+              <span>{t("Overdue Uncompleted (>1 Yr)")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(completionMonitoring.overdue_count || 0)}
               </span>
@@ -1240,7 +1238,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Under Construction</span>
+              <span>{t("Under Construction")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(completionMonitoring.under_construction_count || 0)}
               </span>
@@ -1253,7 +1251,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Physical Inspection</span>
+              <span>{t("Physical Inspection")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(completionMonitoring.physical_inspection_count || 0)}
               </span>
@@ -1266,7 +1264,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Completed Assets</span>
+              <span>{t("Completed Assets")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(completionMonitoring.completed_count || 0)}
               </span>
@@ -1279,34 +1277,34 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-spotlight-left">
                 <div className="da-spotlight-eyebrow text-red-700">
                   <CheckCircle2 size={12} />
-                  <span>1-Year Completion Window Spotlight · Section 3.14 Execution Audit</span>
+                  <span>{t("1-Year Completion Window Spotlight · Section 3.14 Execution Audit")}</span>
                 </div>
                 <div className="da-spotlight-title-line">
                   <span className="da-spotlight-work-id">#{works[0].WORK_ID || works[0].WORK_RECOMMENDATION_DTL_ID}</span>
-                  <span className="badge-stage stage-inspection">{works[0].WORK_STAGE || "In Execution"}</span>
+                  <span className="badge-stage stage-inspection">{t(works[0].WORK_STAGE || "In Execution")}</span>
                 </div>
-                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || "Civil Construction Work"}</div>
+                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || t("Civil Construction Work")}</div>
                 <div className="da-spotlight-subline">
-                  <span>Sanctioned: <strong>{formatCurrency(works[0].SANCTION_AMOUNT || 0)}</strong></span>
+                  <span>{t("Sanctioned:")} <strong>{formatCurrency(works[0].SANCTION_AMOUNT || 0)}</strong></span>
                   <span>·</span>
-                  <span>Sanction Date: <strong>{works[0].SANCTION_DATE || "Recorded"}</strong></span>
+                  <span>{t("Sanction Date:")} <strong>{works[0].SANCTION_DATE || t("Recorded")}</strong></span>
                   <span>·</span>
-                  <span>Peer Median Completion: <strong>{works[0].PEER_MEDIAN_COMPLETION_DAYS != null ? `${formatDecimal(works[0].PEER_MEDIAN_COMPLETION_DAYS)} Days` : "167 Days"}</strong></span>
+                  <span>{t("Peer Median Completion:")} <strong>{works[0].PEER_MEDIAN_COMPLETION_DAYS != null ? `${formatDecimal(works[0].PEER_MEDIAN_COMPLETION_DAYS)} ${t("Days")}` : `167 ${t("Days")}`}</strong></span>
                 </div>
               </div>
               <div className="da-spotlight-right">
                 <div className="da-spotlight-amount">
                   <span className="da-spotlight-amount-val">{formatCurrency(works[0].ACTUAL_AMOUNT || 0)}</span>
-                  <span className="da-spotlight-amount-label">Disbursed</span>
+                  <span className="da-spotlight-amount-label">{t("Disbursed")}</span>
                 </div>
                 <button
                   type="button"
                   className="da-spotlight-inspect-btn btn-danger"
                   onClick={() => handleSelectWork(works[0], "completion")}
-                  title="Inspect Section 3.14 Completion Dossier"
+                  title={t("Inspect Section 3.14 Completion Dossier")}
                 >
                   <Eye size={13} />
-                  <span>Inspect Completion Dossier</span>
+                  <span>{t("Inspect Completion Dossier")}</span>
                 </button>
               </div>
             </div>
@@ -1321,26 +1319,25 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-module-banner-left">
               <div className="da-module-banner-eyebrow">
                 <Coins size={13} />
-                <span>Financial Monitoring & Expenditure Audit</span>
+                <span>{t("Financial Monitoring & Expenditure Audit")}</span>
               </div>
-              <h2 className="da-module-banner-title">Sanctioned vs Payments vs Actual Expenditure Surveillance</h2>
+              <h2 className="da-module-banner-title">{t("Sanctioned vs Payments vs Actual Expenditure Surveillance")}</h2>
               <p className="da-module-banner-desc">
-                Surveillance of cost estimation, installment releases, contractor billing, and uncommitted balance
-                under District Authority supervision.
+                {t("Surveillance of cost estimation, installment releases, contractor billing, and uncommitted balance under District Authority supervision.")}
               </p>
             </div>
             <div className="da-module-banner-right">
               <div className="da-intel-stats">
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Sanctioned</span>
+                  <span className="da-intel-stat-label">{t("Sanctioned")}</span>
                   <div className="da-intel-stat-val">{formatCrores(financials.sanction_amount || 0)}</div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Disbursed</span>
+                  <span className="da-intel-stat-label">{t("Disbursed")}</span>
                   <div className="da-intel-stat-val">{formatCrores(financials.actual_amount || 0)}</div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Cost Outliers</span>
+                  <span className="da-intel-stat-label">{t("Cost Outliers")}</span>
                   <div className="da-intel-stat-val text-amber-700">
                     {formatNumber(financials.cost_variance_cases || 0)}
                   </div>
@@ -1350,7 +1347,7 @@ export default function DADashboard({ summary, onSelectWork }) {
           </div>
 
           <div className="da-subfilter-bar">
-            <span className="da-subfilter-label">Financial Filter:</span>
+            <span className="da-subfilter-label">{t("Financial Filter:")}</span>
             <button
               type="button"
               className={`da-subfilter-btn ${subfilter === "all" ? "active" : ""}`}
@@ -1359,7 +1356,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Cost Anomaly Outliers (&gt;1.2x Peer)</span>
+              <span>{t("Cost Anomaly Outliers (>1.2x Peer)")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(financials.cost_variance_cases || 0)}
               </span>
@@ -1372,7 +1369,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Cost Escalation (Actual &gt; Sanction)</span>
+              <span>{t("Cost Escalation (Actual > Sanction)")}</span>
             </button>
             <button
               type="button"
@@ -1382,7 +1379,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>All Sanctioned Works</span>
+              <span>{t("All Sanctioned Works")}</span>
             </button>
           </div>
 
@@ -1392,34 +1389,34 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-spotlight-left">
                 <div className="da-spotlight-eyebrow text-blue-800">
                   <Coins size={12} />
-                  <span>District Financial & Cost Escalation Audit Spotlight</span>
+                  <span>{t("District Financial & Cost Escalation Audit Spotlight")}</span>
                 </div>
                 <div className="da-spotlight-title-line">
                   <span className="da-spotlight-work-id">#{works[0].WORK_ID || works[0].WORK_RECOMMENDATION_DTL_ID}</span>
-                  <span className="text-xs text-slate-600 font-semibold">· {works[0].WORK_CATEGORY || "Civic Infrastructure"}</span>
+                  <span className="text-xs text-slate-600 font-semibold">· {works[0].WORK_CATEGORY || t("Civic Infrastructure")}</span>
                 </div>
-                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || "Civil Work Proposal"}</div>
+                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || t("Civil Work Proposal")}</div>
                 <div className="da-spotlight-subline">
-                  <span>Sanctioned: <strong>{formatCurrency(works[0].SANCTION_AMOUNT || 0)}</strong></span>
+                  <span>{t("Sanctioned:")} <strong>{formatCurrency(works[0].SANCTION_AMOUNT || 0)}</strong></span>
                   <span>·</span>
-                  <span>Disbursed: <strong>{formatCurrency(works[0].ACTUAL_AMOUNT || 0)}</strong></span>
+                  <span>{t("Disbursed:")} <strong>{formatCurrency(works[0].ACTUAL_AMOUNT || 0)}</strong></span>
                   <span>·</span>
-                  <span>Peer Median Cost: <strong>{formatCurrency(works[0].PEER_MEDIAN_SANCTION_AMOUNT || 0)}</strong></span>
+                  <span>{t("Peer Median Cost:")} <strong>{formatCurrency(works[0].PEER_MEDIAN_SANCTION_AMOUNT || 0)}</strong></span>
                 </div>
               </div>
               <div className="da-spotlight-right">
                 <div className="da-spotlight-amount">
                   <span className="da-spotlight-amount-val">{formatCurrency(works[0].SANCTION_AMOUNT || works[0].RECOMMENDED_AMOUNT || 0)}</span>
-                  <span className="da-spotlight-amount-label">Sanction Value</span>
+                  <span className="da-spotlight-amount-label">{t("Sanction Value")}</span>
                 </div>
                 <button
                   type="button"
                   className="da-spotlight-inspect-btn"
                   onClick={() => handleSelectWork(works[0], "financials")}
-                  title="Inspect Financial Scrutiny Dossier"
+                  title={t("Inspect Financial Scrutiny Dossier")}
                 >
                   <Eye size={13} />
-                  <span>Inspect Financial Dossier</span>
+                  <span>{t("Inspect Financial Dossier")}</span>
                 </button>
               </div>
             </div>
@@ -1434,22 +1431,21 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-module-banner-left">
               <div className="da-module-banner-eyebrow">
                 <ShieldAlert size={13} />
-                <span>Risk Cases & Anomaly Surveillance</span>
+                <span>{t("Risk Cases & Anomaly Surveillance")}</span>
               </div>
-              <h2 className="da-module-banner-title">High & Medium Risk Civil Works in Jurisdiction</h2>
+              <h2 className="da-module-banner-title">{t("High & Medium Risk Civil Works in Jurisdiction")}</h2>
               <p className="da-module-banner-desc">
-                AI multi-dimensional risk scoring combining peer cost deviations, historical delay patterns, and
-                execution anomaly flags.
+                {t("AI multi-dimensional risk scoring combining peer cost deviations, historical delay patterns, and execution anomaly flags.")}
               </p>
             </div>
             <div className="da-module-banner-right">
               <div className="da-intel-stats">
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">High Risk</span>
+                  <span className="da-intel-stat-label">{t("High Risk")}</span>
                   <div className="da-intel-stat-val text-red-700">{formatNumber(riskSummary.high_risk || 0)}</div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Medium Risk</span>
+                  <span className="da-intel-stat-label">{t("Medium Risk")}</span>
                   <div className="da-intel-stat-val text-amber-700">
                     {formatNumber(riskSummary.medium_risk || 0)}
                   </div>
@@ -1459,7 +1455,7 @@ export default function DADashboard({ summary, onSelectWork }) {
           </div>
 
           <div className="da-subfilter-bar">
-            <span className="da-subfilter-label">Severity Filter:</span>
+            <span className="da-subfilter-label">{t("Severity Filter:")}</span>
             <button
               type="button"
               className={`da-subfilter-btn ${subfilter === "all" ? "active" : ""}`}
@@ -1468,7 +1464,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>All High & Medium Risk</span>
+              <span>{t("All High & Medium Risk")}</span>
             </button>
             <button
               type="button"
@@ -1478,7 +1474,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>High Risk Only</span>
+              <span>{t("High Risk Only")}</span>
               <span className="da-subfilter-count">{formatNumber(riskSummary.high_risk || 0)}</span>
             </button>
             <button
@@ -1489,7 +1485,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Medium Risk Only</span>
+              <span>{t("Medium Risk Only")}</span>
               <span className="da-subfilter-count">{formatNumber(riskSummary.medium_risk || 0)}</span>
             </button>
           </div>
@@ -1500,30 +1496,30 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-spotlight-left">
                 <div className="da-spotlight-eyebrow text-red-700">
                   <ShieldAlert size={12} />
-                  <span>Priority Risk Case Spotlight · AI Anomaly Score: {formatDecimal(works[0].RISK_SCORE || 0)}/100</span>
+                  <span>{t("Priority Risk Case Spotlight · AI Anomaly Score:")} {formatDecimal(works[0].RISK_SCORE || 0)}/100</span>
                 </div>
                 <div className="da-spotlight-title-line">
                   <span className="da-spotlight-work-id">#{works[0].WORK_ID || works[0].WORK_RECOMMENDATION_DTL_ID}</span>
-                  <span className="badge-review alert-duplicate">{works[0].RISK_LEVEL || "HIGH"} RISK</span>
+                  <span className="badge-review alert-duplicate">{works[0].RISK_LEVEL || "HIGH"} {t("RISK")}</span>
                 </div>
-                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || "Work Proposal"}</div>
+                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || t("Work Proposal")}</div>
                 <div className="da-spotlight-subline">
-                  <span>Anomaly Rationale: <strong className="text-red-700">{works[0].RISK_REASON || works[0].REVIEW_REASON || "AI Risk Anomaly Flagged"}</strong></span>
+                  <span>{t("Anomaly Rationale:")} <strong className="text-red-700">{works[0].RISK_REASON || works[0].REVIEW_REASON || t("AI Risk Anomaly Flagged")}</strong></span>
                 </div>
               </div>
               <div className="da-spotlight-right">
                 <div className="da-spotlight-amount">
                   <span className="da-spotlight-amount-val">{formatCurrency(works[0].RECOMMENDED_AMOUNT || 0)}</span>
-                  <span className="da-spotlight-amount-label">Proposal Value</span>
+                  <span className="da-spotlight-amount-label">{t("Proposal Value")}</span>
                 </div>
                 <button
                   type="button"
                   className="da-spotlight-inspect-btn btn-danger"
                   onClick={() => handleSelectWork(works[0], "risk")}
-                  title="Inspect AI Risk Dossier"
+                  title={t("Inspect AI Risk Dossier")}
                 >
                   <Eye size={13} />
-                  <span>Inspect Risk Dossier</span>
+                  <span>{t("Inspect Risk Dossier")}</span>
                 </button>
               </div>
             </div>
@@ -1538,38 +1534,38 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-module-banner-left">
               <div className="da-module-banner-eyebrow">
                 <GitBranch size={13} />
-                <span>Duplicate Intelligence & Cross-Recommendation Overlaps</span>
+                <span>{t("Duplicate Intelligence & Cross-Recommendation Overlaps")}</span>
               </div>
-              <h2 className="da-module-banner-title">Similar & Suspicious Works in Jurisdiction</h2>
+              <h2 className="da-module-banner-title">{t("Similar & Suspicious Works in Jurisdiction")}</h2>
               <p className="da-module-banner-desc">
-                Semantic clustering detects overlapping work proposals across parliamentary terms and identical
-                village coordinates to block duplicate fund allocations.
+                {t("Semantic clustering detects overlapping work proposals across parliamentary terms and identical village coordinates to block duplicate fund allocations.")}
               </p>
             </div>
             <div className="da-module-banner-right">
               <div className="da-intel-stats">
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">High Duplicates</span>
+                  <span className="da-intel-stat-label">{t("High Duplicates")}</span>
                   <div className="da-intel-stat-val text-red-700">
                     {formatNumber(riskSummary.high_duplicate_risk || 0)}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Active Clusters</span>
+                  <span className="da-intel-stat-label">{t("Active Clusters")}</span>
                   <div className="da-intel-stat-val">
                     {formatNumber(riskSummary.duplicate_clusters_count || 0)}
                   </div>
                 </div>
               </div>
               <Link to="/duplicates" className="da-strip-btn">
-                <span>Inspect Clusters</span>
+                <span>{t("Inspect Clusters")}</span>
                 <ArrowRight size={13} />
               </Link>
             </div>
           </div>
 
+
           <div className="da-subfilter-bar">
-            <span className="da-subfilter-label">Cluster Risk:</span>
+            <span className="da-subfilter-label">{t("Cluster Risk:")}</span>
             <button
               type="button"
               className={`da-subfilter-btn ${subfilter === "all" ? "active" : ""}`}
@@ -1578,7 +1574,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>All Duplicate Warnings</span>
+              <span>{t("All Duplicate Warnings")}</span>
             </button>
             <button
               type="button"
@@ -1588,7 +1584,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>High Risk Overlaps</span>
+              <span>{t("High Risk Overlaps")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(riskSummary.high_duplicate_risk || 0)}
               </span>
@@ -1601,7 +1597,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Near-Match Proposals</span>
+              <span>{t("Near-Match Proposals")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(riskSummary.medium_duplicate_risk || 0)}
               </span>
@@ -1614,30 +1610,30 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-spotlight-left">
                 <div className="da-spotlight-eyebrow text-amber-800">
                   <GitBranch size={12} />
-                  <span>Duplicate Proposal Cluster Spotlight · Cluster #{works[0].CLUSTER_ID || "—"}</span>
+                  <span>{t("Duplicate Proposal Cluster Spotlight · Cluster #")}{works[0].CLUSTER_ID || "—"}</span>
                 </div>
                 <div className="da-spotlight-title-line">
                   <span className="da-spotlight-work-id">#{works[0].WORK_ID || works[0].WORK_RECOMMENDATION_DTL_ID}</span>
-                  <span className="badge-review alert-duplicate">{works[0].DUPLICATE_RISK || "HIGH"} DUPLICATE RISK</span>
+                  <span className="badge-review alert-duplicate">{works[0].DUPLICATE_RISK || "HIGH"} {t("DUPLICATE RISK")}</span>
                 </div>
-                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || "Duplicate Proposal"}</div>
+                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || t("Duplicate Proposal")}</div>
                 <div className="da-spotlight-subline">
-                  <span>Evidence: <strong className="text-slate-800">{works[0].EVIDENCE || "Cluster overlap detected in district"}</strong></span>
+                  <span>{t("Evidence:")} <strong className="text-slate-800">{works[0].EVIDENCE || t("Cluster overlap detected in district")}</strong></span>
                 </div>
               </div>
               <div className="da-spotlight-right">
                 <div className="da-spotlight-amount">
                   <span className="da-spotlight-amount-val">{formatCurrency(works[0].RECOMMENDED_AMOUNT || 0)}</span>
-                  <span className="da-spotlight-amount-label">Budget</span>
+                  <span className="da-spotlight-amount-label">{t("Budget")}</span>
                 </div>
                 <button
                   type="button"
                   className="da-spotlight-inspect-btn btn-warning"
                   onClick={() => handleSelectWork(works[0], "duplicates")}
-                  title="Inspect Duplicate Cluster Dossier"
+                  title={t("Inspect Duplicate Cluster Dossier")}
                 >
                   <Eye size={13} />
-                  <span>Inspect Duplicate Dossier</span>
+                  <span>{t("Inspect Duplicate Dossier")}</span>
                 </button>
               </div>
             </div>
@@ -1652,12 +1648,11 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-module-banner-left">
               <div className="da-module-banner-eyebrow">
                 <Building2 size={13} />
-                <span>Vendor & Implementing Agency (IA) Performance</span>
+                <span>{t("Vendor & Implementing Agency (IA) Performance")}</span>
               </div>
-              <h2 className="da-module-banner-title">Implementing District Authorities & Executing Bodies</h2>
+              <h2 className="da-module-banner-title">{t("Implementing District Authorities & Executing Bodies")}</h2>
               <p className="da-module-banner-desc">
-                Surveillance of executing agencies (Zila Parishads, PWD, Rural Works) on milestone reporting,
-                speed of technical sanctions, and completion rates.
+                {t("Surveillance of executing agencies (Zila Parishads, PWD, Rural Works) on milestone reporting, speed of technical sanctions, and completion rates.")}
               </p>
             </div>
           </div>
@@ -1667,21 +1662,21 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-panel-header">
                 <h3 className="da-panel-title">
                   <Building2 size={15} color="#b45309" />
-                  <span>Implementing Agencies in Jurisdiction Scope</span>
+                  <span>{t("Implementing Agencies in Jurisdiction Scope")}</span>
                 </h3>
               </div>
               <div className="da-table-container">
                 <table className="da-gov-table">
                   <thead>
                     <tr>
-                      <th>Implementing Agency / Collectorate</th>
-                      <th>Total Works</th>
-                      <th>Sanctioned</th>
-                      <th>Completed</th>
-                      <th>Sanction Amount</th>
-                      <th>Disbursed</th>
-                      <th>Completion %</th>
-                      <th>Delayed (&gt;45d)</th>
+                      <th>{t("Implementing Agency / Collectorate")}</th>
+                      <th>{t("Total Works")}</th>
+                      <th>{t("Sanctioned")}</th>
+                      <th>{t("Completed")}</th>
+                      <th>{t("Sanction Amount")}</th>
+                      <th>{t("Disbursed")}</th>
+                      <th>{t("Completion %")}</th>
+                      <th>{t("Delayed (>45d)")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1720,34 +1715,34 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-spotlight-left">
                 <div className="da-spotlight-eyebrow text-blue-800">
                   <Building2 size={12} />
-                  <span>Implementing Agency Work Spotlight · {works[0].IDA_NAME || "District Authority"}</span>
+                  <span>{t("Implementing Agency Work Spotlight ·")} {works[0].IDA_NAME || t("District Authority")}</span>
                 </div>
                 <div className="da-spotlight-title-line">
                   <span className="da-spotlight-work-id">#{works[0].WORK_ID || works[0].WORK_RECOMMENDATION_DTL_ID}</span>
-                  <span className="badge-stage stage-pending">{works[0].WORK_STAGE || "In Execution"}</span>
+                  <span className="badge-stage stage-pending">{t(works[0].WORK_STAGE || "In Execution")}</span>
                 </div>
-                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || "Agency Project"}</div>
+                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || t("Agency Project")}</div>
                 <div className="da-spotlight-subline">
-                  <span>Hon'ble MP: <strong>{works[0].MP_NAME || "—"}</strong></span>
+                  <span>{t("Hon'ble MP:")} <strong>{works[0].MP_NAME || "—"}</strong></span>
                   <span>·</span>
-                  <span>Category: <strong>{works[0].WORK_CATEGORY || "General/Civil"}</strong></span>
+                  <span>{t("Category:")} <strong>{works[0].WORK_CATEGORY || t("General/Civil")}</strong></span>
                   <span>·</span>
-                  <span>Sanctioned: <strong>{formatCurrency(works[0].SANCTION_AMOUNT || 0)}</strong></span>
+                  <span>{t("Sanctioned:")} <strong>{formatCurrency(works[0].SANCTION_AMOUNT || 0)}</strong></span>
                 </div>
               </div>
               <div className="da-spotlight-right">
                 <div className="da-spotlight-amount">
                   <span className="da-spotlight-amount-val">{formatCurrency(works[0].ACTUAL_AMOUNT || 0)}</span>
-                  <span className="da-spotlight-amount-label">Disbursed</span>
+                  <span className="da-spotlight-amount-label">{t("Disbursed")}</span>
                 </div>
                 <button
                   type="button"
                   className="da-spotlight-inspect-btn"
                   onClick={() => handleSelectWork(works[0], "ia")}
-                  title="Inspect Implementing Agency Work Dossier"
+                  title={t("Inspect Implementing Agency Work Dossier")}
                 >
                   <Eye size={13} />
-                  <span>Inspect Agency Dossier</span>
+                  <span>{t("Inspect Agency Dossier")}</span>
                 </button>
               </div>
             </div>
@@ -1762,24 +1757,23 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-module-banner-left">
               <div className="da-module-banner-eyebrow">
                 <FileCheck size={13} />
-                <span>Ground Evidence & Document Verification</span>
+                <span>{t("Ground Evidence & Document Verification")}</span>
               </div>
-              <h2 className="da-module-banner-title">Analytical Cluster Evidence & Suspicion Scrutiny</h2>
+              <h2 className="da-module-banner-title">{t("Analytical Cluster Evidence & Suspicion Scrutiny")}</h2>
               <p className="da-module-banner-desc">
-                Surveillance of candidate relationships, analytical text similarity evidence, and high suspicion
-                cluster alerts requiring physical audit.
+                {t("Surveillance of candidate relationships, analytical text similarity evidence, and high suspicion cluster alerts requiring physical audit.")}
               </p>
             </div>
             <div className="da-module-banner-right">
               <div className="da-intel-stats">
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Evidence Cases</span>
+                  <span className="da-intel-stat-label">{t("Evidence Cases")}</span>
                   <div className="da-intel-stat-val text-amber-700">
                     {formatNumber(evidenceVerification.total_evidence_cases || 0)}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">High Suspicion</span>
+                  <span className="da-intel-stat-label">{t("High Suspicion")}</span>
                   <div className="da-intel-stat-val text-red-700">
                     {formatNumber(evidenceVerification.high_suspicion_count || 0)}
                   </div>
@@ -1789,7 +1783,7 @@ export default function DADashboard({ summary, onSelectWork }) {
           </div>
 
           <div className="da-subfilter-bar">
-            <span className="da-subfilter-label">Evidence Scrutiny:</span>
+            <span className="da-subfilter-label">{t("Evidence Scrutiny:")}</span>
             <button
               type="button"
               className={`da-subfilter-btn ${subfilter === "all" ? "active" : ""}`}
@@ -1798,7 +1792,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>All Documented Evidence Cases</span>
+              <span>{t("All Documented Evidence Cases")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(evidenceVerification.total_evidence_cases || 0)}
               </span>
@@ -1811,7 +1805,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>High Suspicion Clusters</span>
+              <span>{t("High Suspicion Clusters")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(evidenceVerification.high_suspicion_count || 0)}
               </span>
@@ -1824,31 +1818,31 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-spotlight-left">
                 <div className="da-spotlight-eyebrow text-amber-800">
                   <FileCheck size={12} />
-                  <span>Ground & Candidate Evidence Scrutiny Spotlight</span>
+                  <span>{t("Ground & Candidate Evidence Scrutiny Spotlight")}</span>
                 </div>
                 <div className="da-spotlight-title-line">
                   <span className="da-spotlight-work-id">#{works[0].WORK_ID || works[0].WORK_RECOMMENDATION_DTL_ID}</span>
-                  <span className="badge-review verified">Score: {works[0].EVIDENCE_SCORE || 85}/100</span>
-                  <span className="badge-review alert-duplicate">{works[0].SUSPICION_LEVEL || "HIGH SUSPICION"}</span>
+                  <span className="badge-review verified">{t("Score:")} {works[0].EVIDENCE_SCORE || 85}/100</span>
+                  <span className="badge-review alert-duplicate">{t(works[0].SUSPICION_LEVEL || "HIGH SUSPICION")}</span>
                 </div>
-                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || "Proposal Evidence"}</div>
+                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || t("Proposal Evidence")}</div>
                 <div className="da-spotlight-subline">
-                  <span>Analytical Evidence: <strong className="text-slate-800">{works[0].EVIDENCE || works[0].REVIEW_REASON || "Evidence flagged for physical audit"}</strong></span>
+                  <span>{t("Analytical Evidence:")} <strong className="text-slate-800">{works[0].EVIDENCE || works[0].REVIEW_REASON || t("Evidence flagged for physical audit")}</strong></span>
                 </div>
               </div>
               <div className="da-spotlight-right">
                 <div className="da-spotlight-amount">
                   <span className="da-spotlight-amount-val">{formatCurrency(works[0].RECOMMENDED_AMOUNT || 0)}</span>
-                  <span className="da-spotlight-amount-label">Estimate</span>
+                  <span className="da-spotlight-amount-label">{t("Estimate")}</span>
                 </div>
                 <button
                   type="button"
                   className="da-spotlight-inspect-btn btn-warning"
                   onClick={() => handleSelectWork(works[0], "evidence")}
-                  title="Inspect Evidence Dossier"
+                  title={t("Inspect Evidence Dossier")}
                 >
                   <Eye size={13} />
-                  <span>Inspect Evidence Dossier</span>
+                  <span>{t("Inspect Evidence Dossier")}</span>
                 </button>
               </div>
             </div>
@@ -1863,24 +1857,23 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-module-banner-left">
               <div className="da-module-banner-eyebrow">
                 <Camera size={13} />
-                <span>Geo-Photo & Physical Site Inspection Verification</span>
+                <span>{t("Geo-Photo & Physical Site Inspection Verification")}</span>
               </div>
-              <h2 className="da-module-banner-title">Location GPS & Photographic Milestone Inconsistencies</h2>
+              <h2 className="da-module-banner-title">{t("Location GPS & Photographic Milestone Inconsistencies")}</h2>
               <p className="da-module-banner-desc">
-                Mandatory under MPLADS Section 3.16: physical site inspection and completed asset handover require
-                verified geo-tagged photographs.
+                {t("Mandatory under MPLADS Section 3.16: physical site inspection and completed asset handover require verified geo-tagged photographs.")}
               </p>
             </div>
             <div className="da-module-banner-right">
               <div className="da-intel-stats">
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Site Inspection</span>
+                  <span className="da-intel-stat-label">{t("Site Inspection")}</span>
                   <div className="da-intel-stat-val">
                     {formatNumber(completionMonitoring.physical_inspection_count || 0)}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Completed Handover</span>
+                  <span className="da-intel-stat-label">{t("Completed Handover")}</span>
                   <div className="da-intel-stat-val text-emerald-700">
                     {formatNumber(completionMonitoring.completed_count || 0)}
                   </div>
@@ -1888,13 +1881,13 @@ export default function DADashboard({ summary, onSelectWork }) {
               </div>
               <Link to="/photo-verifier" className="da-strip-btn">
                 <Camera size={13} />
-                <span>Launch Geo-Photo Verifier</span>
+                <span>{t("Launch Geo-Photo Verifier")}</span>
               </Link>
             </div>
           </div>
 
           <div className="da-subfilter-bar">
-            <span className="da-subfilter-label">Milestone Photo Evidence:</span>
+            <span className="da-subfilter-label">{t("Milestone Photo Evidence:")}</span>
             <button
               type="button"
               className={`da-subfilter-btn ${subfilter === "all" ? "active" : ""}`}
@@ -1903,7 +1896,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>All Photo Milestone Works</span>
+              <span>{t("All Photo Milestone Works")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(
                   (completionMonitoring.physical_inspection_count || 0) +
@@ -1919,7 +1912,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Physical Inspection Milestone</span>
+              <span>{t("Physical Inspection Milestone")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(completionMonitoring.physical_inspection_count || 0)}
               </span>
@@ -1932,7 +1925,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              <span>Completed Assets Handover</span>
+              <span>{t("Completed Assets Handover")}</span>
               <span className="da-subfilter-count">
                 {formatNumber(completionMonitoring.completed_count || 0)}
               </span>
@@ -1945,32 +1938,32 @@ export default function DADashboard({ summary, onSelectWork }) {
               <div className="da-spotlight-left">
                 <div className="da-spotlight-eyebrow text-blue-800">
                   <Camera size={12} />
-                  <span>Geo-Photo & Physical Milestone Inspection Spotlight (Section 3.16)</span>
+                  <span>{t("Geo-Photo & Physical Milestone Inspection Spotlight (Section 3.16)")}</span>
                 </div>
                 <div className="da-spotlight-title-line">
                   <span className="da-spotlight-work-id">#{works[0].WORK_ID || works[0].WORK_RECOMMENDATION_DTL_ID}</span>
-                  <span className="badge-stage stage-inspection">{works[0].WORK_STAGE || "Physical Inspection"}</span>
+                  <span className="badge-stage stage-inspection">{t(works[0].WORK_STAGE || "Physical Inspection")}</span>
                 </div>
-                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || "Milestone Asset"}</div>
+                <div className="da-spotlight-desc">{works[0].WORK_DESCRIPTION || t("Milestone Asset")}</div>
                 <div className="da-spotlight-subline">
-                  <span>Constituency: <strong>{works[0].CONSTITUENCY || "District Bounds"}</strong></span>
+                  <span>{t("Constituency:")} <strong>{works[0].CONSTITUENCY || t("District Bounds")}</strong></span>
                   <span>·</span>
-                  <span>Photo Mandate: <strong>Geo-Tagged Verification Required for AS/TS & Asset Handover</strong></span>
+                  <span>{t("Photo Mandate:")} <strong>{t("Geo-Tagged Verification Required for AS/TS & Asset Handover")}</strong></span>
                 </div>
               </div>
               <div className="da-spotlight-right">
                 <div className="da-spotlight-amount">
                   <span className="da-spotlight-amount-val">{formatCurrency(works[0].SANCTION_AMOUNT || works[0].RECOMMENDED_AMOUNT || 0)}</span>
-                  <span className="da-spotlight-amount-label">Sanction Value</span>
+                  <span className="da-spotlight-amount-label">{t("Sanction Value")}</span>
                 </div>
                 <button
                   type="button"
                   className="da-spotlight-inspect-btn"
                   onClick={() => handleSelectWork(works[0], "geo-photo")}
-                  title="Inspect Geo-Photo Milestone Dossier"
+                  title={t("Inspect Geo-Photo Milestone Dossier")}
                 >
                   <Eye size={13} />
-                  <span>Inspect Geo-Photo Dossier</span>
+                  <span>{t("Inspect Geo-Photo Dossier")}</span>
                 </button>
               </div>
             </div>
@@ -1985,18 +1978,17 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-module-banner-left">
               <div className="da-module-banner-eyebrow">
                 <Bell size={13} />
-                <span>District Collectorate Priority Action Queue</span>
+                <span>{t("District Collectorate Priority Action Queue")}</span>
               </div>
-              <h2 className="da-module-banner-title">Priority Cases Requiring Administrative Action</h2>
+              <h2 className="da-module-banner-title">{t("Priority Cases Requiring Administrative Action")}</h2>
               <p className="da-module-banner-desc">
-                High-severity proposals flagged for duplicate overlap, cost anomaly, or delay deviations
-                requiring Collector decision.
+                {t("High-severity proposals flagged for duplicate overlap, cost anomaly, or delay deviations requiring Collector decision.")}
               </p>
             </div>
             <div className="da-module-banner-right">
               <div className="da-intel-stats">
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Actionable Alerts</span>
+                  <span className="da-intel-stat-label">{t("Actionable Alerts")}</span>
                   <div className="da-intel-stat-val text-red-700">
                     {formatNumber((kpis.attention_required || 0) + (incomingRequests.filter(r => r.status === "SUBMITTED" || r.status === "UNDER_REVIEW").length))}
                   </div>
@@ -2008,8 +2000,8 @@ export default function DADashboard({ summary, onSelectWork }) {
           {/* Centralized Cross-Role Incoming Workflow Requests */}
           <div style={{ marginBottom: "20px" }}>
             <RequestTable
-              title="District Authority Incoming Requests & Petitions Queue"
-              subtitle="Real-time intake of Citizen grievances, IA payment claims/MB records, and MP inquiries routed to this Collectorate"
+              title={t("District Authority Incoming Requests & Petitions Queue")}
+              subtitle={t("Real-time intake of Citizen grievances, IA payment claims/MB records, and MP inquiries routed to this Collectorate")}
               requests={incomingRequests}
               loading={incomingRequestsLoading}
               currentRole="DISTRICT_AUTHORITY"
@@ -2021,7 +2013,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                     const wData = await res.json();
                     handleSelectWork(wData, "actions");
                   } else {
-                    alert(`Work #${workId} could not be loaded from registry.`);
+                    alert(`${t("Work #")}${workId} ${t("could not be loaded from registry.")}`);
                   }
                 } catch (e) {
                   console.error(e);
@@ -2037,7 +2029,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 <div className="da-priority-title-area">
                   <h2>
                     <ShieldAlert size={16} color="#b45309" />
-                    <span>Top Priority Scrutiny Cases ({priorityCases.length} Highest Severity)</span>
+                    <span>{t("Top Priority Scrutiny Cases")} ({priorityCases.length} {t("Highest Severity")})</span>
                   </h2>
                 </div>
               </div>
@@ -2056,36 +2048,36 @@ export default function DADashboard({ summary, onSelectWork }) {
                         <div className="da-priority-id-line">
                           <span className="da-priority-work-id">#{workId}</span>
                           <span className="badge-stage stage-pending">
-                            {c.WORK_STAGE || "Pending Sanction"}
+                            {t(c.WORK_STAGE || "Pending Sanction")}
                           </span>
                           {dupRisk === "HIGH" ? (
                             <span className="badge-review alert-duplicate">
-                              Duplicate Cluster #{c.CLUSTER_ID}
+                              {t("Duplicate Cluster #")}{c.CLUSTER_ID}
                             </span>
                           ) : dupRisk === "MEDIUM" ? (
-                            <span className="badge-review alert-review">Near Match #{c.CLUSTER_ID}</span>
+                            <span className="badge-review alert-review">{t("Near Match #")}{c.CLUSTER_ID}</span>
                           ) : c.REQUIRES_REVIEW ? (
-                            <span className="badge-review alert-review">Scrutiny Flagged</span>
+                            <span className="badge-review alert-review">{t("Scrutiny Flagged")}</span>
                           ) : (
-                            <span className="badge-review verified">Operational Review</span>
+                            <span className="badge-review verified">{t("Operational Review")}</span>
                           )}
                         </div>
 
-                        <div className="da-priority-desc">{c.WORK_DESCRIPTION || "Work Proposal"}</div>
+                        <div className="da-priority-desc">{c.WORK_DESCRIPTION || t("Work Proposal")}</div>
 
                         <div className="da-priority-subline">
                           <span>
-                            Hon'ble MP: <strong>{c.MP_NAME || "—"}</strong>
+                            {t("Hon'ble MP:")} <strong>{c.MP_NAME || "—"}</strong>
                           </span>
                           <span>·</span>
                           <span>
-                            Category: <strong>{c.WORK_CATEGORY || "Infrastructure"}</strong>
+                            {t("Category:")} <strong>{t(c.WORK_CATEGORY) || t("Infrastructure")}</strong>
                           </span>
                           {c.SANCTION_DELAY_DAYS !== undefined && c.SANCTION_DELAY_DAYS !== null && !Number.isNaN(Number(c.SANCTION_DELAY_DAYS)) && (
                             <>
                               <span>·</span>
                               <span>
-                                Delay: <strong>{Number(c.SANCTION_DELAY_DAYS)} days</strong>
+                                {t("Delay:")} <strong>{Number(c.SANCTION_DELAY_DAYS)} {t("days")}</strong>
                               </span>
                             </>
                           )}
@@ -2097,7 +2089,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                           <span className="da-spotlight-amount-val">
                             {formatCurrency(c.RECOMMENDED_AMOUNT || 0)}
                           </span>
-                          <span className="da-priority-amount-label">Recommended</span>
+                          <span className="da-priority-amount-label">{t("Recommended")}</span>
                         </div>
 
                         <button
@@ -2107,10 +2099,10 @@ export default function DADashboard({ summary, onSelectWork }) {
                             e.stopPropagation();
                             handleSelectWork(c, "actions");
                           }}
-                          title="Open full 78-field official work dossier"
+                          title={t("Open full 78-field official work dossier")}
                         >
                           <Eye size={13} />
-                          <span>Review Dossier</span>
+                          <span>{t("Review Dossier")}</span>
                         </button>
                       </div>
                     </div>
@@ -2129,36 +2121,35 @@ export default function DADashboard({ summary, onSelectWork }) {
             <div className="da-module-banner-left">
               <div className="da-module-banner-eyebrow">
                 <AlertCircle size={13} />
-                <span>District Magistrate & Collectorate Work Concerns Center</span>
+                <span>{t("District Magistrate & Collectorate Work Concerns Center")}</span>
               </div>
-              <h2 className="da-module-banner-title">Parliamentary Concerns & Statutory Directives</h2>
+              <h2 className="da-module-banner-title">{t("Parliamentary Concerns & Statutory Directives")}</h2>
               <p className="da-module-banner-desc">
-                Review concerns raised by Hon'ble MPs under jurisdiction, issue directives to Implementing Agencies,
-                request clarification, record administrative actions, and verify ground rectification.
+                {t("Review concerns raised by Hon'ble MPs under jurisdiction, issue directives to Implementing Agencies, request clarification, record administrative actions, and verify ground rectification.")}
               </p>
             </div>
             <div className="da-module-banner-right">
               <div className="da-intel-stats">
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Total Concerns</span>
+                  <span className="da-intel-stat-label">{t("Total Concerns")}</span>
                   <div className="da-intel-stat-val" style={{ color: "#005a9c" }}>
                     {daConcerns.length}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Needs DA Action</span>
+                  <span className="da-intel-stat-label">{t("Needs DA Action")}</span>
                   <div className="da-intel-stat-val text-amber-700">
                     {daConcerns.filter((c) => ["SUBMITTED", "RECEIVED", "UNDER_REVIEW", "EVIDENCE_SUBMITTED"].includes((c.status || "").toUpperCase())).length}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Assigned to IA</span>
+                  <span className="da-intel-stat-label">{t("Assigned to IA")}</span>
                   <div className="da-intel-stat-val" style={{ color: "#6b21a8" }}>
                     {daConcerns.filter((c) => ["ACTION_ASSIGNED", "ACTION_IN_PROGRESS"].includes((c.status || "").toUpperCase())).length}
                   </div>
                 </div>
                 <div className="da-intel-stat-item">
-                  <span className="da-intel-stat-label">Resolved</span>
+                  <span className="da-intel-stat-label">{t("Resolved")}</span>
                   <div className="da-intel-stat-val text-emerald-700">
                     {daConcerns.filter((c) => ["RESOLVED", "CLOSED"].includes((c.status || "").toUpperCase())).length}
                   </div>
@@ -2170,12 +2161,12 @@ export default function DADashboard({ summary, onSelectWork }) {
           <ConcernListTable
             concerns={daConcerns}
             loading={daConcernsLoading}
-            title="Jurisdiction Work Concerns Register"
-            subtitle={`Statutory oversight for ${selectedIDA === "ALL" ? "All District Authorities" : selectedIDA}`}
+            title={t("Jurisdiction Work Concerns Register")}
+            subtitle={`${t("Statutory oversight for")} ${selectedIDA === "ALL" ? t("All District Authorities") : selectedIDA}`}
             role="DISTRICT_AUTHORITY"
             onSelectConcern={(id) => setSelectedConcernId(id)}
             onOpenWork={(workId) => onSelectWork ? onSelectWork(workId, "actions") : handleSelectWork(workId, "actions")}
-            emptyMessage="No concerns currently logged for this District Authority jurisdiction."
+            emptyMessage={t("No concerns currently logged for this District Authority jurisdiction.")}
           />
         </div>
       )}
@@ -2197,11 +2188,11 @@ export default function DADashboard({ summary, onSelectWork }) {
         <div className="da-register-toolbar">
           <div className="da-register-title-area">
             <h2>
-              {DA_MODULES.find((m) => m.id === currentTab)?.label || "District Works"} Register
+              {t(DA_MODULES.find((m) => m.id === currentTab)?.label || "District Works")} {t("Register")}
             </h2>
             <p>
-              Audited live from national repository · Filtered for {analytics?.district_name || "District"} (
-              {formatNumber(worksTotal)} Records Total)
+              {t("Audited live from national repository · Filtered for")} {analytics?.district_name || t("District")} (
+              {formatNumber(worksTotal)} {t("Records Total")})
             </p>
           </div>
 
@@ -2210,7 +2201,7 @@ export default function DADashboard({ summary, onSelectWork }) {
               <Search size={13} color="#64748b" />
               <input
                 type="text"
-                placeholder="Search Work ID, title, MP..."
+                placeholder={t("Search by Work ID, title, or IA...")}
                 value={workSearchQuery}
                 onChange={(e) => setWorkSearchQuery(e.target.value)}
               />
@@ -2226,7 +2217,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                   setWorksPage(1);
                 }}
               />
-              <span>Scrutiny Flagged Only</span>
+              <span>{t("Scrutiny Flagged Only")}</span>
             </label>
 
             <button
@@ -2234,17 +2225,17 @@ export default function DADashboard({ summary, onSelectWork }) {
               className="da-pagination-btn"
               onClick={handleExportCSV}
               disabled={!works.length || isExporting}
-              title="Export filtered records to CSV"
+              title={t("Export filtered records to CSV")}
             >
               <Download size={13} className={isExporting ? "animate-spin" : ""} />
-              <span>{isExporting ? "Exporting..." : "Export CSV"}</span>
+              <span>{isExporting ? t("Exporting...") : t("Export CSV")}</span>
             </button>
 
             <button
               type="button"
               className="da-pagination-btn"
               onClick={loadDistrictWorks}
-              title="Refresh register"
+              title={t("Refresh register")}
             >
               <RefreshCw size={13} className={worksLoading ? "animate-spin" : ""} />
             </button>
@@ -2270,7 +2261,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 setWorksPage(1);
               }}
             >
-              {stage === "All" ? "All Stages" : stage}
+              {stage === "All" ? t("All Stages") : t(stage)}
             </button>
           ))}
         </div>
@@ -2280,21 +2271,21 @@ export default function DADashboard({ summary, onSelectWork }) {
           <table className="da-gov-table">
             <thead>
               <tr>
-                <th>Work ID</th>
-                <th>Work Description</th>
-                <th>Recommending MP</th>
-                <th>Recommended (₹)</th>
-                <th>Sanctioned (₹)</th>
-                <th>Stage</th>
-                {currentTab === "compliance-45d" && <th>Sanction Delay</th>}
-                {currentTab === "completion" && <th>Completion Elapsed</th>}
-                {currentTab === "financials" && <th>Disbursed (₹)</th>}
-                {currentTab === "risk-cases" && <th>Risk Level & Reason</th>}
-                {currentTab === "duplicates" && <th>Duplicate Cluster & Similarity</th>}
-                {currentTab === "evidence" && <th>Evidence & Suspicion</th>}
-                {currentTab === "geo-photo" && <th>Site Photo Status</th>}
-                <th>Scrutiny Status</th>
-                <th>Action</th>
+                <th>{t("Work ID")}</th>
+                <th>{t("Work Description")}</th>
+                <th>{t("Recommending MP")}</th>
+                <th>{t("Recommended (₹)")}</th>
+                <th>{t("Sanctioned (₹)")}</th>
+                <th>{t("Stage")}</th>
+                {currentTab === "compliance-45d" && <th>{t("Sanction Delay")}</th>}
+                {currentTab === "completion" && <th>{t("Completion Elapsed")}</th>}
+                {currentTab === "financials" && <th>{t("Disbursed (₹)")}</th>}
+                {currentTab === "risk-cases" && <th>{t("Risk Level & Reason")}</th>}
+                {currentTab === "duplicates" && <th>{t("Duplicate Cluster & Similarity")}</th>}
+                {currentTab === "evidence" && <th>{t("Evidence & Suspicion")}</th>}
+                {currentTab === "geo-photo" && <th>{t("Site Photo Status")}</th>}
+                <th>{t("Scrutiny Status")}</th>
+                <th>{t("Action")}</th>
               </tr>
             </thead>
             <tbody>
@@ -2302,7 +2293,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                 <tr>
                   <td colSpan={10} className="p-8 text-center text-slate-500">
                     <RefreshCw size={18} className="animate-spin mx-auto mb-2 text-slate-600" />
-                    Querying master database for {analytics?.district_name || "district"}...
+                    {t("Querying master database for")} {analytics?.district_name || t("district")}...
                   </td>
                 </tr>
               ) : works.length === 0 ? (
@@ -2310,7 +2301,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                   <td colSpan={10} className="text-center py-6">
                     <div className="da-empty-state-box">
                       <CheckCircle2 size={16} />
-                      <span>No matching works found for the selected module and filters.</span>
+                      <span>{t("No matching works found for the selected module and filters.")}</span>
                     </div>
                   </td>
                 </tr>
@@ -2332,7 +2323,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                         <div className="cell-desc-title" title={work.WORK_DESCRIPTION}>
                           {work.WORK_DESCRIPTION || "—"}
                         </div>
-                        <div className="cell-category">{work.WORK_CATEGORY || "General/Civil"}</div>
+                        <div className="cell-category">{t(work.WORK_CATEGORY || "General/Civil")}</div>
                       </td>
                       <td>
                         <div className="cell-mp-name">{work.MP_NAME || "—"}</div>
@@ -2353,7 +2344,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                                   : "stage-inspection"
                             }`}
                         >
-                          {stage}
+                          {t(stage)}
                         </span>
                       </td>
 
@@ -2365,7 +2356,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                               className={`da-compliance-val ${Number(delayDays) > 45 ? "alert font-bold" : Number(delayDays) >= 30 ? "warn" : ""
                                 }`}
                             >
-                              {Number(delayDays)} Days {Number(delayDays) > 45 ? "(+Overdue)" : ""}
+                              {Number(delayDays)} {t("Days")} {Number(delayDays) > 45 ? t("(+Overdue)") : ""}
                             </span>
                           ) : (
                             "—"
@@ -2381,11 +2372,11 @@ export default function DADashboard({ summary, onSelectWork }) {
                               }`}
                           >
                             {work.COMPLETION_DURATION_DAYS != null
-                              ? `${work.COMPLETION_DURATION_DAYS} Days`
+                              ? `${work.COMPLETION_DURATION_DAYS} ${t("Days")}`
                               : stage === "Work Completed"
-                                ? "Completed"
-                                : "In Execution"}
-                            {work.COMPLETION_DURATION_DAYS > 365 ? " (+Overdue)" : ""}
+                                ? t("Completed")
+                                : t("In Execution")}
+                            {work.COMPLETION_DURATION_DAYS > 365 ? ` ${t("(+Overdue)")}` : ""}
                           </span>
                         </td>
                       )}
@@ -2404,7 +2395,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                             className={`badge-review ${riskLevel === "HIGH" ? "alert-duplicate" : "alert-review"
                               }`}
                           >
-                            {riskLevel} RISK ({formatDecimal(work.RISK_SCORE || 0)})
+                            {riskLevel} {t("RISK")} ({formatDecimal(work.RISK_SCORE || 0)})
                           </span>
                           {work.RISK_REASON && (
                             <div className="text-xs text-slate-500 truncate max-w-xs" title={work.RISK_REASON}>
@@ -2420,16 +2411,16 @@ export default function DADashboard({ summary, onSelectWork }) {
                           {work.CLUSTER_ID ? (
                             <div>
                               <span className="badge-review alert-duplicate">
-                                Cluster #{Math.round(Number(work.CLUSTER_ID))}
+                                {t("Duplicate Cluster #")}{Math.round(Number(work.CLUSTER_ID))}
                               </span>
                               <div className="text-xs text-slate-600 font-semibold mt-0.5">
                                 {work.AVG_TEXT_SIMILARITY != null
-                                  ? `${(Number(work.AVG_TEXT_SIMILARITY) * 100).toFixed(0)}% Text Sim`
-                                  : "100% Match"}
+                                  ? `${(Number(work.AVG_TEXT_SIMILARITY) * 100).toFixed(0)}% ${t("Text Sim")}`
+                                  : t("100% Match")}
                               </div>
                             </div>
                           ) : (
-                            <span className="text-xs text-slate-400">Unique</span>
+                            <span className="text-xs text-slate-400">{t("Unique")}</span>
                           )}
                         </td>
                       )}
@@ -2440,7 +2431,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                           {work.EVIDENCE_SCORE ? (
                             <div>
                               <span className="font-semibold text-xs">
-                                Score: {work.EVIDENCE_SCORE}
+                                {t("Score:")} {work.EVIDENCE_SCORE}
                               </span>
                               <span
                                 className={`badge-review ml-1 ${work.SUSPICION_LEVEL === "HIGH SUSPICION"
@@ -2448,7 +2439,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                                     : "verified"
                                   }`}
                               >
-                                {work.SUSPICION_LEVEL || "NORMAL"}
+                                {t(work.SUSPICION_LEVEL || "NORMAL")}
                               </span>
                             </div>
                           ) : (
@@ -2464,7 +2455,7 @@ export default function DADashboard({ summary, onSelectWork }) {
                             className={`badge-stage ${stage === "Work Completed" ? "stage-completed" : "stage-inspection"
                               }`}
                           >
-                            {stage === "Work Completed" ? "Handover Photo Required" : "Site Photo Logged"}
+                            {stage === "Work Completed" ? t("Handover Photo Required") : t("Site Photo Logged")}
                           </span>
                         </td>
                       )}
@@ -2472,14 +2463,14 @@ export default function DADashboard({ summary, onSelectWork }) {
                       <td>
                         {dupRisk === "HIGH" ? (
                           <span className="badge-review alert-duplicate">
-                            Duplicate Flag #{work.CLUSTER_ID}
+                            {t("Duplicate Flag #")}{work.CLUSTER_ID}
                           </span>
                         ) : dupRisk === "MEDIUM" ? (
-                          <span className="badge-review alert-review">Near Match #{work.CLUSTER_ID}</span>
+                          <span className="badge-review alert-review">{t("Near Match #")}{work.CLUSTER_ID}</span>
                         ) : work.REQUIRES_REVIEW ? (
-                          <span className="badge-review alert-review">Review Required</span>
+                          <span className="badge-review alert-review">{t("Review Required")}</span>
                         ) : (
-                          <span className="badge-review verified">Verified</span>
+                          <span className="badge-review verified">{t("Verified")}</span>
                         )}
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
@@ -2515,10 +2506,10 @@ export default function DADashboard({ summary, onSelectWork }) {
                               type="button"
                               className="btn-view-dossier"
                               onClick={() => handleSelectWork(work, targetSec)}
-                              title={title}
+                              title={t(title)}
                             >
                               <Eye size={13} />
-                              <span>{label} →</span>
+                              <span>{t(label)} →</span>
                             </button>
                           );
                         })()}
@@ -2534,8 +2525,8 @@ export default function DADashboard({ summary, onSelectWork }) {
         {/* Pagination Bar */}
         <div className="da-register-pagination-bar">
           <span>
-            Showing {works.length ? (worksPage - 1) * worksLimit + 1 : 0} to{" "}
-            {Math.min(worksPage * worksLimit, worksTotal)} of {formatNumber(worksTotal)} works
+            {t("Showing")} {works.length ? (worksPage - 1) * worksLimit + 1 : 0} {t("to")}{" "}
+            {Math.min(worksPage * worksLimit, worksTotal)} {t("of")} {formatNumber(worksTotal)} {t("works")}
           </span>
           <div className="da-pagination-controls">
             <button
@@ -2544,10 +2535,10 @@ export default function DADashboard({ summary, onSelectWork }) {
               onClick={() => setWorksPage((p) => Math.max(1, p - 1))}
               disabled={worksPage <= 1}
             >
-              Previous
+              {t("Previous")}
             </button>
             <span className="px-2 font-semibold">
-              Page {worksPage} of {totalPages}
+              {t("Page")} {worksPage} {t("of")} {totalPages}
             </span>
             <button
               type="button"
@@ -2555,7 +2546,7 @@ export default function DADashboard({ summary, onSelectWork }) {
               onClick={() => setWorksPage((p) => Math.min(totalPages, p + 1))}
               disabled={worksPage >= totalPages}
             >
-              Next
+              {t("Next")}
             </button>
           </div>
         </div>
@@ -2564,15 +2555,13 @@ export default function DADashboard({ summary, onSelectWork }) {
       {/* 5. Pre-Sanction Proposal Verification Shortcut */}
       <div className="da-precheck-box">
         <div className="da-precheck-text">
-          <h3>Pre-Sanction Feasibility & Duplicate Screening</h3>
+          <h3>{t("Pre-Sanction Feasibility & Duplicate Screening")}</h3>
           <p>
-            Under Section 3.12 of MPLADS Operational Guidelines, District Authorities must verify feasibility,
-            estimate accuracy, and cross-reference new proposals against existing assets before issuing formal
-            Administrative Sanctions.
+            {t("Under Section 3.12 of MPLADS Operational Guidelines, District Authorities must verify feasibility, estimate accuracy, and cross-reference new proposals against existing assets before issuing formal Administrative Sanctions.")}
           </p>
         </div>
         <Link to="/pre-sanction" className="da-precheck-btn">
-          <span>Validate New Proposal</span>
+          <span>{t("Validate New Proposal")}</span>
           <ExternalLink size={13} />
         </Link>
       </div>

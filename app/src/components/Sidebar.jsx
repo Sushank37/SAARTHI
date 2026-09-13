@@ -212,8 +212,8 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
         daBadges?.overview !== undefined && daBadges?.overview !== null
           ? formatNumber(daBadges.overview)
           : summary?.total_works !== undefined && summary?.total_works !== null
-          ? formatNumber(summary.total_works)
-          : null,
+            ? formatNumber(summary.total_works)
+            : null,
       badgeType: "neutral",
     },
     {
@@ -274,8 +274,8 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
         daBadges?.risk_cases !== undefined && daBadges?.risk_cases !== null
           ? formatNumber(daBadges.risk_cases)
           : summary?.high_risk !== undefined && summary?.high_risk !== null
-          ? formatNumber(summary.high_risk)
-          : null,
+            ? formatNumber(summary.high_risk)
+            : null,
       badgeType: "danger",
     },
     {
@@ -288,8 +288,8 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
         daBadges?.duplicates !== undefined && daBadges?.duplicates !== null
           ? formatNumber(daBadges.duplicates)
           : summary?.duplicate_clusters !== undefined && summary?.duplicate_clusters !== null
-          ? formatNumber(summary.duplicate_clusters)
-          : null,
+            ? formatNumber(summary.duplicate_clusters)
+            : null,
       badgeType: "warning",
     },
     {
@@ -338,8 +338,8 @@ export default function Sidebar({ summary, roleConfig, onLogout }) {
         daBadges?.alerts_queue !== undefined && daBadges?.alerts_queue !== null
           ? formatNumber(daBadges.alerts_queue)
           : summary?.review_required !== undefined && summary?.review_required !== null
-          ? formatNumber(summary.review_required)
-          : null,
+            ? formatNumber(summary.review_required)
+            : null,
       badgeType: "danger",
     },
     {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Search, ExternalLink, LogOut, Bell, ShieldAlert } from "lucide-react";
 import { useAuth } from "../context/useAuth";
+import { useLanguage } from "../context/LanguageContext";
 import { ROLE_IDS } from "../data/roles";
 import LanguageSelector from "./LanguageSelector";
 import EarlyWarningCenter from "./EarlyWarningCenter";
@@ -24,6 +25,7 @@ export default function Header({
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, role: authRole, roleConfig: authRoleConfig } = useAuth() || {};
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [showAlertCenter, setShowAlertCenter] = useState(false);
   const [alertTotal, setAlertTotal] = useState(null);
@@ -109,10 +111,10 @@ export default function Header({
 
           <div className="header-title-block">
             <div className="brand-title-line">
-              <span className="ministry-title">MoSPI · Government of India</span>
-              <span className="saarthi-pill">AUDIT EXTENSION</span>
+              <span className="ministry-title">{t("MoSPI · Government of India")}</span>
+              <span className="saarthi-pill">{t("AUDIT EXTENSION")}</span>
             </div>
-            <div className="portal-title">MPLADS eSAKSHI Work & Fund Verification System</div>
+            <div className="portal-title">{t("MPLADS eSAKSHI Work & Fund Verification System")}</div>
           </div>
         </div>
 
@@ -123,14 +125,14 @@ export default function Header({
               className={`house-btn ${house === "Lok Sabha" ? "active" : ""}`}
               onClick={() => setHouse("Lok Sabha")}
             >
-              18th / 17th Lok Sabha
+              {t("18th / 17th Lok Sabha")}
             </button>
             <button
               className={`house-btn ${house === "Rajya Sabha" ? "active" : ""}`}
               onClick={() => setHouse("Rajya Sabha")}
               title="Rajya Sabha (Council of States) — Whole-State Module in Active Development"
             >
-              <span>Rajya Sabha</span>
+              <span>{t("Rajya Sabha")}</span>
               <span className="house-upcoming-pill">Phase 2</span>
             </button>
           </div>
@@ -141,7 +143,7 @@ export default function Header({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search Work ID, MP, Constituency..."
+              placeholder={t("Search Work ID, MP, Constituency...")}
             />
           </form>
         </div>
@@ -151,12 +153,12 @@ export default function Header({
           {roleConfig ? (
             <div className="header-active-persona" title={`Active Persona: ${roleConfig.displayName}`}>
               <span className="persona-icon">{roleConfig.icon}</span>
-              <span className="persona-name">{roleConfig.shortName}</span>
+              <span className="persona-name">{t(roleConfig.shortName)}</span>
             </div>
           ) : (
             setRole && (
               <div className="stakeholder-role-dropdown" title="Simulate Stakeholder Persona">
-                <span className="role-label">Persona:</span>
+                <span className="role-label">{t("Persona:")}</span>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
@@ -183,7 +185,7 @@ export default function Header({
             >
               <span className="header-early-alert-pulse" />
               <Bell size={14} className="header-early-alert-icon" />
-              <span>Early Alerts</span>
+              <span>{t("Early Alerts")}</span>
               <span className="header-early-alert-badge">
                 {alertTotal != null
                   ? (alertTotal >= 1000 ? `${(alertTotal / 1000).toFixed(1)}k` : alertTotal.toLocaleString("en-IN"))
@@ -191,7 +193,6 @@ export default function Header({
               </span>
             </button>
           )}
-
           <LanguageSelector />
 
           <a
@@ -212,7 +213,7 @@ export default function Header({
             title="Sign out of current session"
           >
             <LogOut size={13} />
-            <span>Logout</span>
+            <span>{t("Logout")}</span>
           </button>
         </div>
       </div>
