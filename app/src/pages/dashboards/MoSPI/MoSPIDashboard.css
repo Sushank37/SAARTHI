@@ -1038,6 +1038,103 @@
   color: #64748b;
 }
 
+/* In-Modal Filter & Search Toolbar */
+.mospi-modal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.mospi-modal-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+  max-width: 360px;
+}
+
+.mospi-modal-search-wrap .search-icon {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.mospi-modal-search-input {
+  width: 100%;
+  padding: 6px 28px 6px 30px;
+  font-size: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #0f172a;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.mospi-modal-search-input:focus {
+  border-color: #005A9C;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 90, 156, 0.1);
+}
+
+.mospi-modal-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mospi-modal-select {
+  height: 32px;
+  padding: 0 8px;
+  font-size: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0f172a;
+  outline: none;
+  cursor: pointer;
+}
+
+.mospi-modal-select:focus {
+  border-color: #005A9C;
+}
+
+.mospi-modal-pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mospi-modal-page-btn {
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.mospi-modal-page-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #005A9C;
+}
+
+.mospi-modal-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* ============================================================
    15. DISTRICT DOSSIER SUMMARY MODAL CONTENT
    ============================================================ */

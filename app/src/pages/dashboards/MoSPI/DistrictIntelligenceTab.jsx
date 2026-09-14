@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import {
   Building2,
@@ -57,6 +57,10 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
   const [idaWorks, setIdaWorks] = useState([]);
   const [loadingWorks, setLoadingWorks] = useState(false);
   const [dossierWork, setDossierWork] = useState(null);
+  const [modalSearch, setModalSearch] = useState("");
+  const [modalStage, setModalStage] = useState("ALL");
+  const [modalPage, setModalPage] = useState(1);
+  const [modalPageSize, setModalPageSize] = useState(25);
 
   // ── Derived ──────────────────────────────────────────────────────────────
   const selectedAuthority = idas.find((item) => item.IDA_NAME === inspectIdaName);
@@ -67,6 +71,9 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
     setInspectIdaName(null);
     setIdaWorks([]);
     setDossierWork(null);
+    setModalSearch("");
+    setModalStage("ALL");
+    setModalPage(1);
   }, []);
 
   // ── Body scroll lock + Esc key (covers both overlays) ─────────────────────
@@ -177,9 +184,12 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
     setActiveOverlay("inspect");
     setDossierWork(null);
     setLoadingWorks(true);
+    setModalSearch("");
+    setModalStage("ALL");
+    setModalPage(1);
     try {
       const res = await fetch(
-        `${API_BASE}/api/works?ida_name=${encodeURIComponent(idaName)}&limit=15`
+        `${API_BASE}/api/works?ida_name=${encodeURIComponent(idaName)}&limit=2500`
       );
       if (res.ok) {
         const d = await res.json();
@@ -191,6 +201,44 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
       setLoadingWorks(false);
     }
   };
+
+  // ── In-Modal Filter & Pagination Logic ────────────────────────────────────
+  const modalFilteredWorks = useMemo(() => {
+    return idaWorks.filter((w) => {
+      const q = modalSearch.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        String(w.WORK_ID || "").toLowerCase().includes(q) ||
+        String(w.WORK_RECOMMENDATION_DTL_ID || "").toLowerCase().includes(q) ||
+        String(w.WORK_DESCRIPTION || "").toLowerCase().includes(q) ||
+        String(w.CONSTITUENCY || "").toLowerCase().includes(q) ||
+        String(w.MP_NAME || "").toLowerCase().includes(q);
+
+      const matchesStage =
+        modalStage === "ALL" ||
+        String(w.WORK_STAGE || "").toLowerCase() === modalStage.toLowerCase();
+
+      return matchesSearch && matchesStage;
+    });
+  }, [idaWorks, modalSearch, modalStage]);
+
+  const modalStages = useMemo(() => {
+    const set = new Set();
+    idaWorks.forEach((w) => {
+      if (w.WORK_STAGE) set.add(w.WORK_STAGE);
+    });
+    return Array.from(set).sort();
+  }, [idaWorks]);
+
+  const totalModalPages = Math.max(
+    1,
+    Math.ceil(modalFilteredWorks.length / modalPageSize)
+  );
+
+  const pagedWorks = useMemo(() => {
+    const start = (modalPage - 1) * modalPageSize;
+    return modalFilteredWorks.slice(start, start + modalPageSize);
+  }, [modalFilteredWorks, modalPage, modalPageSize]);
 
   /**
    * Open District Dossier — REPLACES Inspect in the same modal portal.
@@ -543,20 +591,15 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                             {selectedAuthority.STATE_NAME}
                           </span>
                         )}
-                        {selectedAuthority?.total_works != null && (
-                          <span
-                            className="mospi-pill blue"
-                            style={{ fontSize: "11px" }}
-                          >
-                            {formatNumber(selectedAuthority.total_works)} Works
-                            Registered
-                          </span>
-                        )}
+                        <span
+                          className="mospi-pill blue"
+                          style={{ fontSize: "11px" }}
+                        >
+                          {formatNumber(selectedAuthority?.total_works ?? idaWorks.length)} Works Registered
+                        </span>
                       </div>
                       <p className="mospi-modal-subtitle">
-                        Sampling of registered works — click{" "}
-                        <strong>District Dossier</strong> to open a work's
-                        central record
+                        Official Central Registry — verified active works for this District Authority. Click <strong>District Dossier</strong> to inspect a work's central audit record.
                       </p>
                     </div>
                     <button
@@ -582,7 +625,7 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                             fontSize: "12px",
                           }}
                         >
-                          Loading works for {inspectIdaName}...
+                          Loading central works registry for {inspectIdaName}...
                         </p>
                       </div>
                     ) : idaWorks.length === 0 ? (
@@ -594,104 +637,233 @@ export default function DistrictIntelligenceTab({ onSelectWork }) {
                           fontSize: "13px",
                         }}
                       >
-                        No detailed works returned for this authority.
+                        No detailed works returned for this authority in central database.
                       </div>
                     ) : (
-                      <div
-                        className="mospi-table-wrapper"
-                        style={{ margin: 0 }}
-                      >
-                        <table className="mospi-data-table">
-                          <thead>
-                            <tr>
-                              <th style={{ width: "90px" }}>Work ID</th>
-                              <th>Description</th>
-                              <th>Stage</th>
-                              <th style={{ textAlign: "right" }}>
-                                Sanction Amount
-                              </th>
-                              <th
-                                style={{ textAlign: "center", width: "150px" }}
+                      <>
+                        {/* Quick In-Modal Search & Stage Filter Toolbar */}
+                        <div className="mospi-modal-toolbar">
+                          <div className="mospi-modal-search-wrap">
+                            <Search size={14} className="search-icon" />
+                            <input
+                              type="text"
+                              className="mospi-modal-search-input"
+                              placeholder="Search by Work ID, description, MP..."
+                              value={modalSearch}
+                              onChange={(e) => {
+                                setModalSearch(e.target.value);
+                                setModalPage(1);
+                              }}
+                            />
+                            {modalSearch && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setModalSearch("");
+                                  setModalPage(1);
+                                }}
+                                style={{
+                                  position: "absolute",
+                                  right: "8px",
+                                  top: "50%",
+                                  transform: "translateY(-50%)",
+                                  background: "transparent",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  color: "#94a3b8",
+                                  padding: 0,
+                                }}
+                                aria-label="Clear search"
                               >
-                                Action
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {idaWorks.map((w) => (
-                              <tr
-                                key={
-                                  w.WORK_RECOMMENDATION_DTL_ID || w.WORK_ID
-                                }
-                              >
-                                <td
-                                  style={{
-                                    fontWeight: 700,
-                                    color: "#005A9C",
-                                  }}
+                                <X size={13} />
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="mospi-modal-filter-group">
+                            <select
+                              className="mospi-modal-select"
+                              value={modalStage}
+                              onChange={(e) => {
+                                setModalStage(e.target.value);
+                                setModalPage(1);
+                              }}
+                              aria-label="Filter works by stage"
+                            >
+                              <option value="ALL">All Stages ({idaWorks.length})</option>
+                              {modalStages.map((st) => {
+                                const count = idaWorks.filter(
+                                  (w) =>
+                                    String(w.WORK_STAGE || "").toLowerCase() ===
+                                    st.toLowerCase()
+                                ).length;
+                                return (
+                                  <option key={st} value={st}>
+                                    {st} ({count})
+                                  </option>
+                                );
+                              })}
+                            </select>
+
+                            <select
+                              className="mospi-modal-select"
+                              value={modalPageSize}
+                              onChange={(e) => {
+                                setModalPageSize(Number(e.target.value));
+                                setModalPage(1);
+                              }}
+                              aria-label="Works per page"
+                            >
+                              <option value={25}>25 per page</option>
+                              <option value={50}>50 per page</option>
+                              <option value={100}>100 per page</option>
+                              <option value={2500}>View All</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div
+                          className="mospi-table-wrapper"
+                          style={{ margin: 0 }}
+                        >
+                          <table className="mospi-data-table">
+                            <thead>
+                              <tr>
+                                <th style={{ width: "90px" }}>Work ID</th>
+                                <th>Description</th>
+                                <th>Constituency & MP</th>
+                                <th>Stage</th>
+                                <th style={{ textAlign: "right" }}>
+                                  Sanction Amount
+                                </th>
+                                <th
+                                  style={{ textAlign: "center", width: "150px" }}
                                 >
-                                  #{w.WORK_ID || w.WORK_RECOMMENDATION_DTL_ID}
-                                </td>
-                                <td
-                                  style={{
-                                    maxWidth: "300px",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
-                                  }}
-                                  title={w.WORK_DESCRIPTION}
-                                >
-                                  {w.WORK_DESCRIPTION || "—"}
-                                </td>
-                                <td>
-                                  <span className="mospi-pill neutral">
-                                    {w.WORK_STAGE || "Unspecified"}
-                                  </span>
-                                </td>
-                                <td
-                                  style={{
-                                    textAlign: "right",
-                                    fontWeight: 600,
-                                  }}
-                                >
-                                  {w.SANCTION_AMOUNT
-                                    ? formatCrores(w.SANCTION_AMOUNT)
-                                    : "—"}
-                                </td>
-                                <td style={{ textAlign: "center" }}>
-                                  {/* District Dossier → replaces Inspect in THIS portal */}
-                                  <button
-                                    type="button"
-                                    className="mospi-dossier-btn mospi-dossier-district"
-                                    onClick={() => handleOpenDossier(w)}
-                                    title="View District Central Registry Dossier"
-                                  >
-                                    <Building2 size={11} />
-                                    <span>District Dossier</span>
-                                  </button>
-                                </td>
+                                  Action
+                                </th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                            </thead>
+                            <tbody>
+                              {pagedWorks.map((w) => (
+                                <tr
+                                  key={
+                                    w.WORK_RECOMMENDATION_DTL_ID || w.WORK_ID
+                                  }
+                                >
+                                  <td
+                                    style={{
+                                      fontWeight: 700,
+                                      color: "#005A9C",
+                                    }}
+                                  >
+                                    #{w.WORK_ID || w.WORK_RECOMMENDATION_DTL_ID}
+                                  </td>
+                                  <td
+                                    style={{
+                                      maxWidth: "260px",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                    title={w.WORK_DESCRIPTION}
+                                  >
+                                    {w.WORK_DESCRIPTION || "—"}
+                                  </td>
+                                  <td style={{ fontSize: "11.5px", color: "#334155" }}>
+                                    <div>{w.CONSTITUENCY || "—"}</div>
+                                    <div style={{ fontSize: "10.5px", color: "#64748b" }}>
+                                      {w.MP_NAME || ""}
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <span className="mospi-pill neutral">
+                                      {w.WORK_STAGE || "Unspecified"}
+                                    </span>
+                                  </td>
+                                  <td
+                                    style={{
+                                      textAlign: "right",
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    {w.SANCTION_AMOUNT
+                                      ? formatCrores(w.SANCTION_AMOUNT)
+                                      : "—"}
+                                  </td>
+                                  <td style={{ textAlign: "center" }}>
+                                    {/* District Dossier → replaces Inspect in THIS portal */}
+                                    <button
+                                      type="button"
+                                      className="mospi-dossier-btn mospi-dossier-district"
+                                      onClick={() => handleOpenDossier(w)}
+                                      title="View District Central Registry Dossier"
+                                    >
+                                      <Building2 size={11} />
+                                      <span>District Dossier</span>
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
                     )}
                   </div>
 
-                  {/* Footer */}
+                  {/* Footer with Real Statistics & Pagination */}
                   <div className="mospi-modal-footer">
                     <span className="mospi-modal-footer-meta">
-                      Showing {idaWorks.length} sample works for{" "}
-                      {inspectIdaName}
+                      Showing{" "}
+                      {modalFilteredWorks.length === 0
+                        ? 0
+                        : (modalPage - 1) * modalPageSize + 1}
+                      –
+                      {Math.min(
+                        modalPage * modalPageSize,
+                        modalFilteredWorks.length
+                      )}{" "}
+                      of {modalFilteredWorks.length} registered works for{" "}
+                      <strong>{inspectIdaName}</strong>
+                      {idaWorks.length > modalFilteredWorks.length && (
+                        <span> (filtered from {idaWorks.length} total)</span>
+                      )}
                     </span>
-                    <button
-                      type="button"
-                      className="mospi-action-btn secondary"
-                      onClick={closeAll}
-                      style={{ fontSize: "12px", padding: "5px 14px" }}
-                    >
-                      Close Inspection
-                    </button>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                      {totalModalPages > 1 && (
+                        <div className="mospi-modal-pagination">
+                          <button
+                            type="button"
+                            className="mospi-modal-page-btn"
+                            disabled={modalPage <= 1}
+                            onClick={() => setModalPage((p) => Math.max(1, p - 1))}
+                          >
+                            Previous
+                          </button>
+                          <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 600 }}>
+                            Page {modalPage} of {totalModalPages}
+                          </span>
+                          <button
+                            type="button"
+                            className="mospi-modal-page-btn"
+                            disabled={modalPage >= totalModalPages}
+                            onClick={() => setModalPage((p) => Math.min(totalModalPages, p + 1))}
+                          >
+                            Next
+                          </button>
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        className="mospi-action-btn secondary"
+                        onClick={closeAll}
+                        style={{ fontSize: "12px", padding: "5px 14px" }}
+                      >
+                        Close Inspection
+                      </button>
+                    </div>
                   </div>
                 </>
               )}

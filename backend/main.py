@@ -911,7 +911,7 @@ def get_works(
     limit: int = Query(
         50,
         ge=1,
-        le=500
+        le=3000
     ),
 
     state: str | None = None,
